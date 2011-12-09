@@ -11,8 +11,8 @@ class HashTree:
         z = mol.loc[2]
         for i in self.GridArea:
             intx = int((x + i[0]) / gridsize)
-            inty = int((y + i[0]) / gridsize)
-            intz = int((z + i[0]) / gridsize)
+            inty = int((y + i[1]) / gridsize)
+            intz = int((z + i[2]) / gridsize)
             if (intx,inty,intz) not in self.tree:
                 self.tree[intx,inty,intz] = []
             if mol not in self.tree[intx,inty,intz]:
@@ -24,8 +24,8 @@ class HashTree:
         z = mol.loc[2]
         for i in self.GridArea:
             intx = int((x + i[0]) / gridsize)
-            inty = int((y + i[0]) / gridsize)
-            intz = int((z + i[0]) / gridsize)
+            inty = int((y + i[1]) / gridsize)
+            intz = int((z + i[2]) / gridsize)
             if (intx,inty,intz) in self.tree:
                 for i in range((self.tree[intx,inty,intz].count(mol))):
                     if (intx,inty,intz) in self.tree:
@@ -111,15 +111,17 @@ def Init(ParLoc,ParNum,Psize):
     MolSize = Psize
     mols = [0]*ParNum
     stime = clock()
-    PTree = HashTree()
     for i in range(0,ParNum):
         mols[i]=Molecule()
         mols[i].loc = ParLoc[(i*3):(i*3+3)]
         mols[i].prev_loc = ParLoc[(i*3):(i*3+3)]
         mols[i].index = i
-        PTree.add_point(mols[i],1)
     print("Particles generation in:",round((clock()-stime),6),"sec")
     stime = clock()
+    PTree = HashTree()
+    for mol in mols:
+        PTree.add_point(mol,1)        
+    print("Hash grid generation in:",round((clock()-stime),6),"sec")
     return
 def Simulate(Fps):
     global AirDamp
