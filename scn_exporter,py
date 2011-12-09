@@ -5,7 +5,7 @@ import time
 sys.path.append(bpy.path.abspath('//'))
 import vmol
 imp.reload(vmol)
-#test
+
 cframe = 0
 
 print('molecular script start...')
