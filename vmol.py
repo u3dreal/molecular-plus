@@ -30,6 +30,27 @@ class HashTree:
                 for i in range((self.tree[intx,inty,intz].count(mol))):
                     if (intx,inty,intz) in self.tree:
                         self.tree[intx,inty,intz].remove(mol)
+                        
+    def update(self,prev_loc,mol,gridsize)
+        x = mol.loc[0]
+        y = mol.loc[1]
+        z = mol.loc[2]
+        px = prev_loc[0]
+        py = prev_loc[1]
+        pz = prev_loc[2]
+        if (int(x),int(y),int(z)) != (int(px),int(py),int(pz)):
+            for i in self.GridArea:
+                intx = int((x + i[0]) / gridsize)
+                inty = int((y + i[1]) / gridsize)
+                intz = int((z + i[2]) / gridsize)
+                intpx = int((px + i[0]) / gridsize)
+                intpy = int((py + i[1]) / gridsize)
+                intpz = int((pz + i[2]) / gridsize)
+                if (intx,inty,intz) in self.tree:
+                    for i in range((self.tree[intx,inty,intz].count(mol))):
+                        if (intx,inty,intz) in self.tree:
+                            self.tree[intx,inty,intz].remove(mol)
+
                     
     def query(self,mol,gridsize):
         x = mol.loc[0]
@@ -85,23 +106,29 @@ class Molecule:
             
             
     def self_collide(self,MolSize):
+        global PTree
         PNeighbours = PTree.query(self,1)
         target = MolSize * 2
         sqtarget = target**2
-        for mol in mols:
-            lenghtx = self.loc[0] - mol.loc[0]
-            lenghty = self.loc[1] - mol.loc[1]
-            lenghtz = self.loc[2] - mol.loc[2]
-            sqlenght = (lenghtx * lenghtx) + (lenghty * lenghty) + (lenghtz * lenghtz)
-            if sqlenght != 0 and sqlenght < sqtarget:
-                lenght = sqlenght**0.5
-                factor = (lenght - target) / lenght
-                self.loc[0] -= lenghtx * factor * 0.5
-                self.loc[1] -= lenghty * factor * 0.5
-                self.loc[2] -= lenghtz * factor * 0.5
-                mol.loc[0] += lenghtx * factor * 0.5
-                mol.loc[1] += lenghty * factor * 0.5
-                mol.loc[2] += lenghtz * factor * 0.5
+        #print(len(PNeighbours))
+        if PNeighbours != None:
+            for mol in PNeighbours:
+                lenghtx = self.loc[0] - mol.loc[0]
+                lenghty = self.loc[1] - mol.loc[1]
+                lenghtz = self.loc[2] - mol.loc[2]
+                sqlenght = (lenghtx * lenghtx) + (lenghty * lenghty) + (lenghtz * lenghtz)
+                if sqlenght != 0 and sqlenght < sqtarget:
+                    lenght = sqlenght**0.5
+                    factor = (lenght - target) / lenght
+                    selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
+                    mololdloc = (mol.loc[0],mol.loc[1],mol.loc[2])
+                    self.loc[0] -= lenghtx * factor * 0.5
+                    self.loc[1] -= lenghty * factor * 0.5
+                    self.loc[2] -= lenghtz * factor * 0.5
+                    mol.loc[0] += lenghtx * factor * 0.5
+                    mol.loc[1] += lenghty * factor * 0.5
+                    mol.loc[2] += lenghtz * factor * 0.5
+
             
         
 def Init(ParLoc,ParNum,Psize):
@@ -126,7 +153,7 @@ def Init(ParLoc,ParNum,Psize):
 def Simulate(Fps):
     global AirDamp
     AirDamp = 0.05
-    SubStep = 2
+    SubStep = 1
     DeltaTime = (1/Fps)/SubStep
     for i in range(SubStep):
         for mol in mols:
@@ -136,6 +163,7 @@ def Simulate(Fps):
             mol.verlet(DeltaTime)
         kdtreedict = {}
         kdtreelist = [(0,0,0)]*(len(mols))
+    #print(PTree.tree)
     ParLoc=[]
     for mol in mols:
         for axe in mol.loc:
