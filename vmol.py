@@ -1,37 +1,39 @@
 from time import clock
 class HashTree:
-    def __init__(self):
+    def __init__(self,gridsize=1):
+        self.gridsize = 1
         self.tree={}
-        self.GridArea = [(0,0,0),(0.5,0.5,0.5),(-0.5,0.5,0.5),(0.5,-0.5,0.5),(-0.5,-0.5,0.5)
-                    ,(0.5,0.5,-0.5),(-0.5,0.5,-0.5),(0.5,-0.5,-0.5),(-0.5,-0.5,-0.5)]
+        offset = (1 / gridsize) / 2
+        self.GridArea = [(0,0,0),(offset,offset,offset),(-offset,offset,offset),(offset,-offset,offset),(-offset,-offset,offset)
+                    ,(offset,offset,-offset),(-offset,offset,-offset),(offset,-offset,-offset),(-offset,-offset,-offset)]
         
-    def add_point(self,mol,gridsize):
+    def add_point(self,mol):
         x = mol.loc[0]
         y = mol.loc[1]
         z = mol.loc[2]
         for i in self.GridArea:
-            intx = int((x + i[0]) / gridsize)
-            inty = int((y + i[1]) / gridsize)
-            intz = int((z + i[2]) / gridsize)
+            intx = int((x + i[0]) / self.gridsize)
+            inty = int((y + i[1]) / self.gridsize)
+            intz = int((z + i[2]) / self.gridsize)
             if (intx,inty,intz) not in self.tree:
                 self.tree[intx,inty,intz] = []
             if mol not in self.tree[intx,inty,intz]:
                 self.tree[intx,inty,intz].append(mol)
             
-    def remove_point(self,mol,gridsize):
+    def remove_point(self,mol):
         x = mol.loc[0]
         y = mol.loc[1]
         z = mol.loc[2]
         for i in self.GridArea:
-            intx = int((x + i[0]) / gridsize)
-            inty = int((y + i[1]) / gridsize)
-            intz = int((z + i[2]) / gridsize)
+            intx = int((x + i[0]) / self.gridsize)
+            inty = int((y + i[1]) / self.gridsize)
+            intz = int((z + i[2]) / self.gridsize)
             if (intx,inty,intz) in self.tree:
                 for i in range((self.tree[intx,inty,intz].count(mol))):
                     if (intx,inty,intz) in self.tree:
                         self.tree[intx,inty,intz].remove(mol)
                         
-    def update(self,prev_loc,mol,gridsize)
+    def update(self,prev_loc,mol):
         x = mol.loc[0]
         y = mol.loc[1]
         z = mol.loc[2]
@@ -40,25 +42,29 @@ class HashTree:
         pz = prev_loc[2]
         if (int(x),int(y),int(z)) != (int(px),int(py),int(pz)):
             for i in self.GridArea:
-                intx = int((x + i[0]) / gridsize)
-                inty = int((y + i[1]) / gridsize)
-                intz = int((z + i[2]) / gridsize)
-                intpx = int((px + i[0]) / gridsize)
-                intpy = int((py + i[1]) / gridsize)
-                intpz = int((pz + i[2]) / gridsize)
-                if (intx,inty,intz) in self.tree:
-                    for i in range((self.tree[intx,inty,intz].count(mol))):
-                        if (intx,inty,intz) in self.tree:
-                            self.tree[intx,inty,intz].remove(mol)
+                intx = int((x + i[0]) / self.gridsize)
+                inty = int((y + i[1]) / self.gridsize)
+                intz = int((z + i[2]) / self.gridsize)
+                intpx = int((px + i[0]) / self.gridsize)
+                intpy = int((py + i[1]) / self.gridsize)
+                intpz = int((pz + i[2]) / self.gridsize)
+                if (intpx,intpy,intpz) in self.tree:
+                    for i in range((self.tree[intpx,intpy,intpz].count(mol))):
+                        if (intpx,intpy,intpz) in self.tree:
+                            self.tree[intpx,intpy,intpz].remove(mol)
+                if (intx,inty,intz) not in self.tree:
+                    self.tree[intx,inty,intz] = []
+                if mol not in self.tree[intx,inty,intz]:
+                    self.tree[intx,inty,intz].append(mol)
 
                     
-    def query(self,mol,gridsize):
+    def query(self,mol):
         x = mol.loc[0]
         y = mol.loc[1]
         z = mol.loc[2]
-        intx = int(x / gridsize)
-        inty = int(y / gridsize)
-        intz = int(z / gridsize)
+        intx = int(x / self.gridsize)
+        inty = int(y / self.gridsize)
+        intz = int(z / self.gridsize)
         if (intx,inty,intz) in self.tree:
             return self.tree[intx,inty,intz]
         
@@ -86,28 +92,35 @@ class Molecule:
         self.loc = newloc
         self.prev_loc = tmp
         self.acceleration = [0,0,0]
+        PTree.update(self.prev_loc,self)
     
     def constraint(self):
         wallfriction = 0.0
+        selfoldloc = (self.loc[0],self.loc[1],self.loc[1])
         if self.loc[2] <= 0.0000:
             self.loc[2] = 0.0000
+            PTree.update(selfoldloc,self)
 
         if self.loc[0] <= -1.5000:
             self.loc[0] = -1.5000
+            PTree.update(selfoldloc,self)
 
         if self.loc[0] >= 1.5000:
             self.loc[0] = 1.5000
+            PTree.update(selfoldloc,self)
 
         if self.loc[1] <= -1.5000:
             self.loc[1] = -1.5000
+            PTree.update(selfoldloc,self)
 
         if self.loc[1] >= 1.5000:
             self.loc[1] = 1.5000
+            PTree.update(selfoldloc,self)
             
             
     def self_collide(self,MolSize):
         global PTree
-        PNeighbours = PTree.query(self,1)
+        PNeighbours = PTree.query(self)
         target = MolSize * 2
         sqtarget = target**2
         #print(len(PNeighbours))
@@ -128,6 +141,8 @@ class Molecule:
                     mol.loc[0] += lenghtx * factor * 0.5
                     mol.loc[1] += lenghty * factor * 0.5
                     mol.loc[2] += lenghtz * factor * 0.5
+                    PTree.update(selfoldloc,self)
+                    PTree.update(mololdloc,mol)
 
             
         
@@ -147,7 +162,7 @@ def Init(ParLoc,ParNum,Psize):
     stime = clock()
     PTree = HashTree()
     for mol in mols:
-        PTree.add_point(mol,1)        
+        PTree.add_point(mol)        
     print("Hash grid generation in:",round((clock()-stime),6),"sec")
     return
 def Simulate(Fps):
@@ -157,18 +172,25 @@ def Simulate(Fps):
     DeltaTime = (1/Fps)/SubStep
     for i in range(SubStep):
         for mol in mols:
-            mol.gravity()           
+            mol.gravity()
+            mol.verlet(DeltaTime)
             mol.constraint()
             mol.self_collide(MolSize)
-            mol.verlet(DeltaTime)
-        kdtreedict = {}
-        kdtreelist = [(0,0,0)]*(len(mols))
-    #print(PTree.tree)
+        info_grid()
     ParLoc=[]
     for mol in mols:
         for axe in mol.loc:
             ParLoc.append(axe)
     return ParLoc
+    
+def info_grid():
+    global PTree
+    mol_id = []
+    for i in PTree.tree:
+        for ii in PTree.tree[i]:
+            mol_id.append(ii.index)
+        print("Box:",i,"contains mol number:",mol_id)
+        mol_id = []
 
         
 
