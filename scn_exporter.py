@@ -8,8 +8,9 @@ imp.reload(vmol)
 #test
 cframe = 0
 
-print('molecular script start...')
+print('MOLECULAR SCRIPT START...')
 
+timer = time.clock()
 objPar=bpy.context.object.particle_systems[0].particles
 ParLoc = []
 empty = [0,0,0]
@@ -22,8 +23,31 @@ ParNum=len(objPar)
 Fps = bpy.data.scenes[0].render.fps
 Psize = bpy.context.object.particle_systems[0].settings.particle_size
 
-a=vmol.Init(ParLoc,ParNum,Psize)
-#
+Obstacles = []
+for obj in bpy.data.objects:
+    if obj.type == "MESH":
+        if obj.collision.use == True:
+            print("One object:",obj.name)
+            Obstacles.append(0)
+            ifaces=0
+            for faces in obj.data.faces:
+                fverts = faces.vertices
+                Obstacle[ifaces] = []
+                for i in range(len(fverts)-2):
+                    ivert1 = i-i
+                    ivert2 = ((i*2)-i)+1
+                    ivert3 = ((i*2)-i)+2
+                    vert1 = obj.data.vertices[fverts[ivert1]].co.to_tuple()
+                    vert2 = obj.data.vertices[fverts[ivert2]].co.to_tuple()
+                    vert3 = obj.data.vertices[fverts[ivert3]].co.to_tuple()
+                    Obstacles[ifaces].append((vert1,vert2,vert3))
+                ifaces =+ 1
+                    
+print("Vertices:",Obstacles)
+
+print("Scene prepared to be exported in:",round((time.clock()-timer),5),'sec')
+vmol.Init(ParLoc,ParNum,Psize)
+
 def Refresh():
     bpy.data.scenes[0].update()
 
@@ -37,7 +61,8 @@ class ModalTimerOperator(bpy.types.Operator):
     def modal(self, context, event):
         global cframe
         if event.type == 'ESC' or bpy.context.scene.frame_current==bpy.data.scenes[0].frame_end:
-            print('...molecular script end')
+            print('...MOLECULAR SCRIPT END')
+            #bpy.ops.render.render(animation=True)
             return self.cancel(context)
             
 

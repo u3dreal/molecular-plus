@@ -199,10 +199,10 @@ def Init(ParLoc,ParNum,Psize):
     return
 def Simulate(Fps):
     global AirDamp
-    AirDamp = 0.05
     SubStep = 2
-    DeltaTime = (1/Fps)/SubStep
-    for i in range(SubStep):
+    AirDamp = 0.05 / (SubStep + 1)
+    DeltaTime = (1/Fps)/(SubStep + 1)
+    for i in range(SubStep + 1):
         for mol in mols:
             mol.gravity()
             mol.verlet(DeltaTime)
