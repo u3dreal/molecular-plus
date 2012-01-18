@@ -27,26 +27,32 @@ Obstacles = []
 for obj in bpy.data.objects:
     if obj.type == "MESH":
         if obj.collision.use == True:
-            print("One object:",obj.name)
-            Obstacles.append(0)
+            #print("Object:",obj.name)
+            ObjWorldMatrix = obj.matrix_world
             ifaces=0
+            face = []
             for faces in obj.data.faces:
                 fverts = faces.vertices
-                Obstacle[ifaces] = []
+                triangle = []
                 for i in range(len(fverts)-2):
                     ivert1 = i-i
                     ivert2 = ((i*2)-i)+1
                     ivert3 = ((i*2)-i)+2
-                    vert1 = obj.data.vertices[fverts[ivert1]].co.to_tuple()
-                    vert2 = obj.data.vertices[fverts[ivert2]].co.to_tuple()
-                    vert3 = obj.data.vertices[fverts[ivert3]].co.to_tuple()
-                    Obstacles[ifaces].append((vert1,vert2,vert3))
+                    vert1 = (ObjWorldMatrix * obj.data.vertices[fverts[ivert1]].co).to_tuple()
+                    vert2 = (ObjWorldMatrix * obj.data.vertices[fverts[ivert2]].co).to_tuple()
+                    vert3 = (ObjWorldMatrix * obj.data.vertices[fverts[ivert3]].co).to_tuple()
+                    triangle.append((vert1,vert2,vert3))
+                   #print(triangle)
+                face.append(triangle)
                 ifaces =+ 1
+            #print(face)
+            Obstacles.append(face)
+            
                     
-print("Vertices:",Obstacles)
+#print("Vertices:",Obstacles[0][1][0])
 
 print("Scene prepared to be exported in:",round((time.clock()-timer),5),'sec')
-vmol.Init(ParLoc,ParNum,Psize)
+vmol.Init(ParLoc,ParNum,Psize,Obstacles)
 
 def Refresh():
     bpy.data.scenes[0].update()
