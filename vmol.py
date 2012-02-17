@@ -1,4 +1,63 @@
 from time import clock
+
+def triangle_normal(a,b,c):
+    u = [b[0] - a[0],b[1] - a[1],b[2] - a[2]]
+    v = [c[0] - a[0],c[1] - a[1],c[2] - a[2]]
+    c = [(u[1] * v[2] - u[2] * v[1]),(u[2] * v[0] - u[0] * v[2]),(u[0] * v[1] - u[1] * v[0])]
+    l = (c[0]**2 + c[1]**2 + c[2]**2)**0.5
+    normal = [c[0] / l,c[1] / l,c[2] / l]
+    return normal
+def cross_product(u,v):
+    cross = [(u[1] * v[2] - u[2] * v[1]),(u[2] * v[0] - u[0] * v[2]),(u[0] * v[1] - u[1] * v[0])]
+    return cross
+def dot_product(u,v):
+    dot = (u[0] * v[0]) + (u[1] * v[1]) + (u[2] * v[2])
+    return dot
+def plane_intersec(a,vn,p0,p1):
+    numerator = (vn[0] * (a[0] - p0[0])) + (vn[1] * (a[1] - p0[1])) + (vn[2] * (a[2] - p0[2]))
+    denominator = (vn[0] * (p1[0] - p0[0])) + (vn[1] * (p1[1] - p0[1])) + (vn[2] * (p1[2] - p0[2]))
+    if denominator == 0:
+        bool = False
+        pintersec_point = [0,0,0]
+    else:
+        ri = (numerator / denominator)
+        if ri > 1 or ri < 0:
+            bool = False
+            pi=[0,0,0]
+        else:    
+            vl = [(p1[0] - p0[0]) * ri,(p1[1] - p0[1]) * ri,(p1[2] - p0[2]) * ri]
+            intersec_point = [p0[0] + vl[0],p0[1] + vl[1],p0[2] + vl[2]]
+            bool = True
+    return bool,intersec_point
+
+def triangle_intersec(a,u,v,vn,p0,p1):
+    numerator=(vn[0]*(a[0]-p0[0]))+(vn[1]*(a[1]-p0[1]))+(vn[2]*(a[2]-p0[2]))
+    denominator=(vn[0]*(p1[0]-p0[0]))+(vn[1]*(p1[1]-p0[1]))+(vn[2]*(p1[2]-p0[2]))
+    if denominator == 0:
+        bool = False
+        intersec_point = [0,0,0]
+    else:
+        ri = (numerator/denominator)
+        if ri > 1 or ri < 0:
+            bool = False
+            intersec_point = [0,0,0]
+        else:    
+            vl = [(p1[0] - p0[0]) * ri,(p1[1] - p0[1]) * ri,(p1[2] - p0[2]) * ri]
+            pi = [p0[0] + vl[0],p0[1] + vl[1],p0[2] + vl[2]]
+            w = [pi[0]-a[0],pi[1]-a[1],pi[2]-a[2]]
+            tdenominator = ((u[0] * v[0] + u[1] * v[1] + u[2] * v[2])**2) - ((u[0] * u[0] + u[1] * u[1] + u[2] * u[2]) * (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]))
+            si = (((u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) * (w[0] * v[0] + w[1] * v[1] + w[2] * v[2])) - ((v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) * (w[0] * u[0] + w[1] * u[1] + w[2] * u[2]))) / tdenominator
+            ti = (((u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) * (w[0] * u[0] + w[1] * u[1] + w[2] * u[2])) - ((u[0] * u[0] + u[1] * u[1] + u[2] * u[2]) * (w[0] * v[0] + w[1] * v[1] + w[2] * v[2]))) / tdenominator
+            tsi=si+ti
+            if (si >=0 and ti >=0)and tsi <= 1:
+                intersec_point = pi
+                bool = True
+            else:
+                intersec_point = [0,0,0]
+                bool = False
+    return bool,intersec_point
+
+    
 class HashTree:
     def __init__(self,gridsize):
         self.gridsize = gridsize
@@ -82,7 +141,7 @@ class HashTree:
 class GeoObjects:
     def __init__(self):
         self.index = 0
-        self.polygon = [1,2,3]
+        self.polygon = [0,0,0]
         
     def create_poly(self):
         global geoObstacles
@@ -111,14 +170,20 @@ class Triangles:
     def __init__(self):
         self.index = 0
         self.vertice = []
+        self.normal = [0,0,0]
         
     def create_vertice(self,objindex,polyindex):
         global geoObstacles
+        global GeoObj
         self.vertice = [0] * len(geoObstacles[objindex][polyindex][self.index])
         for i in range(0,len(self.vertice)):
             self.vertice[i] = Vertices()
             self.vertice[i].index = i
             self.vertice[i].create_vertcoordinate(objindex,polyindex,self.index)
+        a = self.vertice[0].co
+        b = self.vertice[1].co
+        c = self.vertice[2].co
+        GeoObj[objindex].polygon[polyindex].triangle[self.index].normal = triangle_normal(a,b,c)
             
             
 class Vertices:
@@ -229,6 +294,24 @@ class Molecule:
                 mol.loc[0] += lenghtx * factor * 0.5
                 mol.loc[1] += lenghty * factor * 0.5
                 mol.loc[2] += lenghtz * factor * 0.5
+                
+                
+    def triangle_collide(self):
+        global GeoObj
+        for obj in GeoObj:
+            for poly in obj.polygon:
+                for tri in poly.triangle:
+                    verta = tri.vertice[0].co
+                    vertb = tri.vertice[1].co
+                    vertc = tri.vertice[2].co
+                    u = [vertb[0] - verta[0],vertb[1] - verta[1],vertb[2] - verta[2]]
+                    v = [vertc[0] - verta[0],vertc[1] - verta[1],vertc[2] - verta[2]]
+                    normal = tri.normal
+                    collision_result = triangle_intersec(verta,u,v,normal,self.prev_loc,self.loc)
+                    if collision_result[0]:
+                        self.loc = collision_result[1]
+                        self.prev_loc = collision_result[1]
+                    
             
         
 def Init(ParLoc,ParNum,Psize,Obstacles):
@@ -253,14 +336,15 @@ def Init(ParLoc,ParNum,Psize,Obstacles):
         mols[i].prev_loc = ParLoc[(i*3):(i*3+3)]
         mols[i].index = i
     print("Particles generation in:",round((clock()-stime),6),"sec")
-    '''
+
     print("Objects:",GeoObj)
     print("Polygons:",GeoObj[0].polygon)
     print("Triangles:",GeoObj[0].polygon[0].triangle)
+    print("Normal:",GeoObj[0].polygon[0].triangle[0].normal)
     print("Vertices:",GeoObj[0].polygon[0].triangle[0].vertice)
     print("Coordinate:",GeoObj[0].polygon[0].triangle[0].vertice[0].co)
     print("X:",GeoObj[0].polygon[0].triangle[0].vertice[0].co[0])
-    '''
+    
     stime = clock()
     PTree = HashTree(GridSize)
     for mol in mols:
@@ -279,6 +363,7 @@ def Simulate(Fps):
             mol.constraint()
             mol.self_collide(MolSize)
             #mol.self_collide_bruteforce(MolSize)
+            mol.triangle_collide()
         #info_grid()
     ParLoc=[]
     for mol in mols:
