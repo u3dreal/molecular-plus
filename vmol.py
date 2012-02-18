@@ -1,5 +1,12 @@
 from time import clock
 
+def vec_normalize(vec):
+    vec_lenght = (vec[0]**2 + vec[1]**2 + vec[2]**2)**0.5
+    if vec_lenght == 0:
+        return ((0,0,0))
+    else:
+        return ((vec[0] / vec_lenght),(vec[1] / vec_lenght),(vec[2] / vec_lenght))
+
 def triangle_normal(a,b,c):
     u = [b[0] - a[0],b[1] - a[1],b[2] - a[2]]
     v = [c[0] - a[0],c[1] - a[1],c[2] - a[2]]
@@ -301,16 +308,20 @@ class Molecule:
         for obj in GeoObj:
             for poly in obj.polygon:
                 for tri in poly.triangle:
+                    normal = tri.normal
                     verta = tri.vertice[0].co
                     vertb = tri.vertice[1].co
                     vertc = tri.vertice[2].co
                     u = [vertb[0] - verta[0],vertb[1] - verta[1],vertb[2] - verta[2]]
                     v = [vertc[0] - verta[0],vertc[1] - verta[1],vertc[2] - verta[2]]
-                    normal = tri.normal
-                    collision_result = triangle_intersec(verta,u,v,normal,self.prev_loc,self.loc)
+                    offset_ray = vec_normalize(((self.prev_loc[0] - self.loc[0]),(self.prev_loc[1] - self.loc[1]),(self.prev_loc[2] - self.loc[2])))
+                    offset_ray = (offset_ray[0] * MolSize,offset_ray[1] * MolSize,offset_ray[2] * MolSize)
+                    start_ray = (self.prev_loc[0] + offset_ray[0],self.prev_loc[1] + offset_ray[1],self.prev_loc[2] + offset_ray[2])
+                    end_ray = self.loc
+                    collision_result = triangle_intersec(verta,u,v,normal,start_ray,end_ray)
                     if collision_result[0]:
                         self.loc = collision_result[1]
-                        self.prev_loc = collision_result[1]
+                        #self.prev_loc = collision_result[1]
                     
             
         
@@ -337,13 +348,13 @@ def Init(ParLoc,ParNum,Psize,Obstacles):
         mols[i].index = i
     print("Particles generation in:",round((clock()-stime),6),"sec")
 
-    print("Objects:",GeoObj)
+    '''print("Objects:",GeoObj)
     print("Polygons:",GeoObj[0].polygon)
     print("Triangles:",GeoObj[0].polygon[0].triangle)
     print("Normal:",GeoObj[0].polygon[0].triangle[0].normal)
     print("Vertices:",GeoObj[0].polygon[0].triangle[0].vertice)
     print("Coordinate:",GeoObj[0].polygon[0].triangle[0].vertice[0].co)
-    print("X:",GeoObj[0].polygon[0].triangle[0].vertice[0].co[0])
+    print("X:",GeoObj[0].polygon[0].triangle[0].vertice[0].co[0])'''
     
     stime = clock()
     PTree = HashTree(GridSize)
@@ -354,7 +365,7 @@ def Init(ParLoc,ParNum,Psize,Obstacles):
 def Simulate(Fps):
     global AirDamp
     SubStep = 8
-    AirDamp = 0.05 / (SubStep + 1)
+    AirDamp = 0.025 / (SubStep + 1)
     DeltaTime = (1/Fps)/(SubStep + 1)
     for i in range(SubStep + 1):
         for mol in mols:
