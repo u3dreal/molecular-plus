@@ -308,20 +308,38 @@ class Molecule:
         for obj in GeoObj:
             for poly in obj.polygon:
                 for tri in poly.triangle:
-                    normal = tri.normal
                     verta = tri.vertice[0].co
                     vertb = tri.vertice[1].co
                     vertc = tri.vertice[2].co
+                    normal = tri.normal
                     u = [vertb[0] - verta[0],vertb[1] - verta[1],vertb[2] - verta[2]]
                     v = [vertc[0] - verta[0],vertc[1] - verta[1],vertc[2] - verta[2]]
+                    offset = MolSize
                     offset_ray = vec_normalize(((self.prev_loc[0] - self.loc[0]),(self.prev_loc[1] - self.loc[1]),(self.prev_loc[2] - self.loc[2])))
-                    offset_ray = (offset_ray[0] * MolSize,offset_ray[1] * MolSize,offset_ray[2] * MolSize)
+                    offset_ray = (offset_ray[0] * offset,offset_ray[1] * offset,offset_ray[2] * offset)
                     start_ray = (self.prev_loc[0] + offset_ray[0],self.prev_loc[1] + offset_ray[1],self.prev_loc[2] + offset_ray[2])
                     end_ray = self.loc
-                    collision_result = triangle_intersec(verta,u,v,normal,start_ray,end_ray)
-                    if collision_result[0]:
-                        self.loc = collision_result[1]
-                        #self.prev_loc = collision_result[1]
+                    colpoint_result = triangle_intersec(verta,u,v,normal,start_ray,end_ray)
+                    if colpoint_result[0]:
+                        selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
+                        print(normal)
+                        print((normal[0]**2 + normal[1]**2 + normal[2]**2)**0.5)
+                        
+                        loc_mult = dot_product(normal,(self.loc[0] - colpoint_result[1][0],self.loc[1] - colpoint_result[1][1],self.loc[2] - colpoint_result[1][2]))
+                        prevloc_mult = dot_product(normal,(self.prev_loc[0] - colpoint_result[1][0],self.prev_loc[1] - colpoint_result[1][1],self.prev_loc[2] - colpoint_result[1][2]))
+                        
+                        damp = 2
+                        
+                        self.loc[0] = self.loc[0] - (loc_mult * normal[0] * damp)
+                        self.loc[1] = self.loc[1] - (loc_mult * normal[1] * damp)
+                        self.loc[2] = self.loc[2] - (loc_mult * normal[2] * damp)
+                        
+                        self.prev_loc[0] = self.prev_loc[0] - (prevloc_mult * normal[0] * damp)
+                        self.prev_loc[1] = self.prev_loc[1] - (prevloc_mult * normal[1] * damp)
+                        self.prev_loc[2] = self.prev_loc[2] - (prevloc_mult * normal[2] * damp)
+                        
+                        PTree.update(selfoldloc,self)
+                        
                     
             
         
@@ -365,16 +383,17 @@ def Init(ParLoc,ParNum,Psize,Obstacles):
 def Simulate(Fps):
     global AirDamp
     SubStep = 8
-    AirDamp = 0.025 / (SubStep + 1)
+    AirDamp = 0.05 / (SubStep + 1)
     DeltaTime = (1/Fps)/(SubStep + 1)
     for i in range(SubStep + 1):
         for mol in mols:
             mol.gravity()
             mol.verlet(DeltaTime)
             mol.constraint()
+            mol.triangle_collide()
             mol.self_collide(MolSize)
             #mol.self_collide_bruteforce(MolSize)
-            mol.triangle_collide()
+            
         #info_grid()
     ParLoc=[]
     for mol in mols:
