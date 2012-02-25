@@ -178,6 +178,12 @@ class Triangles:
         self.index = 0
         self.vertice = []
         self.normal = [0,0,0]
+        self.u = [0,0,0]
+        self.v = [0,0,0]
+        self.w = [0,0,0]
+        self.nu = [0,0,0]
+        self.nv = [0,0,0]
+        self.nw = [0,0,0]
         
     def create_vertice(self,objindex,polyindex):
         global geoObstacles
@@ -191,7 +197,13 @@ class Triangles:
         b = self.vertice[1].co
         c = self.vertice[2].co
         GeoObj[objindex].polygon[polyindex].triangle[self.index].normal = triangle_normal(a,b,c)
-            
+        GeoObj[objindex].polygon[polyindex].triangle[self.index].u = [b[0] - a[0],b[1] - a[1],b[2] - a[2]]
+        GeoObj[objindex].polygon[polyindex].triangle[self.index].v = [c[0] - a[0],c[1] - a[1],c[2] - a[2]]
+        GeoObj[objindex].polygon[polyindex].triangle[self.index].w = [c[0] - b[0],c[1] - b[1],c[2] - b[2]]
+        GeoObj[objindex].polygon[polyindex].triangle[self.index].nu = vec_normalize(self.u)
+        GeoObj[objindex].polygon[polyindex].triangle[self.index].nv = vec_normalize(self.v)
+        GeoObj[objindex].polygon[polyindex].triangle[self.index].nw = vec_normalize(self.w) 
+        
             
 class Vertices:
     def __init__(self):
@@ -303,7 +315,7 @@ class Molecule:
                 mol.loc[2] += lenghtz * factor * 0.5
                 
                 
-    def triangle_collide(self):
+    def raycast_triangle_collide(self):
         global GeoObj
         for obj in GeoObj:
             for poly in obj.polygon:
@@ -322,13 +334,14 @@ class Molecule:
                     colpoint_result = triangle_intersec(verta,u,v,normal,start_ray,end_ray)
                     if colpoint_result[0]:
                         selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
-                        print(normal)
-                        print((normal[0]**2 + normal[1]**2 + normal[2]**2)**0.5)
+                        
+                        #print(normal)
+                        #print((normal[0]**2 + normal[1]**2 + normal[2]**2)**0.5)
                         
                         loc_mult = dot_product(normal,(self.loc[0] - colpoint_result[1][0],self.loc[1] - colpoint_result[1][1],self.loc[2] - colpoint_result[1][2]))
                         prevloc_mult = dot_product(normal,(self.prev_loc[0] - colpoint_result[1][0],self.prev_loc[1] - colpoint_result[1][1],self.prev_loc[2] - colpoint_result[1][2]))
                         
-                        damp = 2
+                        damp = 1
                         
                         self.loc[0] = self.loc[0] - (loc_mult * normal[0] * damp)
                         self.loc[1] = self.loc[1] - (loc_mult * normal[1] * damp)
@@ -339,6 +352,46 @@ class Molecule:
                         self.prev_loc[2] = self.prev_loc[2] - (prevloc_mult * normal[2] * damp)
                         
                         PTree.update(selfoldloc,self)
+                        
+    def triangle_collide(self):
+        global GeoObj
+        target = MolSize
+        sqtarget = target**2
+        for obj in GeoObj:
+            for poly in obj.polygon:
+                for tri in poly.triangle:
+                    verta = tri.vertice[0].co
+                    vertb = tri.vertice[1].co
+                    vertc = tri.vertice[2].co
+                    normal = tri.normal
+                    u = tri.u
+                    v = tri.v
+   
+                    loc_mult = dot_product(normal,(self.loc[0] - verta[0],self.loc[1] - verta[1],self.loc[2] - verta[2]))                       
+                    col_sph = [0,0,0]
+                    col_sph[0] = self.loc[0] - (loc_mult * normal[0])
+                    col_sph[1] = self.loc[1] - (loc_mult * normal[1])
+                    col_sph[2] = self.loc[2] - (loc_mult * normal[2])
+                    ray_start = [col_sph[0] + normal[0],col_sph[1] + normal[1],col_sph[2] + normal[2]]
+                    ray_end = [col_sph[0] - normal[0],col_sph[1] - normal[1],col_sph[2] - normal[2]]
+                    colpoint_result = triangle_intersec(verta,u,v,normal,ray_start,ray_end)
+                    if colpoint_result[0]:
+                    
+                        lenghtx = self.loc[0] - col_sph[0]
+                        lenghty = self.loc[1] - col_sph[1]
+                        lenghtz = self.loc[2] - col_sph[2]
+                        sqlenght = (lenghtx * lenghtx) + (lenghty * lenghty) + (lenghtz * lenghtz)
+                        if sqlenght != 0 and sqlenght < sqtarget:
+                            lenght = sqlenght**0.5
+                            factor = (lenght - target) / lenght
+                            selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
+                            selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
+                            
+                            self.loc[0] -= lenghtx * factor * 1.01
+                            self.loc[1] -= lenghty * factor * 1.01
+                            self.loc[2] -= lenghtz * factor * 1.01
+
+                            PTree.update(selfoldloc,self)
                         
                     
             
@@ -382,7 +435,7 @@ def Init(ParLoc,ParNum,Psize,Obstacles):
     return
 def Simulate(Fps):
     global AirDamp
-    SubStep = 8
+    SubStep = 16
     AirDamp = 0.05 / (SubStep + 1)
     DeltaTime = (1/Fps)/(SubStep + 1)
     for i in range(SubStep + 1):
