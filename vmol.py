@@ -366,7 +366,10 @@ class Molecule:
                     normal = tri.normal
                     u = tri.u
                     v = tri.v
-   
+                    w = tri.w
+                    nu = tri.nu
+                    nv = tri.nv
+                    nw = tri.nw
                     loc_mult = dot_product(normal,(self.loc[0] - verta[0],self.loc[1] - verta[1],self.loc[2] - verta[2]))                       
                     col_sph = [0,0,0]
                     col_sph[0] = self.loc[0] - (loc_mult * normal[0])
@@ -375,23 +378,38 @@ class Molecule:
                     ray_start = [col_sph[0] + normal[0],col_sph[1] + normal[1],col_sph[2] + normal[2]]
                     ray_end = [col_sph[0] - normal[0],col_sph[1] - normal[1],col_sph[2] - normal[2]]
                     colpoint_result = triangle_intersec(verta,u,v,normal,ray_start,ray_end)
-                    if colpoint_result[0]:
-                    
-                        lenghtx = self.loc[0] - col_sph[0]
-                        lenghty = self.loc[1] - col_sph[1]
-                        lenghtz = self.loc[2] - col_sph[2]
-                        sqlenght = (lenghtx * lenghtx) + (lenghty * lenghty) + (lenghtz * lenghtz)
-                        if sqlenght != 0 and sqlenght < sqtarget:
-                            lenght = sqlenght**0.5
-                            factor = (lenght - target) / lenght
-                            selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
-                            selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
-                            
-                            self.loc[0] -= lenghtx * factor * 1.01
-                            self.loc[1] -= lenghty * factor * 1.01
-                            self.loc[2] -= lenghtz * factor * 1.01
+                    if colpoint_result[0] == False:
+                        dist_dict = {}
+                        dist_keys = []
+                        for i in ([verta,nu,u],[verta,nv,v],[vertb,nw,w]):    
+                            vec = [self.loc[0] - i[0][0],self.loc[1] - i[0][1],self.loc[2] - i[0][2]]
+                            mult = dot_product(vec,i[1]) / ((i[2][0]**2 + i[2][1]**2 + i[2][2]**2)**0.5)
+                            if mult <= 0:
+                                mult = 0
+                            if mult >= 1:
+                                mult = 1
+                            point = [i[0][0] + (i[2][0] * mult),i[0][1] + (i[2][1] * mult),i[0][2] + (i[2][2] * mult)]
+                            sqt_dist = ((self.loc[0] - point[0])**2) + ((self.loc[1] - point[1])**2) + ((self.loc[2] - point[2])**2)
+                            dist_dict[sqt_dist] = point
+                            dist_keys.append(sqt_dist)
+                        dist_keys.sort()
+                        near_dist = dist_keys[0]
+                        col_sph = dist_dict[near_dist]                
+                    lenghtx = self.loc[0] - col_sph[0]
+                    lenghty = self.loc[1] - col_sph[1]
+                    lenghtz = self.loc[2] - col_sph[2]
+                    sqlenght = (lenghtx * lenghtx) + (lenghty * lenghty) + (lenghtz * lenghtz)
+                    if sqlenght != 0 and sqlenght < sqtarget:
+                        lenght = sqlenght**0.5
+                        factor = (lenght - target) / lenght
+                        selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
+                        selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
+                        
+                        self.loc[0] -= lenghtx * factor * 1
+                        self.loc[1] -= lenghty * factor * 1
+                        self.loc[2] -= lenghtz * factor * 1
 
-                            PTree.update(selfoldloc,self)
+                        PTree.update(selfoldloc,self)
                         
                     
             
