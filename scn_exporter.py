@@ -2,6 +2,7 @@ import bpy
 import sys
 import imp
 import time
+import cProfile
 sys.path.append(bpy.path.abspath('//'))
 import vmol
 imp.reload(vmol)
@@ -76,6 +77,7 @@ class ModalTimerOperator(bpy.types.Operator):
             print('Frame:',bpy.context.scene.frame_current)
             if cframe >= (bpy.data.scenes[0].frame_start + 3):
                 timer1=time.clock()
+                #cProfile.runctx("ParLoc = vmol.Simulate(Fps)",globals(),locals())
                 ParLoc = vmol.Simulate(Fps)
                 print('    >Moldule take:',round((time.clock()-timer1),5),'sec')
                 timer2=time.clock()
