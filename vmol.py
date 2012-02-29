@@ -65,6 +65,35 @@ def triangle_intersec(a,u,v,vn,p0,p1):
     return bool,intersec_point
 
     
+def collision_response(obj1_loc,obj1_prevloc,obj1_mass,obj1_coefres,obj1_frict,obj2_loc,obj2_prevloc,obj2_mass,obj2_coefres,obj2_frict):
+    avg_frict = (obj1_frict + obj2_frict) / 2
+    avg_coefres = (obj1_coefres + obj2_coefres) / 2
+    col_normal = vec_normalize([(obj1_loc[0] - obj2_loc[0]),(obj1_loc[1] - obj2_loc[1]),(obj1_loc[2] - obj2_loc[2])])
+    obj1_mult = dot_product(col_normal,(obj1_prevloc[0] - obj1_loc[0],obj1_prevloc[1] - obj1_loc[1],obj1_prevloc[2] - obj1_loc[2]))
+    obj2_mult = dot_product(col_normal,(obj2_prevloc[0] - obj2_loc[0],obj2_prevloc[1] - obj2_loc[1],obj2_prevloc[2] - obj2_loc[2]))
+    obj1_point = [obj1_prevloc[0] - (obj1_mult * col_normal[0]),obj1_prevloc[1] - (obj1_mult * col_normal[1]),obj1_prevloc[2] - (obj1_mult * col_normal[2])]
+    obj2_point = [obj2_prevloc[0] - (obj2_mult * col_normal[0]),obj2_prevloc[1] - (obj2_mult * col_normal[1]),obj2_prevloc[2] - (obj2_mult * col_normal[2])]
+    obj1_y = [obj1_point[0] - obj1_prevloc[0],obj1_point[1] - obj1_prevloc[1],obj1_point[2] - obj1_prevloc[2]]
+    obj1_x = [obj1_loc[0] - obj1_point[0],obj1_loc[1] - obj1_point[1],obj1_loc[2] - obj1_point[2]]
+    obj2_y = [obj2_point[0] - obj2_prevloc[0],obj2_point[1] - obj2_prevloc[1],obj2_point[2] - obj2_prevloc[2]]
+    obj2_x = [obj2_loc[0] - obj2_point[0],obj2_loc[1] - obj2_point[1],obj2_loc[2] - obj2_point[2]]
+    muly = 1.5
+    mulx = 0.03
+    '''
+    print ("collision normal:",col_normal)
+    print("pos     :",obj1_loc)
+    print("prev_pos:",obj1_prevloc)
+    print("point   :",obj1_point)
+    print("vel y   :",obj1_y)
+    print("vel x   :",obj1_x)
+    print("add     :",[obj1_prevloc[0] + ((obj1_y[0] * muly) + (obj1_x[0] * mulx)),obj1_prevloc[1] + ((obj1_y[1]  * muly) + (obj1_x[1] * mulx)),obj1_prevloc[2] + ((obj1_y[2] * muly) + (obj1_x[2] * mulx))])
+    '''
+    obj1_newprevloc = [obj1_prevloc[0] + ((obj1_y[0] * muly) + (obj1_x[0] * mulx)),obj1_prevloc[1] + ((obj1_y[1]  * muly) + (obj1_x[1] * mulx)),obj1_prevloc[2] + ((obj1_y[2] * muly) + (obj1_x[2] * mulx))]
+    obj2_newprevloc = [obj2_prevloc[0] + ((obj2_y[0] * muly) + (obj2_x[0] * mulx)),obj2_prevloc[1] + ((obj2_y[1]  * muly) + (obj2_x[1] * mulx)),obj2_prevloc[2] + ((obj2_y[2] * muly) + (obj2_x[2] * mulx))]
+   
+    return obj1_newprevloc,obj2_newprevloc
+
+    
 class HashTree:
     def __init__(self,gridsize):
         self.gridsize = gridsize
@@ -290,6 +319,17 @@ class Molecule:
                     mol.loc[0] += lenghtx * factor * 0.5
                     mol.loc[1] += lenghty * factor * 0.5
                     mol.loc[2] += lenghtz * factor * 0.5
+                    
+                    prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
+                    self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
+                    prev_loc = [mol.prev_loc[0],mol.prev_loc[1],mol.prev_loc[2]]
+                    mol.prev_loc = [prev_loc[0] + (mol.loc[0] - mololdloc[0]),prev_loc[1] + (mol.loc[1] - mololdloc[1]),prev_loc[2] + (mol.loc[2] - mololdloc[2])]
+                   
+                    col_resp = collision_response(self.loc,self.prev_loc,1,1,1,mol.loc,mol.prev_loc,1,1,1)
+                    self.prev_loc = col_resp[0]
+                    mol.prev_loc = col_resp[1]
+                    #print("collision particles")
+                    
                     PTree.update(selfoldloc,self)
                     PTree.update(mololdloc,mol)
 
@@ -410,6 +450,13 @@ class Molecule:
                             self.loc[0] -= lenghtx * factor * 1
                             self.loc[1] -= lenghty * factor * 1
                             self.loc[2] -= lenghtz * factor * 1
+                            
+                            prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
+                            self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
+                           
+                            col_resp = collision_response(self.loc,self.prev_loc,1,1,1,col_sph,col_sph,10**10,1,1)
+                            self.prev_loc = col_resp[0]
+                            #print("collision polygone")
 
                             PTree.update(selfoldloc,self)
                 
