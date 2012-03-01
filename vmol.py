@@ -67,32 +67,32 @@ def triangle_intersec(a,u,v,vn,p0,p1):
     
 def collision_response(obj1_loc,obj1_prevloc,obj1_mass,obj1_coefres,obj1_frict,obj2_loc,obj2_prevloc,obj2_mass,obj2_coefres,obj2_frict):
     avg_frict = (obj1_frict + obj2_frict) / 2
-    avg_coefres = (obj1_coefres + obj2_coefres) / 2
+    avg_coefres = 0#(obj1_coefres + obj2_coefres) / 2
     col_normal = vec_normalize([(obj1_loc[0] - obj2_loc[0]),(obj1_loc[1] - obj2_loc[1]),(obj1_loc[2] - obj2_loc[2])])
     obj1_mult = dot_product(col_normal,(obj1_prevloc[0] - obj1_loc[0],obj1_prevloc[1] - obj1_loc[1],obj1_prevloc[2] - obj1_loc[2]))
     obj2_mult = dot_product(col_normal,(obj2_prevloc[0] - obj2_loc[0],obj2_prevloc[1] - obj2_loc[1],obj2_prevloc[2] - obj2_loc[2]))
     obj1_point = [obj1_prevloc[0] - (obj1_mult * col_normal[0]),obj1_prevloc[1] - (obj1_mult * col_normal[1]),obj1_prevloc[2] - (obj1_mult * col_normal[2])]
     obj2_point = [obj2_prevloc[0] - (obj2_mult * col_normal[0]),obj2_prevloc[1] - (obj2_mult * col_normal[1]),obj2_prevloc[2] - (obj2_mult * col_normal[2])]
     obj1_y = [obj1_point[0] - obj1_prevloc[0],obj1_point[1] - obj1_prevloc[1],obj1_point[2] - obj1_prevloc[2]]
-    obj1_x = [obj1_loc[0] - obj1_point[0],obj1_loc[1] - obj1_point[1],obj1_loc[2] - obj1_point[2]]
+    obj1_x = [obj1_point[0] - obj1_loc[0],obj1_point[1] - obj1_loc[1],obj1_point[2] - obj1_loc[2]]
     obj2_y = [obj2_point[0] - obj2_prevloc[0],obj2_point[1] - obj2_prevloc[1],obj2_point[2] - obj2_prevloc[2]]
-    obj2_x = [obj2_loc[0] - obj2_point[0],obj2_loc[1] - obj2_point[1],obj2_loc[2] - obj2_point[2]]
+    obj2_x = [obj2_point[0] - obj2_loc[0],obj2_point[1] - obj2_loc[1],obj2_point[2] - obj2_loc[2]]
     muly = 1
-    mulx = 0.1
+    mulx = 0.99
 
-    obj1_y[0] = ((avg_coefres * obj2_mass *(obj2_y[0] - obj1_y[0]) + obj1_mass * obj1_y[0] + obj2_mass * obj2_y[0]) / (obj1_mass + obj2_mass))   
-    obj1_y[1] = ((avg_coefres * obj2_mass *(obj2_y[1] - obj1_y[1]) + obj1_mass * obj1_y[1] + obj2_mass * obj2_y[1]) / (obj1_mass + obj2_mass))
-    obj1_y[2] = ((avg_coefres * obj2_mass *(obj2_y[2] - obj1_y[2]) + obj1_mass * obj1_y[2] + obj2_mass * obj2_y[2]) / (obj1_mass + obj2_mass))
+    obj1_y[0] = -1 * ((avg_coefres * obj2_mass *(obj2_y[0] - obj1_y[0]) + obj1_mass * obj1_y[0] + obj2_mass * obj2_y[0]) / (obj1_mass + obj2_mass))   
+    obj1_y[1] = -1 * ((avg_coefres * obj2_mass *(obj2_y[1] - obj1_y[1]) + obj1_mass * obj1_y[1] + obj2_mass * obj2_y[1]) / (obj1_mass + obj2_mass))
+    obj1_y[2] = -1 * ((avg_coefres * obj2_mass *(obj2_y[2] - obj1_y[2]) + obj1_mass * obj1_y[2] + obj2_mass * obj2_y[2]) / (obj1_mass + obj2_mass))
     
-    obj2_y[0] = ((avg_coefres * obj1_mass *(obj1_y[0] - obj2_y[0]) + obj1_mass * obj1_y[0] + obj2_mass * obj2_y[0]) / (obj1_mass + obj2_mass))   
-    obj2_y[1] = ((avg_coefres * obj1_mass *(obj1_y[1] - obj2_y[1]) + obj1_mass * obj1_y[1] + obj2_mass * obj2_y[1]) / (obj1_mass + obj2_mass))
-    obj2_y[2] = ((avg_coefres * obj1_mass *(obj1_y[2] - obj2_y[2]) + obj1_mass * obj1_y[2] + obj2_mass * obj2_y[2]) / (obj1_mass + obj2_mass))
+    obj2_y[0] = -1 * ((avg_coefres * obj1_mass *(obj1_y[0] - obj2_y[0]) + obj1_mass * obj1_y[0] + obj2_mass * obj2_y[0]) / (obj1_mass + obj2_mass))   
+    obj2_y[1] = -1 * ((avg_coefres * obj1_mass *(obj1_y[1] - obj2_y[1]) + obj1_mass * obj1_y[1] + obj2_mass * obj2_y[1]) / (obj1_mass + obj2_mass))
+    obj2_y[2] = -1 * ((avg_coefres * obj1_mass *(obj1_y[2] - obj2_y[2]) + obj1_mass * obj1_y[2] + obj2_mass * obj2_y[2]) / (obj1_mass + obj2_mass))
     
     # Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
     # Vb = (Cr*Ma*(Ua-Ub)+Ma*Ua+Mb*Ub)/(Ma+Mb)
      
-    obj1_newprevloc = [obj1_loc[0] - ((obj1_y[0] * muly) - (obj1_x[0] * mulx)),obj1_loc[1] - ((obj1_y[1]  * muly) - (obj1_x[1] * mulx)),obj1_loc[2] - ((obj1_y[2] * muly) - (obj1_x[2] * mulx))]
-    obj2_newprevloc = [obj2_loc[0] - ((obj2_y[0] * muly) - (obj2_x[0] * mulx)),obj2_loc[1] - ((obj2_y[1]  * muly) - (obj2_x[1] * mulx)),obj2_loc[2] - ((obj2_y[2] * muly) - (obj2_x[2] * mulx))]
+    obj1_newprevloc = [obj1_loc[0] + ((obj1_y[0] * muly) + (obj1_x[0] * mulx)),obj1_loc[1] + ((obj1_y[1]  * muly) + (obj1_x[1] * mulx)),obj1_loc[2] + ((obj1_y[2] * muly) + (obj1_x[2] * mulx))]
+    obj2_newprevloc = [obj2_loc[0] + ((obj2_y[0] * muly) + (obj2_x[0] * mulx)),obj2_loc[1] + ((obj2_y[1]  * muly) + (obj2_x[1] * mulx)),obj2_loc[2] + ((obj2_y[2] * muly) + (obj2_x[2] * mulx))]
    
     return obj1_newprevloc,obj2_newprevloc
 
@@ -503,7 +503,7 @@ def Init(ParLoc,ParNum,Psize,Obstacles):
     return
 def Simulate(Fps):
     global AirDamp
-    SubStep = 0
+    SubStep = 4
     AirDamp = 0.05 / (SubStep + 1)
     DeltaTime = (1/Fps)/(SubStep + 1)
     for i in range(SubStep + 1):
