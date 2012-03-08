@@ -27,7 +27,7 @@ Psize = bpy.context.object.particle_systems[0].settings.particle_size
 Obstacles = []
 for obj in bpy.data.objects:
     if obj.type == "MESH":
-        if obj.collision.use == True:
+        if obj.collision.use == True and obj.hide == False:
             #print("Object:",obj.name)
             ObjWorldMatrix = obj.matrix_world
             ifaces=0
