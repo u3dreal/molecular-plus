@@ -66,23 +66,23 @@ def triangle_intersec(a,u,v,vn,p0,p1):
 
     
 def collision_response(obj1_loc,obj1_prevloc,obj1_mass,obj1_coefres,obj1_coeffric,obj2_loc,obj2_prevloc,obj2_mass,obj2_coefres,obj2_coeffric):
-    avg_coeffric = 0.6 #(obj1_coeffric + obj2_coeffric) / 2
-    avg_coefres = 0 #(obj1_coefres + obj2_coefres) / 2
+    avg_coeffric = 0.2 #(obj1_coeffric + obj2_coeffric) / 2
+    avg_coefres = 0.0 #(obj1_coefres + obj2_coefres) / 2
     col1_normal = vec_normalize([(obj1_loc[0] - obj2_loc[0]),(obj1_loc[1] - obj2_loc[1]),(obj1_loc[2] - obj2_loc[2])])
     col2_normal = vec_normalize([(obj2_loc[0] - obj1_loc[0]),(obj2_loc[1] - obj1_loc[1]),(obj2_loc[2] - obj1_loc[2])])
     obj1_mult = dot_product(col1_normal,(obj1_prevloc[0] - obj1_loc[0],obj1_prevloc[1] - obj1_loc[1],obj1_prevloc[2] - obj1_loc[2]))
     obj2_mult = dot_product(col2_normal,(obj2_prevloc[0] - obj2_loc[0],obj2_prevloc[1] - obj2_loc[1],obj2_prevloc[2] - obj2_loc[2]))
     obj1_point = [obj1_prevloc[0] - (obj1_mult * col1_normal[0]),obj1_prevloc[1] - (obj1_mult * col1_normal[1]),obj1_prevloc[2] - (obj1_mult * col1_normal[2])]
-    obj2_point = [obj2_prevloc[0] - (obj2_mult * col1_normal[0]),obj2_prevloc[1] - (obj2_mult * col2_normal[1]),obj2_prevloc[2] - (obj2_mult * col2_normal[2])]
+    obj2_point = [obj2_prevloc[0] - (obj2_mult * col2_normal[0]),obj2_prevloc[1] - (obj2_mult * col2_normal[1]),obj2_prevloc[2] - (obj2_mult * col2_normal[2])]
     obj1_y = [obj1_point[0] - obj1_prevloc[0],obj1_point[1] - obj1_prevloc[1],obj1_point[2] - obj1_prevloc[2]]
     obj1_x = [obj1_loc[0] - obj1_point[0],obj1_loc[1] - obj1_point[1],obj1_loc[2] - obj1_point[2]]
     obj2_y = [obj2_point[0] - obj2_prevloc[0],obj2_point[1] - obj2_prevloc[1],obj2_point[2] - obj2_prevloc[2]]
     obj2_x = [obj2_loc[0] - obj2_point[0],obj2_loc[1] - obj2_point[1],obj2_loc[2] - obj2_point[2]]
-    avg_coeffric = avg_coeffric * (DeltaTime*DeltaTime)
-    muly = 1.1
-    #mul1x = 0.0
-    #mul2x = 0.0
-    
+
+    muly = 0.0
+    #mul1x = 0.05
+    #mul2x = 0.05
+ 
     if obj1_mult > 0:
         sqmagn1_x = (obj1_x[0]**2 + obj1_x[1]**2 + obj1_x[2]**2)
         if sqmagn1_x != 0:
@@ -104,7 +104,7 @@ def collision_response(obj1_loc,obj1_prevloc,obj1_mass,obj1_coefres,obj1_coeffri
             mul2x = 0
     else:
         mul2x = 0
-    
+
     '''
     obj1_y[0] = (avg_coefres * obj2_mass *(obj2_y[0] - obj1_y[0]) + obj1_mass * obj1_y[0] + obj2_mass * obj2_y[0]) / (obj1_mass + obj2_mass) 
     obj1_y[1] = (avg_coefres * obj2_mass *(obj2_y[1] - obj1_y[1]) + obj1_mass * obj1_y[1] + obj2_mass * obj2_y[1]) / (obj1_mass + obj2_mass)
@@ -308,24 +308,24 @@ class Molecule:
         wallfriction = 0.0
         selfoldloc = (self.loc[0],self.loc[1],self.loc[2])
         
-        if self.loc[2] <= 0.0000:
-            self.loc[2] = 0.0000
+        if self.loc[2] <= -10.0000:
+            self.loc[2] = -10.0000
             PTree.update(selfoldloc,self)
 
-        if self.loc[0] <= -1.5000:
-            self.loc[0] = -1.5000
+        if self.loc[0] <= -10.5000:
+            self.loc[0] = -10.5000
             PTree.update(selfoldloc,self)
 
-        if self.loc[0] >= 1.5000:
-            self.loc[0] = 1.5000
+        if self.loc[0] >= 10.5000:
+            self.loc[0] = 10.5000
             PTree.update(selfoldloc,self)
 
-        if self.loc[1] <= -1.5000:
-            self.loc[1] = -1.5000
+        if self.loc[1] <= -10.5000:
+            self.loc[1] = -10.5000
             PTree.update(selfoldloc,self)
 
-        if self.loc[1] >= 1.5000:
-            self.loc[1] = 1.5000
+        if self.loc[1] >= 10.5000:
+            self.loc[1] = 10.5000
             PTree.update(selfoldloc,self)
             
             
@@ -353,10 +353,10 @@ class Molecule:
                     mol.loc[1] += lenghty * factor * 0.5
                     mol.loc[2] += lenghtz * factor * 0.5
                     
-                    prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
-                    self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
-                    prev_loc = [mol.prev_loc[0],mol.prev_loc[1],mol.prev_loc[2]]
-                    mol.prev_loc = [prev_loc[0] + (mol.loc[0] - mololdloc[0]),prev_loc[1] + (mol.loc[1] - mololdloc[1]),prev_loc[2] + (mol.loc[2] - mololdloc[2])]
+                    #prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
+                    #self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
+                    #prev_loc = [mol.prev_loc[0],mol.prev_loc[1],mol.prev_loc[2]]
+                    #mol.prev_loc = [prev_loc[0] + (mol.loc[0] - mololdloc[0]),prev_loc[1] + (mol.loc[1] - mololdloc[1]),prev_loc[2] + (mol.loc[2] - mololdloc[2])]
                    
                     col_resp = collision_response(self.loc,self.prev_loc,1,1,1,mol.loc,mol.prev_loc,1,1,1)
                     self.prev_loc = col_resp[0]
@@ -480,8 +480,8 @@ class Molecule:
                             self.loc[1] -= lenghty * factor * 1
                             self.loc[2] -= lenghtz * factor * 1
                             
-                            prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
-                            self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
+                            #prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
+                            #self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
                            
                             col_resp = collision_response(self.loc,self.prev_loc,1,1,1,col_sph,col_sph,10**10,1,1)
                             self.prev_loc = col_resp[0]
@@ -530,7 +530,7 @@ def Init(ParLoc,ParNum,Psize,Obstacles):
 def Simulate(Fps):
     global AirDamp
     global DeltaTime
-    SubStep = 4
+    SubStep = 16
     AirDamp = 0.05 / (SubStep + 1)
     DeltaTime = (1/Fps)/(SubStep + 1)
     for i in range(SubStep + 1):
