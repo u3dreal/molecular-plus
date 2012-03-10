@@ -66,8 +66,8 @@ def triangle_intersec(a,u,v,vn,p0,p1):
 
     
 def collision_response(obj1_loc,obj1_prevloc,obj1_mass,obj1_coefres,obj1_coeffric,obj2_loc,obj2_prevloc,obj2_mass,obj2_coefres,obj2_coeffric):
-    avg_coeffric = 0.2 #(obj1_coeffric + obj2_coeffric) / 2
-    avg_coefres = 0.0 #(obj1_coefres + obj2_coefres) / 2
+    avg_coeffric = 0.1 #(obj1_coeffric + obj2_coeffric) / 2
+    avg_coefres = 0.98 #(obj1_coefres + obj2_coefres) / 2
     col1_normal = vec_normalize([(obj1_loc[0] - obj2_loc[0]),(obj1_loc[1] - obj2_loc[1]),(obj1_loc[2] - obj2_loc[2])])
     col2_normal = vec_normalize([(obj2_loc[0] - obj1_loc[0]),(obj2_loc[1] - obj1_loc[1]),(obj2_loc[2] - obj1_loc[2])])
     obj1_mult = dot_product(col1_normal,(obj1_prevloc[0] - obj1_loc[0],obj1_prevloc[1] - obj1_loc[1],obj1_prevloc[2] - obj1_loc[2]))
@@ -78,51 +78,53 @@ def collision_response(obj1_loc,obj1_prevloc,obj1_mass,obj1_coefres,obj1_coeffri
     obj1_x = [obj1_loc[0] - obj1_point[0],obj1_loc[1] - obj1_point[1],obj1_loc[2] - obj1_point[2]]
     obj2_y = [obj2_point[0] - obj2_prevloc[0],obj2_point[1] - obj2_prevloc[1],obj2_point[2] - obj2_prevloc[2]]
     obj2_x = [obj2_loc[0] - obj2_point[0],obj2_loc[1] - obj2_point[1],obj2_loc[2] - obj2_point[2]]
-
-    muly = 0.0
-    #mul1x = 0.05
-    #mul2x = 0.05
- 
+    obj1_ny = vec_normalize(obj1_y)
+    obj1_nx = vec_normalize(obj1_x)
+    obj2_ny = vec_normalize(obj2_y)
+    obj2_nx = vec_normalize(obj2_x)
+    muly = 1
+    #mul1x = 0
+    #mul2x = 0
+    sqmagn1_y = obj1_y[0]**2 + obj1_y[1]**2 + obj1_y[2]**2
     if obj1_mult > 0:
-        sqmagn1_x = (obj1_x[0]**2 + obj1_x[1]**2 + obj1_x[2]**2)
+        obj1_oldvel = -((sqmagn1_y)**0.5)
+        sqmagn1_x = obj1_x[0]**2 + obj1_x[1]**2 + obj1_x[2]**2
         if sqmagn1_x != 0:
-            mul1x = (((obj1_y[0]**2 + obj1_y[1]**2 + obj1_y[2]**2) * (avg_coeffric**2)) / sqmagn1_x)**0.5
+            mul1x = (((sqmagn1_y) * (avg_coeffric**2)) / sqmagn1_x)**0.5
             if mul1x >= 1:
                 mul1x = 1
         else:
             mul1x = 0
     else:
+        obj1_oldvel = ((sqmagn1_y)**0.5)
         mul1x = 0
-     
+
+    sqmagn2_y = obj2_y[0]**2 + obj2_y[1]**2 + obj2_y[2]**2        
     if obj2_mult > 0:
+        obj2_oldvel = ((sqmagn2_y)**0.5)
         sqmagn2_x = (obj2_x[0]**2 + obj2_x[1]**2 + obj2_x[2]**2)
         if sqmagn2_x != 0:
-            mul2x = (((obj2_y[0]**2 + obj2_y[1]**2 + obj2_y[2]**2) * (avg_coeffric**2)) / sqmagn2_x)**0.5
+            mul2x = (((sqmagn2_y) * (avg_coeffric**2)) / sqmagn2_x)**0.5
             if mul2x >= 1:
                 mul2x = 1
         else:
             mul2x = 0
     else:
+        obj2_oldvel = -((sqmagn2_y)**0.5)
         mul2x = 0
 
-    '''
-    obj1_y[0] = (avg_coefres * obj2_mass *(obj2_y[0] - obj1_y[0]) + obj1_mass * obj1_y[0] + obj2_mass * obj2_y[0]) / (obj1_mass + obj2_mass) 
-    obj1_y[1] = (avg_coefres * obj2_mass *(obj2_y[1] - obj1_y[1]) + obj1_mass * obj1_y[1] + obj2_mass * obj2_y[1]) / (obj1_mass + obj2_mass)
-    obj1_y[2] = (avg_coefres * obj2_mass *(obj2_y[2] - obj1_y[2]) + obj1_mass * obj1_y[2] + obj2_mass * obj2_y[2]) / (obj1_mass + obj2_mass)
-    
-    obj2_y[0] = (avg_coefres * obj1_mass *(obj1_y[0] - obj2_y[0]) + obj1_mass * obj1_y[0] + obj2_mass * obj2_y[0]) / (obj1_mass + obj2_mass) 
-    obj2_y[1] = (avg_coefres * obj1_mass *(obj1_y[1] - obj2_y[1]) + obj1_mass * obj1_y[1] + obj2_mass * obj2_y[1]) / (obj1_mass + obj2_mass)
-    obj2_y[2] = (avg_coefres * obj1_mass *(obj1_y[2] - obj2_y[2]) + obj1_mass * obj1_y[2] + obj2_mass * obj2_y[2]) / (obj1_mass + obj2_mass)
-    
+    #print('***')
+    #print('***')    
+        
+    obj1_vel = (avg_coefres * obj2_mass * (obj2_oldvel - obj1_oldvel) + (obj1_mass * obj1_oldvel) + (obj2_mass * obj2_oldvel)) / (obj1_mass + obj2_mass)
+    obj2_vel = (avg_coefres * obj1_mass * (obj1_oldvel - obj2_oldvel) + (obj1_mass * obj1_oldvel) + (obj2_mass * obj2_oldvel)) / (obj1_mass + obj2_mass)
     # Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
     # Vb = (Cr*Ma*(Ua-Ub)+Ma*Ua+Mb*Ub)/(Ma+Mb)
-     
-    obj1_newprevloc = [obj1_point[0] - (obj1_y[0] * muly) - (obj1_x[0] * mulx),obj1_point[1] - (obj1_y[1]  * muly) - (obj1_x[1] * mulx),obj1_point[2] - (obj1_y[2] * muly) - (obj1_x[2] * mulx)]
-    obj2_newprevloc = [obj2_point[0] - (obj2_y[0] * muly) - (obj2_x[0] * mulx),obj2_point[1] - (obj2_y[1]  * muly) - (obj2_x[1] * mulx),obj2_point[2] - (obj2_y[2] * muly) - (obj2_x[2] * mulx)]
-    '''
+    obj1_y = [obj1_ny[0] * obj1_vel,obj1_ny[1] * obj1_vel,obj1_ny[2] * obj1_vel]
+    obj2_y = [obj2_ny[0] * obj2_vel,obj2_ny[1] * obj2_vel,obj2_ny[2] * obj2_vel]
     
-    obj1_newprevloc = [obj1_prevloc[0] + (obj1_y[0] * muly) + (obj1_x[0] * mul1x),obj1_prevloc[1] + (obj1_y[1]  * muly) + (obj1_x[1] * mul1x),obj1_prevloc[2] + (obj1_y[2] * muly) + (obj1_x[2] * mul1x)]
-    obj2_newprevloc = [obj2_prevloc[0] + (obj2_y[0] * muly) + (obj2_x[0] * mul2x),obj2_prevloc[1] + (obj2_y[1]  * muly) + (obj2_x[1] * mul2x),obj2_prevloc[2] + (obj2_y[2] * muly) + (obj2_x[2] * mul2x)]
+    obj1_newprevloc = [obj1_point[0] + (obj1_y[0] * muly) + (obj1_x[0] * mul1x),obj1_point[1] + (obj1_y[1]  * muly) + (obj1_x[1] * mul1x),obj1_point[2] + (obj1_y[2] * muly) + (obj1_x[2] * mul1x)]
+    obj2_newprevloc = [obj2_point[0] + (obj2_y[0] * muly) + (obj2_x[0] * mul2x),obj2_point[1] + (obj2_y[1]  * muly) + (obj2_x[1] * mul2x),obj2_point[2] + (obj2_y[2] * muly) + (obj2_x[2] * mul2x)]
     
     return obj1_newprevloc,obj2_newprevloc
 
@@ -353,10 +355,10 @@ class Molecule:
                     mol.loc[1] += lenghty * factor * 0.5
                     mol.loc[2] += lenghtz * factor * 0.5
                     
-                    #prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
-                    #self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
-                    #prev_loc = [mol.prev_loc[0],mol.prev_loc[1],mol.prev_loc[2]]
-                    #mol.prev_loc = [prev_loc[0] + (mol.loc[0] - mololdloc[0]),prev_loc[1] + (mol.loc[1] - mololdloc[1]),prev_loc[2] + (mol.loc[2] - mololdloc[2])]
+                    prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
+                    self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
+                    prev_loc = [mol.prev_loc[0],mol.prev_loc[1],mol.prev_loc[2]]
+                    mol.prev_loc = [prev_loc[0] + (mol.loc[0] - mololdloc[0]),prev_loc[1] + (mol.loc[1] - mololdloc[1]),prev_loc[2] + (mol.loc[2] - mololdloc[2])]
                    
                     col_resp = collision_response(self.loc,self.prev_loc,1,1,1,mol.loc,mol.prev_loc,1,1,1)
                     self.prev_loc = col_resp[0]
@@ -480,8 +482,8 @@ class Molecule:
                             self.loc[1] -= lenghty * factor * 1
                             self.loc[2] -= lenghtz * factor * 1
                             
-                            #prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
-                            #self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
+                            prev_loc = [self.prev_loc[0],self.prev_loc[1],self.prev_loc[2]]
+                            self.prev_loc = [prev_loc[0] + (self.loc[0] - selfoldloc[0]),prev_loc[1] + (self.loc[1] - selfoldloc[1]),prev_loc[2] + (self.loc[2] - selfoldloc[2])]
                            
                             col_resp = collision_response(self.loc,self.prev_loc,1,1,1,col_sph,col_sph,10**10,1,1)
                             self.prev_loc = col_resp[0]
@@ -530,7 +532,7 @@ def Init(ParLoc,ParNum,Psize,Obstacles):
 def Simulate(Fps):
     global AirDamp
     global DeltaTime
-    SubStep = 16
+    SubStep = 4
     AirDamp = 0.05 / (SubStep + 1)
     DeltaTime = (1/Fps)/(SubStep + 1)
     for i in range(SubStep + 1):
