@@ -1,3 +1,0 @@
-This is my molecular script for Blender.This version integrate verlet in python.
-After good result, a Cython version of this will be compilated to increase performance.
-A better description and instruction on how it's work comming soon...
