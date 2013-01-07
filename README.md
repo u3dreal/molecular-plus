@@ -24,3 +24,6 @@ To activate the plugins:
 - Go in File > User Preferences > Addons tab
 - In the "Object" categories, you must find "Molecular"
 - Check it , close the "Blender user preferences" windows and have fun.
+
+
+Visit my blo about this script for donation, comments or more detail : http://pyroevil.cu.cc/?cat=7
