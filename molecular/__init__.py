@@ -40,6 +40,7 @@ else:
         import molcore
     except:
         from molecular import molcore
+        pass
 
 
 import bpy

@@ -1,4 +1,5 @@
 #print("allo")
+from math import floor
 
 def init(importdata):
     global fps
@@ -11,9 +12,7 @@ def init(importdata):
     psys = []
     
     for i in importdata[1:]:
-        #print(i[0])
         psys.append(ParSys(i))
-    #print(psys[1].particle[0].sys.collision_group)
     parnum = 0
     for i in psys:
         parnum += i.parnum
@@ -22,6 +21,8 @@ def init(importdata):
 
 class ParSys:
     def __init__(self,data):
+        global hashgrid
+        hashgrid = HashTree()
         
         self.parnum = data[0]
         self.particle = [0] * self.parnum
@@ -53,10 +54,13 @@ class ParSys:
             self.particle[i] = Particle()
             self.particle[i].loc = data[1][(i * 3):(i * 3 + 3)]
             self.particle[i].vel = data[2][(i * 3):(i * 3 + 3)]
-            self.particle[i].size = data[3][(i * 3):(i * 3 + 3)]
-            self.particle[i].mass = data[4][(i * 3):(i * 3 + 3)]
-            self.particle[i].state = data[5][(i * 3):(i * 3 + 3)]
+            self.particle[i].size = data[3][i]
+            self.particle[i].sqsize = sq_number(self.particle[i].size)
+            self.particle[i].mass = data[4][i]
+            self.particle[i].state = data[5][i]
             self.particle[i].sys = self
+            hashgrid.add_point(self.particle[i])
+            #print(self.particle[i].size,self.particle[i].sqsize)
             
         
 class Particle(ParSys):
@@ -64,14 +68,15 @@ class Particle(ParSys):
         self.loc = [0,0,0]
         self.vel = [0,0,0]
         self.size = "is size"
+        self.sqsize = "near square number for hashing"
         self.mass = "is mass"
         self.state = "is alive state"
         self.sys = "is parent system"
  
        
 class HashTree:
-    def __init__(self,gridsize):
-        self.gridsize = gridsize
+    def __init__(self):
+        self.gridsize = []
         self.tree={}
         self.ngrid = []
         for xgrid in range(-1,2):
@@ -80,7 +85,7 @@ class HashTree:
                     self.ngrid.append((xgrid,ygrid,zgrid))
         #print(self.ngrid)
         #print(len(self.ngrid))
-        print("Gridsize at:",self.gridsize)
+        #print("Gridsize at:",self.gridsize)
        
     def add_point(self,mol):
         x = mol.loc[0]
@@ -148,7 +153,16 @@ class HashTree:
                 if ngridcoord in self.tree:
                     neighbours.extend(self.tree[ngridcoord])
             return neighbours
-        
+ 
+def sq_number(val):
+    nearsq = 8
+    while val > nearsq or val < nearsq / 2:
+        if val > nearsq:
+            nearsq = nearsq * 2
+        elif val < nearsq / 2:
+            nearsq = nearsq / 2
+    return nearsq
+         
 '''        
 def ApplyCns():
     
