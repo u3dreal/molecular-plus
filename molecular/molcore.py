@@ -5,24 +5,26 @@ def init(importdata):
     global fps
     global substep
     global psys
+    global hashgrid
     
     fps = importdata[0][0]
     substep = importdata[0][1]
     #print(fps,substep)
     psys = []
-    
+    hashgrid = HashTree()
     for i in importdata[1:]:
         psys.append(ParSys(i))
     parnum = 0
     for i in psys:
         parnum += i.parnum
+    print(hashgrid.sizelist)
+    print(hashgrid.query(psys[0].particle[11]))
     return parnum
     
 
 class ParSys:
     def __init__(self,data):
         global hashgrid
-        hashgrid = HashTree()
         
         self.parnum = data[0]
         self.particle = [0] * self.parnum
@@ -52,6 +54,7 @@ class ParSys:
         
         for i in range(self.parnum):
             self.particle[i] = Particle()
+            self.particle[i].id = i
             self.particle[i].loc = data[1][(i * 3):(i * 3 + 3)]
             self.particle[i].vel = data[2][(i * 3):(i * 3 + 3)]
             self.particle[i].size = data[3][i]
@@ -65,6 +68,7 @@ class ParSys:
         
 class Particle(ParSys):
     def __init__(self):
+        self.id = 0
         self.loc = [0,0,0]
         self.vel = [0,0,0]
         self.size = "is size"
@@ -76,12 +80,13 @@ class Particle(ParSys):
        
 class HashTree:
     def __init__(self):
-        self.gridsize = []
+        self.sizelist = []
         self.tree={}
         self.ngrid = []
-        for xgrid in range(-1,2):
-            for ygrid in range(-1,2):
-                for zgrid in range(-1,2):
+        rrange = 1
+        for xgrid in range(-rrange,rrange + 1):
+            for ygrid in range(-rrange,rrange + 1):
+                for zgrid in range(-rrange,rrange + 1):
                     self.ngrid.append((xgrid,ygrid,zgrid))
         #print(self.ngrid)
         #print(len(self.ngrid))
@@ -91,26 +96,30 @@ class HashTree:
         x = mol.loc[0]
         y = mol.loc[1]
         z = mol.loc[2]
-        intx = floor(x / self.gridsize)
-        inty = floor(y / self.gridsize)
-        intz = floor(z / self.gridsize)
-        if (intx,inty,intz) not in self.tree:
-            self.tree[intx,inty,intz] = []
-        if mol not in self.tree[intx,inty,intz]:
-            self.tree[intx,inty,intz].append(mol)
+        size = mol.sqsize 
+        if size not in self.sizelist:
+            self.sizelist.append(size)
+        intx = floor(x / size)
+        inty = floor(y / size)
+        intz = floor(z / size)
+        if (size,intx,inty,intz) not in self.tree:
+            self.tree[size,intx,inty,intz] = []
+        if mol not in self.tree[size,intx,inty,intz]:
+            self.tree[size,intx,inty,intz].append((mol.id,mol.sqsize))
             #print (x,y,z,";",intx,inty,intz)
            
     def remove_point(self,mol):
         x = mol.loc[0]
         y = mol.loc[1]
         z = mol.loc[2]
-        intx = floor(x / self.gridsize)
-        inty = floor(y / self.gridsize)
-        intz = floor(z / self.gridsize)
-        if (intx,inty,intz) in self.tree:
-            for i in range((self.tree[intx,inty,intz].count(mol))):
-                if (intx,inty,intz) in self.tree:
-                    self.tree[intx,inty,intz].remove(mol)
+        size = mol.sqsize
+        intx = floor(x / size)
+        inty = floor(y / size)
+        intz = floor(z / size)
+        if (size,intx,inty,intz) in self.tree:
+            for i in range((self.tree[size,intx,inty,intz].count(mol))):
+                if (size,intx,inty,intz) in self.tree:
+                    self.tree[size,intx,inty,intz].remove(mol)
                        
     def update(self,prev_loc,mol):
         x = mol.loc[0]
@@ -119,24 +128,25 @@ class HashTree:
         px = prev_loc[0]
         py = prev_loc[1]
         pz = prev_loc[2]
-        intx = floor(x / self.gridsize)
-        inty = floor(y / self.gridsize)
-        intz = floor(z / self.gridsize)
-        intpx = floor(px / self.gridsize)
-        intpy = floor(py / self.gridsize)
-        intpz = floor(pz / self.gridsize)
-        if (intx,inty,intz) != (intpx,intpy,intpz):
-            if (intpx,intpy,intpz) in self.tree:
-                for i in range((self.tree[intpx,intpy,intpz].count(mol))):
-                    self.tree[intpx,intpy,intpz].remove(mol)
-                    #print("rem mol:",mol.index,"from:",(intpx,intpy,intpz))
-                    if len(self.tree[intpx,intpy,intpz]) == 0:
-                        del self.tree[intpx,intpy,intpz]
-                        #print("del box:",(intpx,intpy,intpz))
-            if (intx,inty,intz) not in self.tree:
-                self.tree[intx,inty,intz] = []
-            if mol not in self.tree[intx,inty,intz]:
-                self.tree[intx,inty,intz].append(mol)
+        size = mol.sqsize
+        intx = floor(x / size)
+        inty = floor(y / size)
+        intz = floor(z / size)
+        intpx = floor(px / size)
+        intpy = floor(py / size)
+        intpz = floor(pz / size)
+        if (size,intx,inty,intz) != (size,intpx,intpy,intpz):
+            if (size,intpx,intpy,intpz) in self.tree:
+                for i in range((self.tree[size,intpx,intpy,intpz].count(mol))):
+                    self.tree[size,intpx,intpy,intpz].remove(mol)
+                    #print("rem mol:",mol.index,"from:",(size,intpx,intpy,intpz))
+                    if len(self.tree[size,intpx,intpy,intpz]) == 0:
+                        del self.tree[size,intpx,intpy,intpz]
+                        #print("del box:",(size,intpx,intpy,intpz))
+            if (size,intx,inty,intz) not in self.tree:
+                self.tree[size,intx,inty,intz] = []
+            if mol not in self.tree[size,intx,inty,intz]:
+                self.tree[size,intx,inty,intz].append(mol)
 
                    
     def query(self,mol):
@@ -144,15 +154,19 @@ class HashTree:
         x = mol.loc[0]
         y = mol.loc[1]
         z = mol.loc[2]
-        intx = floor(x / self.gridsize)
-        inty = floor(y / self.gridsize)
-        intz = floor(z / self.gridsize)
-        if (intx,inty,intz) in self.tree:
-            for i in self.ngrid:
-                ngridcoord = (intx + i[0],inty + i[1],intz + i[2])
-                if ngridcoord in self.tree:
-                    neighbours.extend(self.tree[ngridcoord])
-            return neighbours
+        for size in self.sizelist:
+            intx = floor(x / size)
+            inty = floor(y / size)
+            intz = floor(z / size)
+            print(size,intx,inty,intz)
+            if (size,intx,inty,intz) in self.tree:
+                print(size)
+                for i in self.ngrid:
+                    ngridcoord = (size,intx + i[0],inty + i[1],intz + i[2])
+                    if ngridcoord in self.tree:
+                        neighbours.extend(self.tree[ngridcoord])
+        return neighbours
+        
  
 def sq_number(val):
     nearsq = 8
@@ -163,7 +177,97 @@ def sq_number(val):
             nearsq = nearsq / 2
     return nearsq
          
-'''        
+'''
+class HashTree:
+    def __init__(self):
+        self.sizelist = []
+        self.tree={}
+        self.ngrid = []
+        rrange = 1
+        for xgrid in range(-rrange,rrange + 1):
+            for ygrid in range(-rrange,rrange + 1):
+                for zgrid in range(-rrange,rrange + 1):
+                    self.ngrid.append((xgrid,ygrid,zgrid))
+        #print(self.ngrid)
+        #print(len(self.ngrid))
+        #print("Gridsize at:",self.gridsize)
+       
+    def add_point(self,mol):
+        x = mol.loc[0]
+        y = mol.loc[1]
+        z = mol.loc[2]
+        size = mol.sqsize
+        if size not in self.sizelist:
+            self.sizelist.append(size)
+        intx = floor(x / size)
+        inty = floor(y / size)
+        intz = floor(z / size)
+        if (size,intx,inty,intz) not in self.tree:
+            self.tree[size,intx,inty,intz] = []
+        if mol not in self.tree[size,intx,inty,intz]:
+            self.tree[size,intx,inty,intz].append((mol.id,mol.sqsize))
+            #print (x,y,z,";",intx,inty,intz)
+           
+    def remove_point(self,mol):
+        x = mol.loc[0]
+        y = mol.loc[1]
+        z = mol.loc[2]
+        size = mol.sqsize
+        intx = floor(x / size)
+        inty = floor(y / size)
+        intz = floor(z / size)
+        if (size,intx,inty,intz) in self.tree:
+            for i in range((self.tree[size,intx,inty,intz].count(mol))):
+                if (size,intx,inty,intz) in self.tree:
+                    self.tree[size,intx,inty,intz].remove(mol)
+                       
+    def update(self,prev_loc,mol):
+        x = mol.loc[0]
+        y = mol.loc[1]
+        z = mol.loc[2]
+        px = prev_loc[0]
+        py = prev_loc[1]
+        pz = prev_loc[2]
+        size = mol.sqsize
+        intx = floor(x / size)
+        inty = floor(y / size)
+        intz = floor(z / size)
+        intpx = floor(px / size)
+        intpy = floor(py / size)
+        intpz = floor(pz / size)
+        if (size,intx,inty,intz) != (size,intpx,intpy,intpz):
+            if (size,intpx,intpy,intpz) in self.tree:
+                for i in range((self.tree[size,intpx,intpy,intpz].count(mol))):
+                    self.tree[size,intpx,intpy,intpz].remove(mol)
+                    #print("rem mol:",mol.index,"from:",(size,intpx,intpy,intpz))
+                    if len(self.tree[size,intpx,intpy,intpz]) == 0:
+                        del self.tree[size,intpx,intpy,intpz]
+                        #print("del box:",(size,intpx,intpy,intpz))
+            if (size,intx,inty,intz) not in self.tree:
+                self.tree[size,intx,inty,intz] = []
+            if mol not in self.tree[size,intx,inty,intz]:
+                self.tree[size,intx,inty,intz].append(mol)
+
+                   
+    def query(self,mol,size):
+        neighbours = []
+        x = mol.loc[0]
+        y = mol.loc[1]
+        z = mol.loc[2]
+        for size in self.sizelist:
+            intx = floor(x / size)
+            inty = floor(y / size)
+            intz = floor(z / size)
+            if (size,intx,inty,intz) in self.tree:
+                for i in self.ngrid:
+                    ngridcoord = (size,intx + i[0],inty + i[1],intz + i[2])
+                    if ngridcoord in self.tree:
+                        neighbours.extend(self.tree[ngridcoord])
+            return neighbours
+
+
+
+        
 def ApplyCns():
     
     global dctCns
