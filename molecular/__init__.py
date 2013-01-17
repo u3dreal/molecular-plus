@@ -99,6 +99,69 @@ def define_props():
         bpy.types.Scene.mol_substep = bpy.props.IntProperty(name = "mol_substep", description = "Substep. Higher equal more stable and accurate but more slower",min = 0, max = 900, default = 4)
 
 
+def pack_data(initiate):
+    global exportdata
+    
+    for obj in bpy.data.objects:
+        for psys in obj.particle_systems:
+            if psys.settings.mol_matter != -1:
+                psys.settings.mol_density = float(psys.settings.mol_matter)
+            if psys.settings.mol_active == True:
+                parlen = len(psys.particles)
+                par_loc = [0,0,0] * parlen
+                par_vel = [0,0,0] * parlen
+                par_size = [0] * parlen
+                par_mass = []
+                for i in range(parlen):
+                    par_mass.append(psys.settings.mass + ((random() - 0.5) * 0.01)) #random mass variation
+                par_alive = []
+                for par in psys.particles:
+                    if par.alive_state == "UNBORN":
+                        par_alive.append(0)
+                    if par.alive_state == "ALIVE":
+                        par_alive.append(1)
+                    if par.alive_state == "DEAD":
+                        par_alive.append(2)
+                        
+                psys.particles.foreach_get('location',par_loc)
+                psys.particles.foreach_get('velocity',par_vel)
+                
+                if initiate:
+                    psys.particles.foreach_get('size',par_size)
+                    
+                    params = [0] * 23
+                    params[0] = psys.settings.mol_selfcollision_active
+                    params[1] = psys.settings.mol_othercollision_active
+                    params[2] = psys.settings.mol_collision_group
+                    params[3] = psys.settings.mol_links_active
+                    params[4] = psys.settings.mol_link_length
+                    params[5] = psys.settings.mol_link_stiff
+                    params[6] = psys.settings.mol_link_stiffrand
+                    params[7] = psys.settings.mol_link_stiffexp
+                    params[8] = psys.settings.mol_link_stiffinv
+                    params[9] = psys.settings.mol_link_damp
+                    params[10] = psys.settings.mol_link_damprand
+                    params[11] = psys.settings.mol_link_broken
+                    params[12] = psys.settings.mol_link_brokenrand
+                    params[13] = psys.settings.mol_relink_group
+                    params[14] = psys.settings.mol_relink_chance
+                    params[15] = psys.settings.mol_relink_chancerand
+                    params[16] = psys.settings.mol_relink_stiff
+                    params[17] = psys.settings.mol_relink_stiffexp
+                    params[18] = psys.settings.mol_relink_stiffinv
+                    params[19] = psys.settings.mol_relink_damp
+                    params[20] = psys.settings.mol_relink_damprand
+                    params[21] = psys.settings.mol_relink_broken
+                    params[22] = psys.settings.mol_relink_brokenrand                    
+    
+            if initiate:
+                exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
+                pass
+            else:
+                exportdata.append((par_loc,par_vel,par_alive))     
+                pass  
+    
+
 
 class MolecularPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
@@ -244,59 +307,9 @@ class MolSimulate(bpy.types.Operator):
         else:
             fps = scene.render.fps
         
+        exportdata = []
         exportdata = [(fps,substep)]    
-        
-        
-        for obj in bpy.data.objects:
-            for psys in obj.particle_systems:
-                if psys.settings.mol_matter != -1:
-                    psys.settings.mol_density = float(psys.settings.mol_matter)
-                if psys.settings.mol_active == True:
-                    parlen = len(psys.particles)
-                    par_loc = [0,0,0] * parlen
-                    par_vel = [0,0,0] * parlen
-                    par_size = [0] * parlen
-                    par_mass = []
-                    for i in range(parlen):
-                        par_mass.append(psys.settings.mass + ((random() - 0.5) * 0.01)) #random mass variation
-                    par_alive = []
-                    for par in psys.particles:
-                        if par.alive_state == "UNBORN":
-                            par_alive.append(0)
-                        if par.alive_state == "ALIVE":
-                            par_alive.append(1)
-                        if par.alive_state == "DEAD":
-                            par_alive.append(2)
-                    psys.particles.foreach_get('location',par_loc)
-                    psys.particles.foreach_get('velocity',par_vel)
-                    psys.particles.foreach_get('size',par_size)
-                    
-                    params = [0] * 23
-                    params[0] = psys.settings.mol_selfcollision_active
-                    params[1] = psys.settings.mol_othercollision_active
-                    params[2] = psys.settings.mol_collision_group
-                    params[3] = psys.settings.mol_links_active
-                    params[4] = psys.settings.mol_link_length
-                    params[5] = psys.settings.mol_link_stiff
-                    params[6] = psys.settings.mol_link_stiffrand
-                    params[7] = psys.settings.mol_link_stiffexp
-                    params[8] = psys.settings.mol_link_stiffinv
-                    params[9] = psys.settings.mol_link_damp
-                    params[10] = psys.settings.mol_link_damprand
-                    params[11] = psys.settings.mol_link_broken
-                    params[12] = psys.settings.mol_link_brokenrand
-                    params[13] = psys.settings.mol_relink_group
-                    params[14] = psys.settings.mol_relink_chance
-                    params[15] = psys.settings.mol_relink_chancerand
-                    params[16] = psys.settings.mol_relink_stiff
-                    params[17] = psys.settings.mol_relink_stiffexp
-                    params[18] = psys.settings.mol_relink_stiffinv
-                    params[19] = psys.settings.mol_relink_damp
-                    params[20] = psys.settings.mol_relink_damprand
-                    params[21] = psys.settings.mol_relink_broken
-                    params[22] = psys.settings.mol_relink_brokenrand                    
-
-                    exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
+        pack_data(True)
         imp.reload(molcore)
         report = molcore.init(exportdata)
         etime = clock()
@@ -316,6 +329,7 @@ class MolSimulateModal(bpy.types.Operator):
     def modal(self, context, event):
         global substep
         global old_endframe
+        global exportdata
         
         scene = bpy.context.scene
         frame_end = scene.frame_end
@@ -328,6 +342,21 @@ class MolSimulateModal(bpy.types.Operator):
 
         if event.type == 'TIMER':
             stime = clock()
+            exportdata = []
+            pack_data(False)
+            importdata = molcore.simulate(exportdata)
+            #print(importdata[1])
+            i = 0
+            for obj in bpy.data.objects:
+                for psys in obj.particle_systems:
+                    if psys.settings.mol_active == True:
+                        #print(len(importdata[i][1]))
+                        #print(len(psys.particles))
+                        psys.particles.foreach_set('velocity',importdata[1][i])
+                    i += 1
+                        
+                        
+                        
             scene.frame_set(frame = frame_current + 1)
             etime = clock()
             print("    frame " + str(frame_current/(substep+1)) + " take " + str(round(etime - stime,3)) + "sec")
