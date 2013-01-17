@@ -8,6 +8,7 @@ def init(importdata):
     global substep
     global psys
     global kdtree
+    global parlist
     
     listsqsize = []
     fps = importdata[0][0]
@@ -49,6 +50,8 @@ def init(importdata):
 def simulate(importdata):
     global kdtree
     
+    kdtree = KDTree()
+    kdtree.create(parlist,"root")
     exportdata = []
     update_ParSys(importdata)
     for parsys in psys:
