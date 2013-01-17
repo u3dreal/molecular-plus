@@ -103,7 +103,7 @@ def pack_data(initiate):
     global exportdata
     
     for obj in bpy.data.objects:
-        for psys in obj.particle_systems:
+        for psys in obj.particle_systems:           
             if psys.settings.mol_matter != -1:
                 psys.settings.mol_density = float(psys.settings.mol_matter)
             if psys.settings.mol_active == True:
@@ -127,6 +127,7 @@ def pack_data(initiate):
                 psys.particles.foreach_get('velocity',par_vel)
                 
                 if initiate:
+                    psys.settings.count = psys.settings.count
                     psys.particles.foreach_get('size',par_size)
                     
                     params = [0] * 23
@@ -290,7 +291,7 @@ class MolSimulate(bpy.types.Operator):
         global substep
         global old_endframe
         global exportdata
-        
+
         print("Molecular Sim start...")
         stime = clock()
         scene = bpy.context.scene
@@ -330,7 +331,9 @@ class MolSimulateModal(bpy.types.Operator):
         global substep
         global old_endframe
         global exportdata
+        global stime
         
+        #stime = clock()
         scene = bpy.context.scene
         frame_end = scene.frame_end
         frame_current = scene.frame_current
@@ -341,7 +344,8 @@ class MolSimulateModal(bpy.types.Operator):
             return self.cancel(context)
 
         if event.type == 'TIMER':
-            stime = clock()
+            if frame_current == scene.frame_start:            
+                stime = clock()
             exportdata = []
             pack_data(False)
             importdata = molcore.simulate(exportdata)
@@ -354,12 +358,13 @@ class MolSimulateModal(bpy.types.Operator):
                         #print(len(psys.particles))
                         psys.particles.foreach_set('velocity',importdata[1][i])
                     i += 1
-                        
-                        
-                        
+                     
             scene.frame_set(frame = frame_current + 1)
-            etime = clock()
-            print("    frame " + str(frame_current/(substep+1)) + " take " + str(round(etime - stime,3)) + "sec")
+            framesubstep = frame_current/(substep+1)
+            if framesubstep == int(framesubstep):
+                etime = clock()
+                print("    frame " + str(framesubstep) + " take " + str(round(etime - stime,3)) + "sec")
+                stime = clock()
 
         return {'PASS_THROUGH'}
 

@@ -7,13 +7,12 @@ def init(importdata):
     global fps
     global substep
     global psys
-    global hashgrid
+    global kdtree
     
     listsqsize = []
     fps = importdata[0][0]
     substep = importdata[0][1]
     psys = []
-    hashgrid = KDTree()
     for i in importdata[1:]:
         psys.append(ParSys(i))
     parnum = 0
@@ -31,7 +30,7 @@ def init(importdata):
     kdtree.create(parlist,"root")
     print("  KDtree generation take:",round(clock()-timer,5),"sec")
     point = (0,0,0)
-    r = 0.5
+    r = 2
     timer = clock()
     rquery = kdtree.rnn_query(point,r)
     print("  RNN query number find:",len(rquery))
@@ -44,12 +43,12 @@ def init(importdata):
         print("> DONT MATCH!!!")
     else:
         print("  Match!")
-
     return parnum
 
 
 def simulate(importdata):
-    #print(importdata)
+    global kdtree
+    
     exportdata = []
     update_ParSys(importdata)
     for parsys in psys:
@@ -74,13 +73,22 @@ def simulate(importdata):
             
     
 def collide(par):
-    global hashgrid
+    global kdtree
     
-    neighbours = hashgrid.brute_query(par.loc,par.size)
+    neighbours = kdtree.rnn_query(par.loc,par.size * 2)
     
     for ii in neighbours:
-        stiff = 12
         i = ii.particle
+        if i.sys != par.sys :
+            if i.sys.othercollision_active == False or par.sys.othercollision_active == False:
+                return
+        #print(par.sys.collision_group)
+        if i.sys.collision_group != par.sys.collision_group:
+            return
+        if i.sys == par.sys and par.sys.selfcollision_active == False:
+            return
+        
+        stiff = fps + substep
         target = (par.size + i.size) * 0.99
         sqtarget = target**2
         #print(par.state)
@@ -93,12 +101,12 @@ def collide(par):
             if sqlenght != 0 and sqlenght < sqtarget:
                 lenght = sqlenght**0.5
                 factor = (lenght - target) / lenght
-                par.vel[0] -= ((lenghtx * factor * 0.5) * stiff)
-                par.vel[1] -= ((lenghty * factor * 0.5) * stiff)
-                par.vel[2] -= ((lenghtz * factor * 0.5) * stiff)
-                i.vel[0] += ((lenghtx * factor * 0.5) * stiff)
-                i.vel[1] += ((lenghty * factor * 0.5) * stiff)
-                i.vel[2] += ((lenghtz * factor * 0.5) * stiff)
+                par.vel[0] -= ((lenghtx * factor * 0.5) * stiff) * (par.mass/(par.mass+i.mass)*2)
+                par.vel[1] -= ((lenghty * factor * 0.5) * stiff) * (par.mass/(par.mass+i.mass)*2)
+                par.vel[2] -= ((lenghtz * factor * 0.5) * stiff) * (par.mass/(par.mass+i.mass)*2)
+                i.vel[0] += ((lenghtx * factor * 0.5) * stiff) * (i.mass/(par.mass+i.mass)*2)
+                i.vel[1] += ((lenghty * factor * 0.5) * stiff) * (i.mass/(par.mass+i.mass)*2)
+                i.vel[2] += ((lenghtz * factor * 0.5) * stiff) * (i.mass/(par.mass+i.mass)*2)
     
 
 
@@ -107,13 +115,13 @@ def update_ParSys(data):
     global psys    
     i = 0
     ii = 0
-    print(data[1][2])
+    #print(data[1][2])
     for parsys in psys:
         for par in parsys.particle:
            par.loc = data[i][0][(ii * 3):(ii * 3 + 3)]
            par.vel = data[i][1][(ii * 3):(ii * 3 + 3)]
            par.state = data[i][2][ii]
-           print("state:",par.state)
+           #print("state:",par.state)
            ii += 1
         ii = 0
         i += 1
@@ -221,7 +229,7 @@ class KDTree():
         if (point[axis] - node.particle.loc[axis])**2 <= dist:
             if square_dist(point,node.particle.loc,k) <= dist:
                 #print("    " + node.name + "(" + str(node.particle.id) + ")" + " added")
-                self.result.append(node.particle)
+                self.result.append(node)
             self.rnn_search(node.left_child,point,dist,k,depth + 1)
             self.rnn_search(node.right_child,point,dist,k,depth + 1)
         
