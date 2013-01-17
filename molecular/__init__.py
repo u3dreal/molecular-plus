@@ -358,13 +358,18 @@ class MolSimulateModal(bpy.types.Operator):
                         #print(len(psys.particles))
                         psys.particles.foreach_set('velocity',importdata[1][i])
                     i += 1
-                     
-            scene.frame_set(frame = frame_current + 1)
-            framesubstep = frame_current/(substep+1)
+            framesubstep = frame_current/(substep+1)        
             if framesubstep == int(framesubstep):
                 etime = clock()
-                print("    frame " + str(framesubstep) + " take " + str(round(etime - stime,3)) + "sec")
+                print("    frame " + str(framesubstep + 1) + " take:")
+                print("      Molecular Script: " + str(round(etime - stime,3)) + " sec")
                 stime = clock()
+                stime2 = clock()
+            scene.frame_set(frame = frame_current + 1)
+            if framesubstep == int(framesubstep):
+                etime2 = clock()
+                print("      Blender: " + str(round(etime2 - stime2,3)) + " sec")
+                stime2 = clock()
 
         return {'PASS_THROUGH'}
 
