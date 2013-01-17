@@ -12,7 +12,6 @@ def init(importdata):
     listsqsize = []
     fps = importdata[0][0]
     substep = importdata[0][1]
-    #print(fps,substep)
     psys = []
     hashgrid = KDTree()
     for i in importdata[1:]:
@@ -32,18 +31,94 @@ def init(importdata):
     kdtree.create(parlist,"root")
     print("  KDtree generation take:",round(clock()-timer,5),"sec")
     point = (0,0,0)
-    r = 0.2
+    r = 0.5
     timer = clock()
-    query = kdtree.rnn_query(point,r)
-    print("  RNN query number find:",len(query))
+    rquery = kdtree.rnn_query(point,r)
+    print("  RNN query number find:",len(rquery))
     print("  KDtree RNN query take:",round(clock()-timer,5),"sec")
     timer = clock()
-    query = kdtree.brute_query(point,r)
-    print("  Brute query number find:",len(query))
+    bquery = kdtree.brute_query(point,r)
+    print("  Brute query number find:",len(bquery))
     print("  Brute query take:",round(clock()-timer,5),"sec")
+    if len(rquery) != len(bquery):
+        print("> DONT MATCH!!!")
+    else:
+        print("  Match!")
+
     return parnum
+
+
+def simulate(importdata):
+    #print(importdata)
+    exportdata = []
+    update_ParSys(importdata)
+    for parsys in psys:
+        for par in parsys.particle:
+            collide(par)
+    exportdata = []
+    parloc = []
+    parvel = []
+    parloctmp = []
+    parveltmp = []
+    for parsys in psys:
+        for par in parsys.particle:
+            parloctmp += par.loc
+            parveltmp += par.vel
+        parloc.append(parloctmp)  
+        parvel.append(parveltmp)
+        parloctmp = []
+        parveltmp = []   
+    exportdata = [parloc,parvel]
+    return exportdata
+            
+            
+    
+def collide(par):
+    global hashgrid
+    
+    neighbours = hashgrid.brute_query(par.loc,par.size)
+    
+    for ii in neighbours:
+        stiff = 12
+        i = ii.particle
+        target = (par.size + i.size) * 0.99
+        sqtarget = target**2
+        #print(par.state)
+        if par.state == 1 and i.state == 1:
+            #print("collide!")
+            lenghtx = par.loc[0] - i.loc[0]
+            lenghty = par.loc[1] - i.loc[1]
+            lenghtz = par.loc[2] - i.loc[2]
+            sqlenght = (lenghtx * lenghtx) + (lenghty * lenghty) + (lenghtz * lenghtz)
+            if sqlenght != 0 and sqlenght < sqtarget:
+                lenght = sqlenght**0.5
+                factor = (lenght - target) / lenght
+                par.vel[0] -= ((lenghtx * factor * 0.5) * stiff)
+                par.vel[1] -= ((lenghty * factor * 0.5) * stiff)
+                par.vel[2] -= ((lenghtz * factor * 0.5) * stiff)
+                i.vel[0] += ((lenghtx * factor * 0.5) * stiff)
+                i.vel[1] += ((lenghty * factor * 0.5) * stiff)
+                i.vel[2] += ((lenghtz * factor * 0.5) * stiff)
     
 
+
+    
+def update_ParSys(data):
+    global psys    
+    i = 0
+    ii = 0
+    print(data[1][2])
+    for parsys in psys:
+        for par in parsys.particle:
+           par.loc = data[i][0][(ii * 3):(ii * 3 + 3)]
+           par.vel = data[i][1][(ii * 3):(ii * 3 + 3)]
+           par.state = data[i][2][ii]
+           print("state:",par.state)
+           ii += 1
+        ii = 0
+        i += 1
+    
+    
 class ParSys:
     def __init__(self,data):
         global hashgrid
@@ -103,7 +178,7 @@ class Particle(ParSys):
 
 class KDTree():
     root_node = "node on top"
-    full_list = []
+    nodes = []
     result = []
     def create(self,parlist,name,depth = 0):
         if not parlist:
@@ -114,9 +189,9 @@ class KDTree():
         parlist.sort(key= lambda p: p.loc[axis])
         median = int(len(parlist) / 2)
         node = Nodes()
+        self.nodes.append(node)
         node.name = name
         if parlist and depth == 0:
-            self.full_list = parlist
             self.root_node = node
         node.particle = parlist[median]
         node.left_child = self.create(parlist[:median],"left" + str(depth+1),depth + 1)
@@ -129,7 +204,7 @@ class KDTree():
             return []
         else:
             dist = dist**2
-            print("   distance to reach:",dist)
+            #print("   distance to reach:",dist)
             k = len(self.root_node.particle.loc)
             self.rnn_search(self.root_node,point,dist,k)
             
@@ -138,29 +213,33 @@ class KDTree():
     def rnn_search(self,node,point,dist,k,depth = 0):
         
         if node == None:
-            return
+            return None
         
         axis = depth % k
-        print("    " + node.name + " viewed at " + str(square_dist(point,node.particle.loc,k)**0.5))
-        if square_dist(point,node.particle.loc,k) < dist:
-            print("    " + node.name + " added")
-            self.result.append(node.particle)
-            self.rnn_search(node.left_child,point,dist,k)
-            self.rnn_search(node.right_child,point,dist,k)
+        #print("    " + node.name + "(" + str(node.particle.id) + ")" + " viewed at " + str(square_dist(point,node.particle.loc,k)**0.5))
+                  
+        if (point[axis] - node.particle.loc[axis])**2 <= dist:
+            if square_dist(point,node.particle.loc,k) <= dist:
+                #print("    " + node.name + "(" + str(node.particle.id) + ")" + " added")
+                self.result.append(node.particle)
+            self.rnn_search(node.left_child,point,dist,k,depth + 1)
+            self.rnn_search(node.right_child,point,dist,k,depth + 1)
         
-        else:    
+        else:
             if point[axis] <= node.particle.loc[axis]:
-                self.rnn_search(node.left_child,point,dist,k)
-            else:
-                self.rnn_search(node.right_child,point,dist,k)
+                self.rnn_search(node.left_child,point,dist,k,depth + 1)
+            if point[axis] >= node.particle.loc[axis]:
+                self.rnn_search(node.right_child,point,dist,k,depth + 1)
 
 
     def brute_query(self,point,dist):
         self.result = []
         k = len(point)
         dist = dist**2
-        for i in self.full_list:
-            if square_dist(i.loc,point,k) < dist:
+        for i in self.nodes:
+            #print("    " + i.name + "(" + str(i.particle.id) + ")" + " viewed at " + str(square_dist(point,i.particle.loc,k)**0.5))
+            if square_dist(i.particle.loc,point,k) <= dist:
+                #print("    " + i.name + "(" + str(i.particle.id) + ")" + " added")
                 self.result.append(i)
         return self.result
 
