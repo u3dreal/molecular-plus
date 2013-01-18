@@ -104,12 +104,14 @@ def collide(par):
             if sqlenght != 0 and sqlenght < sqtarget:
                 lenght = sqlenght**0.5
                 factor = (lenght - target) / lenght
-                par.vel[0] -= ((lenghtx * factor * 0.5) * stiff) * (par.mass/(par.mass+i.mass)*2)
-                par.vel[1] -= ((lenghty * factor * 0.5) * stiff) * (par.mass/(par.mass+i.mass)*2)
-                par.vel[2] -= ((lenghtz * factor * 0.5) * stiff) * (par.mass/(par.mass+i.mass)*2)
-                i.vel[0] += ((lenghtx * factor * 0.5) * stiff) * (i.mass/(par.mass+i.mass)*2)
-                i.vel[1] += ((lenghty * factor * 0.5) * stiff) * (i.mass/(par.mass+i.mass)*2)
-                i.vel[2] += ((lenghtz * factor * 0.5) * stiff) * (i.mass/(par.mass+i.mass)*2)
+                ratio1 = (i.mass/(par.mass + i.mass)*2)
+                ratio2 = (par.mass/(par.mass + i.mass)*2)
+                par.vel[0] -= ((lenghtx * factor * 0.5) * stiff) * ratio1
+                par.vel[1] -= ((lenghty * factor * 0.5) * stiff) * ratio1
+                par.vel[2] -= ((lenghtz * factor * 0.5) * stiff) * ratio1
+                i.vel[0] += ((lenghtx * factor * 0.5) * stiff) * ratio2
+                i.vel[1] += ((lenghty * factor * 0.5) * stiff) * ratio2
+                i.vel[2] += ((lenghtz * factor * 0.5) * stiff) * ratio2
     
 
 
