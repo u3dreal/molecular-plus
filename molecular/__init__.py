@@ -45,6 +45,7 @@ else:
 
 import bpy
 from random import random
+from math import pi
 import imp
 from time import clock
 
@@ -104,7 +105,7 @@ def pack_data(initiate):
     
     for obj in bpy.data.objects:
         for psys in obj.particle_systems:           
-            if psys.settings.mol_matter != -1:
+            if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
             if psys.settings.mol_active == True:
                 parlen = len(psys.particles)
@@ -112,8 +113,9 @@ def pack_data(initiate):
                 par_vel = [0,0,0] * parlen
                 par_size = [0] * parlen
                 par_mass = []
-                for i in range(parlen):
-                    par_mass.append(psys.settings.mass + ((random() - 0.5) * 0.01)) #random mass variation
+                if psys.settings.mol_density_active:
+                    for par in psys.particles:
+                        par_mass.append(psys.settings.mol_density * (4/3*pi*((par.size/2)**3)))
                 par_alive = []
                 for par in psys.particles:
                     if par.alive_state == "UNBORN":
@@ -341,6 +343,8 @@ class MolSimulateModal(bpy.types.Operator):
             scene.render.frame_map_new = 1
             scene.frame_end = old_endframe
             scene.frame_set(frame = scene.frame_start)
+            #bpy.ops.render.render(animation=True)
+            print("...Molecular Sim end")
             return self.cancel(context)
 
         if event.type == 'TIMER':
