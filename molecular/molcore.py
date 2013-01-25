@@ -28,8 +28,10 @@ def init(importdata):
             parlist.append(ii)
     timer = clock()
     kdtree = KDTree()
-    kdtree.create(parlist,"root")
+    kdtree.create_nodes(len(parlist))
+    kdtree.create_tree(parlist,"root")
     print("  KDtree generation take:",round(clock()-timer,5),"sec")
+    """
     point = (0,0,0)
     r = 2
     timer = clock()
@@ -44,16 +46,15 @@ def init(importdata):
         print("> DONT MATCH!!!")
     else:
         print("  Match!")
+    """
     return parnum
 
 
 def simulate(importdata):
     global kdtree
     
-    kdtree = KDTree()
-    kdtree.create(parlist,"root")
-    exportdata = []
     update_ParSys(importdata)
+    kdtree.create_tree(parlist,"root")
     for parsys in psys:
         for par in parsys.particle:
             collide(par)
@@ -81,43 +82,69 @@ def collide(par):
     neighbours = kdtree.rnn_query(par.loc,par.size * 2)
     
     for ii in neighbours:
-        i = ii.particle
-        if i.sys != par.sys :
-            if i.sys.othercollision_active == False or par.sys.othercollision_active == False:
+        i = ii[0].particle
+        if i not in par.collided_with:
+            if i.sys != par.sys :
+                if i.sys.othercollision_active == False or par.sys.othercollision_active == False:
+                    return
+            #print(par.sys.collision_group)
+            if i.sys.collision_group != par.sys.collision_group:
                 return
-        #print(par.sys.collision_group)
-        if i.sys.collision_group != par.sys.collision_group:
-            return
-        if i.sys == par.sys and par.sys.selfcollision_active == False:
-            return
-        
-        stiff = fps + substep
-        target = (par.size + i.size) * 0.99
-        sqtarget = target**2
-        #print(par.state)
-        if par.state == 1 and i.state == 1:
-            #print("collide!")
-            lenghtx = par.loc[0] - i.loc[0]
-            lenghty = par.loc[1] - i.loc[1]
-            lenghtz = par.loc[2] - i.loc[2]
-            sqlenght = (lenghtx * lenghtx) + (lenghty * lenghty) + (lenghtz * lenghtz)
-            if sqlenght != 0 and sqlenght < sqtarget:
-                lenght = sqlenght**0.5
-                factor = (lenght - target) / lenght
-                ratio1 = (i.mass/(par.mass + i.mass)*2)
-                ratio2 = (par.mass/(par.mass + i.mass)*2)
-                par.vel[0] -= ((lenghtx * factor * 0.5) * stiff) * ratio1
-                par.vel[1] -= ((lenghty * factor * 0.5) * stiff) * ratio1
-                par.vel[2] -= ((lenghtz * factor * 0.5) * stiff) * ratio1
-                i.vel[0] += ((lenghtx * factor * 0.5) * stiff) * ratio2
-                i.vel[1] += ((lenghty * factor * 0.5) * stiff) * ratio2
-                i.vel[2] += ((lenghtz * factor * 0.5) * stiff) * ratio2
+            if i.sys == par.sys and par.sys.selfcollision_active == False:
+                return
+            
+            stiff = fps * (substep +1)
+            target = (par.size + i.size) * 0.99
+            sqtarget = target**2
+            #print(par.state)
+            if par.state == 1 and i.state == 1:
+                #print("collide!")
+                lenghtx = par.loc[0] - i.loc[0]
+                lenghty = par.loc[1] - i.loc[1]
+                lenghtz = par.loc[2] - i.loc[2]
+                #sqlenght = (lenghtx * lenghtx) + (lenghty * lenghty) + (lenghtz * lenghtz)
+                sqlenght  = ii[1]
+                if sqlenght != 0 and sqlenght < sqtarget:
+                    lenght = sqlenght**0.5
+                    factor = (lenght - target) / lenght
+                    #ratio1 = (i.mass/(par.mass + i.mass)*2)
+                    #ratio2 = (par.mass/(par.mass + i.mass)*2)
+                    par.vel[0] -= ((lenghtx * factor * 0.5) * stiff)# * ratio1
+                    par.vel[1] -= ((lenghty * factor * 0.5) * stiff)# * ratio1
+                    par.vel[2] -= ((lenghtz * factor * 0.5) * stiff)# * ratio1
+                    i.vel[0] += ((lenghtx * factor * 0.5) * stiff)# * ratio2
+                    i.vel[1] += ((lenghty * factor * 0.5) * stiff)# * ratio2
+                    i.vel[2] += ((lenghtz * factor * 0.5) * stiff)# * ratio2
+                    i.collided_with.append(par)
+                    
+                    """
+                    col_normal1 = [(i.loc[0] - par.loc[0]) / lenght,(i.loc[1] - par.loc[1]) / lenght,(i.loc[2] - par.loc[2]) / lenght]
+                    col_normal2 = [col_normal1[0] * -1,col_normal1[1] * -1,col_normal1[2] * -1]
+                    
+                    Ua = dot_product(par.vel,col_normal1)                 
+                    Ub = dot_product(i.vel,col_normal2)
+                    Cr = 1      
+                    Ma = par.mass
+                    Mb = i.mass     
+                    Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
+                    Vb = (Cr*Ma*(Ua-Ub)+Ma*Ua+Mb*Ub)/(Ma+Mb)
+                    
+                    par.vel[0] = par.vel[0] * Va
+                    par.vel[1] = par.vel[1] * Va
+                    par.vel[2] = par.vel[2] * Va
+                    
+                    i.vel[0] =i.vel[0] * Vb
+                    i.vel[1] =i.vel[1] * Vb
+                    i.vel[2] =i.vel[2] * Vb
+                    """
+                
     
 
 
     
 def update_ParSys(data):
-    global psys    
+    global psys
+    global substep
     i = 0
     ii = 0
     #print(data[1][2])
@@ -126,6 +153,7 @@ def update_ParSys(data):
            par.loc = data[i][0][(ii * 3):(ii * 3 + 3)]
            par.vel = data[i][1][(ii * 3):(ii * 3 + 3)]
            par.state = data[i][2][ii]
+           par.collided_with = []
            #print("state:",par.state)
            ii += 1
         ii = 0
@@ -188,12 +216,20 @@ class Particle(ParSys):
         self.mass = "is mass"
         self.state = "is alive state"
         self.sys = "is parent system"
+        self.collided_with = []
 
 class KDTree():
     root_node = "node on top"
     nodes = []
     result = []
-    def create(self,parlist,name,depth = 0):
+    index = 0
+    def create_nodes(self,parnum):
+        if self.nodes == []:
+            for i in range(parnum):
+                node = Nodes()
+                self.nodes.append(node)
+                self.index = 0
+    def create_tree(self,parlist,name,depth = 0):
         if not parlist:
             return None
         
@@ -201,14 +237,16 @@ class KDTree():
         axis = depth % k
         parlist.sort(key= lambda p: p.loc[axis])
         median = int(len(parlist) / 2)
-        node = Nodes()
-        self.nodes.append(node)
+        if depth == 0:
+            self.index = 0
+        node = self.nodes[self.index]
         node.name = name
         if parlist and depth == 0:
             self.root_node = node
+        self.index += 1
         node.particle = parlist[median]
-        node.left_child = self.create(parlist[:median],"left" + str(depth+1),depth + 1)
-        node.right_child = self.create(parlist[median + 1:],"right" + str(depth+1),depth + 1)
+        node.left_child = self.create_tree(parlist[:median],"left" + str(depth+1),depth + 1)
+        node.right_child = self.create_tree(parlist[median + 1:],"right" + str(depth+1),depth + 1)
         return node
     
     def rnn_query(self,point,dist):
@@ -216,33 +254,34 @@ class KDTree():
         if self.root_node == None:
             return []
         else:
-            dist = dist**2
+            sqdist = dist**2
             #print("   distance to reach:",dist)
             k = len(self.root_node.particle.loc)
-            self.rnn_search(self.root_node,point,dist,k)
+            self.rnn_search(self.root_node,point,dist,sqdist,k)
             
         return self.result
             
-    def rnn_search(self,node,point,dist,k,depth = 0):
+    def rnn_search(self,node,point,dist,sqdist,k,depth = 0):
         
         if node == None:
             return None
         
         axis = depth % k
         #print("    " + node.name + "(" + str(node.particle.id) + ")" + " viewed at " + str(square_dist(point,node.particle.loc,k)**0.5))
-                  
-        if (point[axis] - node.particle.loc[axis])**2 <= dist:
-            if square_dist(point,node.particle.loc,k) <= dist:
+
+        if (point[axis] - node.particle.loc[axis])**2 <= sqdist:
+            realdist = square_dist(point,node.particle.loc,k)
+            if realdist <= sqdist:
                 #print("    " + node.name + "(" + str(node.particle.id) + ")" + " added")
-                self.result.append(node)
-            self.rnn_search(node.left_child,point,dist,k,depth + 1)
-            self.rnn_search(node.right_child,point,dist,k,depth + 1)
+                self.result.append((node,realdist))
+            self.rnn_search(node.left_child,point,dist,sqdist,k,depth + 1)
+            self.rnn_search(node.right_child,point,dist,sqdist,k,depth + 1)
         
         else:
             if point[axis] <= node.particle.loc[axis]:
-                self.rnn_search(node.left_child,point,dist,k,depth + 1)
+                self.rnn_search(node.left_child,point,dist,sqdist,k,depth + 1)
             if point[axis] >= node.particle.loc[axis]:
-                self.rnn_search(node.right_child,point,dist,k,depth + 1)
+                self.rnn_search(node.right_child,point,dist,sqdist,k,depth + 1)
 
 
     def brute_query(self,point,dist):
@@ -281,4 +320,10 @@ def square_dist(point1,point2,k):
     for i in range(k):
         sq_dist += (point1[i] - point2[i])**2
     return sq_dist
-    
+
+def cross_product(u,v):
+    cross = [(u[1] * v[2] - u[2] * v[1]),(u[2] * v[0] - u[0] * v[2]),(u[0] * v[1] - u[1] * v[0])]
+    return cross
+def dot_product(u,v):
+    dot = (u[0] * v[0]) + (u[1] * v[1]) + (u[2] * v[2])
+    return dot
