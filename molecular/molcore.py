@@ -93,56 +93,92 @@ def collide(par):
             if i.sys == par.sys and par.sys.selfcollision_active == False:
                 return
             
-            stiff = fps * (substep +1)
+            stiff = (fps * (substep +1)) / 2
             target = (par.size + i.size) * 0.99
             sqtarget = target**2
             #print(par.state)
             if par.state == 1 and i.state == 1:
-                #print("collide!")
                 lenghtx = par.loc[0] - i.loc[0]
                 lenghty = par.loc[1] - i.loc[1]
                 lenghtz = par.loc[2] - i.loc[2]
-                #sqlenght = (lenghtx * lenghtx) + (lenghty * lenghty) + (lenghtz * lenghtz)
                 sqlenght  = ii[1]
                 if sqlenght != 0 and sqlenght < sqtarget:
                     lenght = sqlenght**0.5
                     factor = (lenght - target) / lenght
-                    #ratio1 = (i.mass/(par.mass + i.mass)*2)
-                    #ratio2 = (par.mass/(par.mass + i.mass)*2)
-                    par.vel[0] -= ((lenghtx * factor * 0.5) * stiff)# * ratio1
-                    par.vel[1] -= ((lenghty * factor * 0.5) * stiff)# * ratio1
-                    par.vel[2] -= ((lenghtz * factor * 0.5) * stiff)# * ratio1
-                    i.vel[0] += ((lenghtx * factor * 0.5) * stiff)# * ratio2
-                    i.vel[1] += ((lenghty * factor * 0.5) * stiff)# * ratio2
-                    i.vel[2] += ((lenghtz * factor * 0.5) * stiff)# * ratio2
-                    i.collided_with.append(par)
+                    ratio1 = (i.mass/(par.mass + i.mass)*2)
+                    ratio2 = (par.mass/(par.mass + i.mass)*2)
+
+                    par.vel[0] -= ((lenghtx * factor * 0.5) * stiff) * ratio1
+                    par.vel[1] -= ((lenghty * factor * 0.5) * stiff) * ratio1
+                    par.vel[2] -= ((lenghtz * factor * 0.5) * stiff) * ratio1
+                    i.vel[0] += ((lenghtx * factor * 0.5) * stiff) * ratio2
+                    i.vel[1] += ((lenghty * factor * 0.5) * stiff) * ratio2
+                    i.vel[2] += ((lenghtz * factor * 0.5) * stiff) * ratio2
+
                     
-                    
+
                     col_normal1 = [(i.loc[0] - par.loc[0]) / lenght,(i.loc[1] - par.loc[1]) / lenght,(i.loc[2] - par.loc[2]) / lenght]
                     col_normal2 = [col_normal1[0] * -1,col_normal1[1] * -1,col_normal1[2] * -1]
+                              
+                    ypar_vel = [par.vel[0] * col_normal1[0],par.vel[1] * col_normal1[1],par.vel[2] * col_normal1[2]]
+                    xpar_vel = [par.vel[0] - ypar_vel[0],par.vel[1] - ypar_vel[1],par.vel[2] - ypar_vel[2]]
                     
+                    yi_vel = [i.vel[0] * col_normal1[0],i.vel[1] * col_normal1[1],i.vel[2] * col_normal1[2]]
+                    xi_vel = [i.vel[0] - yi_vel[0],i.vel[1] - yi_vel[1],i.vel[2] - yi_vel[2]]
+                    
+                    """
+                    print("Parvel",par.vel,ypar_vel,xpar_vel)
+                    print("ivel",i.vel,yi_vel,xi_vel)
+
                     Ua = dot_product(par.vel,col_normal1)             
-                    Ub = dot_product(i.vel,col_normal1)                   
-                    Cr = 0  
+                    Ub = dot_product(i.vel,col_normal1)
+                    Cr = 0.5
                     Ma = par.mass
                     Mb = i.mass     
                     Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
                     Vb = (Cr*Ma*(Ua-Ub)+Ma*Ua+Mb*Ub)/(Ma+Mb)
-                    Va = Va * 1
-                    Vb = Vb * 1
+                    if Ua == 0:
+                        Mula = 0
+                    else:
+                        Mula = Va / Ua
+                    if Ub == 0:
+                        Mulb = 0
+                    else:
+                        Mulb = Vb / Ub
+                    
                     print("par:",par.vel,Ua,Va)
                     print("i:",i.vel,Ub,Vb)
+                    print("MulA:",Mula)
+                    print("MulB:",Mulb)
                     
-                    par.vel[0] = par.vel[0] * Va
-                    par.vel[1] = Va
-                    par.vel[2] = par.vel[2] * Va
+                    ypar_vel[0] = ypar_vel[0] * Mula
+                    ypar_vel[1] = ypar_vel[1] * Mula
+                    ypar_vel[2] = ypar_vel[2] * Mula
                     
-                    i.vel[0] = i.vel[0] * Vb
-                    i.vel[1] = Vb
-                    i.vel[2] = i.vel[2] * Vb
+                    yi_vel[0] = yi_vel[0] * Mulb
+                    yi_vel[1] = yi_vel[1] * Mulb
+                    yi_vel[2] = yi_vel[2] * Mulb
+                    """
                     
-                    print("par:",par.vel)
-                    print("i:",i.vel)
+                    friction = 0.995
+                    xpar_vel[0] *= friction
+                    xpar_vel[1] *= friction
+                    xpar_vel[2] *= friction
+                    xi_vel[0] *= friction
+                    xi_vel[1] *= friction
+                    xi_vel[2] *= friction
+                    
+                    
+                    par.vel = [ypar_vel[0] + xpar_vel[0],ypar_vel[1] + xpar_vel[1],ypar_vel[2] + xpar_vel[2]]
+                    i.vel = [yi_vel[0] + xi_vel[0],yi_vel[1] + xi_vel[1],yi_vel[2] + xi_vel[2]]  
+                    
+                    #print("after par:",par.vel)
+                    #print("after i:",i.vel)
+                                   
+                    
+                    i.collided_with.append(par)
+                    
+                    
                     
                 
     
