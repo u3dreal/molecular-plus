@@ -117,26 +117,33 @@ def collide(par):
                     i.vel[2] += ((lenghtz * factor * 0.5) * stiff)# * ratio2
                     i.collided_with.append(par)
                     
-                    """
+                    
                     col_normal1 = [(i.loc[0] - par.loc[0]) / lenght,(i.loc[1] - par.loc[1]) / lenght,(i.loc[2] - par.loc[2]) / lenght]
                     col_normal2 = [col_normal1[0] * -1,col_normal1[1] * -1,col_normal1[2] * -1]
                     
-                    Ua = dot_product(par.vel,col_normal1)                 
-                    Ub = dot_product(i.vel,col_normal2)
-                    Cr = 1      
+                    Ua = dot_product(par.vel,col_normal1)             
+                    Ub = dot_product(i.vel,col_normal1)                   
+                    Cr = 0  
                     Ma = par.mass
                     Mb = i.mass     
                     Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
                     Vb = (Cr*Ma*(Ua-Ub)+Ma*Ua+Mb*Ub)/(Ma+Mb)
+                    Va = Va * 1
+                    Vb = Vb * 1
+                    print("par:",par.vel,Ua,Va)
+                    print("i:",i.vel,Ub,Vb)
                     
                     par.vel[0] = par.vel[0] * Va
-                    par.vel[1] = par.vel[1] * Va
+                    par.vel[1] = Va
                     par.vel[2] = par.vel[2] * Va
                     
-                    i.vel[0] =i.vel[0] * Vb
-                    i.vel[1] =i.vel[1] * Vb
-                    i.vel[2] =i.vel[2] * Vb
-                    """
+                    i.vel[0] = i.vel[0] * Vb
+                    i.vel[1] = Vb
+                    i.vel[2] = i.vel[2] * Vb
+                    
+                    print("par:",par.vel)
+                    print("i:",i.vel)
+                    
                 
     
 
