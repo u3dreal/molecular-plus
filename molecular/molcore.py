@@ -160,13 +160,22 @@ def collide(par):
                     yi_vel[2] = yi_vel[2] * Mulb
                     """
                     
-                    friction = 0.995
+                    coldeep = target - lenght
+                    xpar_lenght = square_dist([0,0,0],xpar_vel,3)**0.5
+                    coefriction = 0.5
+                    friction = 1 - (coldeep * coefriction / xpar_lenght)
+                    print(coldeep)
+                    print(xpar_lenght)
+                    print(friction)
+                    #friction = 0.1
+                    
                     xpar_vel[0] *= friction
                     xpar_vel[1] *= friction
                     xpar_vel[2] *= friction
                     xi_vel[0] *= friction
                     xi_vel[1] *= friction
                     xi_vel[2] *= friction
+                    
                     
                     
                     par.vel = [ypar_vel[0] + xpar_vel[0],ypar_vel[1] + xpar_vel[1],ypar_vel[2] + xpar_vel[2]]
