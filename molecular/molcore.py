@@ -107,90 +107,73 @@ def collide(par):
                     factor = (lenght - target) / lenght
                     ratio1 = (i.mass/(par.mass + i.mass))
                     ratio2 = (par.mass/(par.mass + i.mass))
-                    
-                    par.vel[0] -= (lenghtx * factor * ratio1 * 2) * stiff
-                    par.vel[1] -= (lenghty * factor * ratio1 * 2) * stiff
-                    par.vel[2] -= (lenghtz * factor * ratio1 * 2) * stiff
-                    i.vel[0] += (lenghtx * factor * ratio2 * 2) * stiff
-                    i.vel[1] += (lenghty * factor * ratio2 * 2) * stiff
-                    i.vel[2] += (lenghtz * factor * ratio2 * 2) * stiff
-                    
-                    
+                    """
+                    par.vel[0] -= (lenghtx * factor * ratio1) * stiff
+                    par.vel[1] -= (lenghty * factor * ratio1) * stiff
+                    par.vel[2] -= (lenghtz * factor * ratio1) * stiff
+                    i.vel[0] += (lenghtx * factor * ratio2) * stiff
+                    i.vel[1] += (lenghty * factor * ratio2) * stiff
+                    i.vel[2] += (lenghtz * factor * ratio2) * stiff
+                    """
 
                     col_normal1 = [(i.loc[0] - par.loc[0]) / lenght,(i.loc[1] - par.loc[1]) / lenght,(i.loc[2] - par.loc[2]) / lenght]
+                    #print("i.vel:",i.vel)
+                    #print("Normal",col_normal1)
+                    #print("Normal_length",(col_normal1[0]**2 + col_normal1[1]**2 + col_normal1[2]**2)**0.5)
                     col_normal2 = [col_normal1[0] * -1,col_normal1[1] * -1,col_normal1[2] * -1]
-                              
-                    ypar_vel = [par.vel[0] * col_normal1[0],par.vel[1] * col_normal1[1],par.vel[2] * col_normal1[2]]
+                     
+                    factor1 = dot_product(par.vel,col_normal1)      
+                    ypar_vel = [factor1 * col_normal1[0],factor1 * col_normal1[1],factor1 * col_normal1[2]]
                     xpar_vel = [par.vel[0] - ypar_vel[0],par.vel[1] - ypar_vel[1],par.vel[2] - ypar_vel[2]]
                     
-                    yi_vel = [i.vel[0] * col_normal1[0],i.vel[1] * col_normal1[1],i.vel[2] * col_normal1[2]]
-                    xi_vel = [i.vel[0] - yi_vel[0],i.vel[1] - yi_vel[1],i.vel[2] - yi_vel[2]]
+                    factor2 = dot_product(i.vel,col_normal2)
+                    yi_vel = [factor2 * col_normal1[0],factor2 * col_normal1[1],factor2* col_normal1[2]]
+                    xi_vel = [i.vel[0] + yi_vel[0],i.vel[1] + yi_vel[1],i.vel[2] + yi_vel[2]]
                     
-                    """
-                    #print("Parvel",par.vel,ypar_vel,xpar_vel)
-                    #print("ivel",i.vel,yi_vel,xi_vel)
+                    #print("yi_vel:",yi_vel)
+                    #print("xi_vel:",xi_vel)
+                    
 
-                    Ua = dot_product(par.vel,col_normal1)             
-                    Ub = dot_product(i.vel,col_normal1)
-                    Cr = 1
+                    Ua = factor1
+                    #print("Ua:",Ua)       
+                    Ub = -factor2
+                    #print("Ub:",Ub)  
+                    Cr = 0.5
                     Ma = par.mass
                     Mb = i.mass     
                     Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
                     Vb = (Cr*Ma*(Ua-Ub)+Ma*Ua+Mb*Ub)/(Ma+Mb)
-                    if Ua == 0:
-                        Mula = 0
-                    else:
-                        Mula = Va / Ua
-                    if Ub == 0:
-                        Mulb = 0
-                    else:
-                        Mulb = Vb / Ub
+                    #print("Va:",Va)
+                    #print("Vb:",Vb)  
                     
-                    #print("par:",par.vel,Ua,Va)
-                    #print("i:",i.vel,Ub,Vb)
-                    #print("MulA:",Mula)
-                    #print("MulB:",Mulb)
+                    #print("factor:",-(factor * ratio1) * stiff)
+                    mula = 1#(factor * ratio1 * stiff)
+                    #print("mula:",mula)
+                    mulb = 1#(factor * ratio2 * stiff)
+                    #print("mulb:",mulb)
+                    ypar_vel[0] = col_normal1[0] * Va * mula
+                    ypar_vel[1] = col_normal1[1] * Va * mula
+                    ypar_vel[2] = col_normal1[2] * Va * mula
+                    yi_vel[0] = col_normal1[0] * Vb * mulb
+                    yi_vel[1] = col_normal1[1] * Vb * mulb
+                    yi_vel[2] = col_normal1[2] * Vb * mulb
+                    #print("yi_vel after:",yi_vel)
+                    #print("xi_vel after:",xi_vel)
                     
-                    ypar_vel[0] = ypar_vel[0] * Mula
-                    ypar_vel[1] = ypar_vel[1] * Mula
-                    ypar_vel[2] = ypar_vel[2] * Mula
-                    
-                    yi_vel[0] = yi_vel[0] * Mulb
-                    yi_vel[1] = yi_vel[1] * Mulb
-                    yi_vel[2] = yi_vel[2] * Mulb
-
-                    
-                    coldeep = (target - lenght) #* (fps * (substep +1))
-                    xpar_lenght = square_dist([0,0,0],xpar_vel,3)**0.5
-                    coefriction = 2.5
-                    friction = 1 - (coldeep * coefriction / xpar_lenght)
-                    if friction <= 0:
-                        friction = 0
-                    if friction >= 1:
-                        friction = 1
-                    #print(coldeep)
-                    #print(xpar_lenght)
-                    #print(friction)
-                    """
-                    friction = 0.05
-                    nxpar_vel = [0,0,0]
-                    nxi_vel = [0,0,0]
-                    nxpar_vel[0] = (xpar_vel[0] * (1 - (friction * ratio1))) - (xi_vel[0] * (friction * ratio2))
-                    nxpar_vel[1] = (xpar_vel[1] * (1 - (friction * ratio1))) - (xi_vel[1] * (friction * ratio2))
-                    nxpar_vel[2] = (xpar_vel[2] * (1 - (friction * ratio1))) - (xi_vel[2] * (friction * ratio2))
-                    nxi_vel[0] = (xi_vel[0] * (1 - (friction * ratio2))) - (xpar_vel[0] * (friction * ratio1))
-                    nxi_vel[1] = (xi_vel[1] * (1 - (friction * ratio2))) - (xpar_vel[1] * (friction * ratio1))
-                    nxi_vel[2] = (xi_vel[2] * (1 - (friction * ratio2))) - (xpar_vel[2] * (friction * ratio1))
+                    par.vel = [ypar_vel[0] - xpar_vel[0],ypar_vel[1] - xpar_vel[1],ypar_vel[2] - xpar_vel[2]]
+                    i.vel = [yi_vel[0] + xi_vel[0],yi_vel[1] + xi_vel[1],yi_vel[2] + xi_vel[2]]
                     
                     
+                    if abs(Va) < abs(((factor * ratio1) * stiff)):
+                        par.vel[0] -= ((lenghtx * factor * ratio1) * stiff)
+                        par.vel[1] -= ((lenghty * factor * ratio1) * stiff)
+                        par.vel[2] -= ((lenghtz * factor * ratio1) * stiff)
+                    if abs(Vb) < abs(((factor * ratio1) * stiff)):
+                        i.vel[0] += ((lenghtx * factor * ratio2) * stiff)
+                        i.vel[1] += ((lenghty * factor * ratio2) * stiff)
+                        i.vel[2] += ((lenghtz * factor * ratio2) * stiff)
                     
-                    par.vel = [ypar_vel[0] + nxpar_vel[0],ypar_vel[1] + nxpar_vel[1],ypar_vel[2] + nxpar_vel[2]]
-                    i.vel = [yi_vel[0] + nxi_vel[0],yi_vel[1] + nxi_vel[1],yi_vel[2] + nxi_vel[2]]  
-                    
-                    #print("after par:",par.vel)
-                    #print("after i:",i.vel)
-                                   
-                    
+                                                       
                     i.collided_with.append(par)
                     
                     
