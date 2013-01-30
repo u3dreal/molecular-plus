@@ -93,7 +93,7 @@ def collide(par):
             if i.sys == par.sys and par.sys.selfcollision_active == False:
                 return
             
-            stiff = (fps * (substep +1)) / 2
+            stiff = (fps * (substep +1))
             target = (par.size + i.size) * 0.99
             sqtarget = target**2
             #print(par.state)
@@ -115,7 +115,8 @@ def collide(par):
                     i.vel[1] += (lenghty * factor * ratio2) * stiff
                     i.vel[2] += (lenghtz * factor * ratio2) * stiff
                     """
-
+                  
+                    
                     col_normal1 = [(i.loc[0] - par.loc[0]) / lenght,(i.loc[1] - par.loc[1]) / lenght,(i.loc[2] - par.loc[2]) / lenght]
                     #print("i.vel:",i.vel)
                     #print("Normal",col_normal1)
@@ -127,18 +128,18 @@ def collide(par):
                     xpar_vel = [par.vel[0] - ypar_vel[0],par.vel[1] - ypar_vel[1],par.vel[2] - ypar_vel[2]]
                     
                     factor2 = dot_product(i.vel,col_normal2)
-                    yi_vel = [factor2 * col_normal1[0],factor2 * col_normal1[1],factor2* col_normal1[2]]
-                    xi_vel = [i.vel[0] + yi_vel[0],i.vel[1] + yi_vel[1],i.vel[2] + yi_vel[2]]
+                    yi_vel = [factor2 * col_normal2[0],factor2 * col_normal2[1],factor2* col_normal2[2]]
+                    xi_vel = [i.vel[0] - yi_vel[0],i.vel[1] - yi_vel[1],i.vel[2] - yi_vel[2]]
                     
                     #print("yi_vel:",yi_vel)
                     #print("xi_vel:",xi_vel)
                     
-
+                    #"""
                     Ua = factor1
                     #print("Ua:",Ua)       
                     Ub = -factor2
                     #print("Ub:",Ub)  
-                    Cr = 0.5
+                    Cr = 1
                     Ma = par.mass
                     Mb = i.mass     
                     Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
@@ -147,9 +148,9 @@ def collide(par):
                     #print("Vb:",Vb)  
                     
                     #print("factor:",-(factor * ratio1) * stiff)
-                    mula = 1#(factor * ratio1 * stiff)
+                    mula = 1
                     #print("mula:",mula)
-                    mulb = 1#(factor * ratio2 * stiff)
+                    mulb = 1
                     #print("mulb:",mulb)
                     ypar_vel[0] = col_normal1[0] * Va * mula
                     ypar_vel[1] = col_normal1[1] * Va * mula
@@ -159,20 +160,32 @@ def collide(par):
                     yi_vel[2] = col_normal1[2] * Vb * mulb
                     #print("yi_vel after:",yi_vel)
                     #print("xi_vel after:",xi_vel)
+                    #"""
+                    friction = 0.995
+                    xpar_vel[0] *= friction
+                    xpar_vel[1] *= friction
+                    xpar_vel[2] *= friction
+                    xi_vel[0] *= friction
+                    xi_vel[1] *= friction
+                    xi_vel[2] *= friction
                     
-                    par.vel = [ypar_vel[0] - xpar_vel[0],ypar_vel[1] - xpar_vel[1],ypar_vel[2] - xpar_vel[2]]
+                    #print("par_vel befor:",par.vel)
+                    #print("i_vel befor:",i.vel)
+                    par.vel = [ypar_vel[0] + xpar_vel[0],ypar_vel[1] + xpar_vel[1],ypar_vel[2] + xpar_vel[2]]
                     i.vel = [yi_vel[0] + xi_vel[0],yi_vel[1] + xi_vel[1],yi_vel[2] + xi_vel[2]]
+                    print("par_vel after:",par.vel)
+                    #print("i_vel after:",i.vel)
                     
-                    
+                    """
                     if abs(Va) < abs(((factor * ratio1) * stiff)):
                         par.vel[0] -= ((lenghtx * factor * ratio1) * stiff)
                         par.vel[1] -= ((lenghty * factor * ratio1) * stiff)
                         par.vel[2] -= ((lenghtz * factor * ratio1) * stiff)
-                    if abs(Vb) < abs(((factor * ratio1) * stiff)):
+                    if abs(Vb) < abs(((factor * ratio2) * stiff)):
                         i.vel[0] += ((lenghtx * factor * ratio2) * stiff)
                         i.vel[1] += ((lenghty * factor * ratio2) * stiff)
                         i.vel[2] += ((lenghtz * factor * ratio2) * stiff)
-                    
+                    """
                                                        
                     i.collided_with.append(par)
                     
