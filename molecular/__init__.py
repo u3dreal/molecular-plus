@@ -129,7 +129,7 @@ def pack_data(initiate):
                 psys.particles.foreach_get('velocity',par_vel)
                 
                 if initiate:
-                    psys.settings.count = psys.settings.count
+                    #psys.settings.count = psys.settings.count
                     psys.particles.foreach_get('size',par_size)
                     
                     params = [0] * 23
