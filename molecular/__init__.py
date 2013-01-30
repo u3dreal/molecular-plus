@@ -119,11 +119,11 @@ def pack_data(initiate):
                 par_alive = []
                 for par in psys.particles:
                     if par.alive_state == "UNBORN":
-                        par_alive.append(0)
-                    if par.alive_state == "ALIVE":
-                        par_alive.append(1)
-                    if par.alive_state == "DEAD":
                         par_alive.append(2)
+                    if par.alive_state == "ALIVE":
+                        par_alive.append(0)
+                    if par.alive_state == "DEAD":
+                        par_alive.append(3)
                         
                 psys.particles.foreach_get('location',par_loc)
                 psys.particles.foreach_get('velocity',par_vel)

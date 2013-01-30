@@ -25,7 +25,9 @@ def init(importdata):
     parlist = []  
     for i in psys:
         for ii in i.particle:
+            create_link(ii)
             parlist.append(ii)
+            print(ii.state)
     timer = clock()
     kdtree = KDTree()
     kdtree.create_nodes(len(parlist))
@@ -97,7 +99,8 @@ def collide(par):
             target = (par.size + i.size) * 0.99
             sqtarget = target**2
             #print(par.state)
-            if par.state == 1 and i.state == 1:
+            
+            if par.state <= 1 and i.state <= 1:
                 lenghtx = par.loc[0] - i.loc[0]
                 lenghty = par.loc[1] - i.loc[1]
                 lenghtz = par.loc[2] - i.loc[2]
@@ -204,15 +207,30 @@ def update_ParSys(data):
     #print(data[1][2])
     for parsys in psys:
         for par in parsys.particle:
-           par.loc = data[i][0][(ii * 3):(ii * 3 + 3)]
-           par.vel = data[i][1][(ii * 3):(ii * 3 + 3)]
-           par.state = data[i][2][ii]
-           par.collided_with = []
-           #print("state:",par.state)
-           ii += 1
+            par.loc = data[i][0][(ii * 3):(ii * 3 + 3)]
+            par.vel = data[i][1][(ii * 3):(ii * 3 + 3)]
+            if par.state <= 1 and data[i][2][ii] == 0:
+                par.state = data[i][2][ii] + 1
+            else:
+                par.state = data[i][2][ii]
+            par.collided_with = []
+            print("state:",par.state)
+            ii += 1
         ii = 0
         i += 1
+
+def create_link(par):
+    neighbours = kdtree.rnn_query(par.loc,par.size * 2)
     
+   
+class links:
+    def __init__(self):
+        self.lenght = "lenght of the link"
+        self.start = "first particle starting from"
+        self.end = "second particle ending with"
+        self.stiffness = "stiffness of the link"
+        self.damping = "damping of the link"
+        self.broken = "max stretch factor to link broken"
     
 class ParSys:
     def __init__(self,data):
