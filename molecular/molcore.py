@@ -25,9 +25,7 @@ def init(importdata):
     parlist = []  
     for i in psys:
         for ii in i.particle:
-            create_link(ii)
             parlist.append(ii)
-            print(ii.state)
     timer = clock()
     kdtree = KDTree()
     kdtree.create_nodes(len(parlist))
@@ -49,6 +47,9 @@ def init(importdata):
     else:
         print("  Match!")
     """
+    for i in psys:
+        for ii in i.particle:
+            create_link(ii)
     return parnum
 
 
@@ -60,6 +61,7 @@ def simulate(importdata):
     for parsys in psys:
         for par in parsys.particle:
             collide(par)
+            solve_link(par)
     exportdata = []
     parloc = []
     parvel = []
@@ -100,7 +102,7 @@ def collide(par):
             sqtarget = target**2
             #print(par.state)
             
-            if par.state <= 1 and i.state <= 1:
+            if par.state <= 1 and i.state <= 1 and i not in par.link_with or par not in i.link_with:
                 lenghtx = par.loc[0] - i.loc[0]
                 lenghty = par.loc[1] - i.loc[1]
                 lenghtz = par.loc[2] - i.loc[2]
@@ -110,14 +112,14 @@ def collide(par):
                     factor = (lenght - target) / lenght
                     ratio1 = (i.mass/(par.mass + i.mass))
                     ratio2 = (par.mass/(par.mass + i.mass))
-                    """
+                    
                     par.vel[0] -= (lenghtx * factor * ratio1) * stiff
                     par.vel[1] -= (lenghty * factor * ratio1) * stiff
                     par.vel[2] -= (lenghtz * factor * ratio1) * stiff
                     i.vel[0] += (lenghtx * factor * ratio2) * stiff
                     i.vel[1] += (lenghty * factor * ratio2) * stiff
                     i.vel[2] += (lenghtz * factor * ratio2) * stiff
-                    """
+                    
                   
                     
                     col_normal1 = [(i.loc[0] - par.loc[0]) / lenght,(i.loc[1] - par.loc[1]) / lenght,(i.loc[2] - par.loc[2]) / lenght]
@@ -137,7 +139,7 @@ def collide(par):
                     #print("yi_vel:",yi_vel)
                     #print("xi_vel:",xi_vel)
                     
-                    #"""
+                    """
                     Ua = factor1
                     #print("Ua:",Ua)       
                     Ub = -factor2
@@ -163,7 +165,7 @@ def collide(par):
                     yi_vel[2] = col_normal1[2] * Vb * mulb
                     #print("yi_vel after:",yi_vel)
                     #print("xi_vel after:",xi_vel)
-                    #"""
+                    """
                     friction = 0.995
                     xpar_vel[0] *= friction
                     xpar_vel[1] *= friction
@@ -176,7 +178,7 @@ def collide(par):
                     #print("i_vel befor:",i.vel)
                     par.vel = [ypar_vel[0] + xpar_vel[0],ypar_vel[1] + xpar_vel[1],ypar_vel[2] + xpar_vel[2]]
                     i.vel = [yi_vel[0] + xi_vel[0],yi_vel[1] + xi_vel[1],yi_vel[2] + xi_vel[2]]
-                    print("par_vel after:",par.vel)
+                    #print("par_vel after:",par.vel)
                     #print("i_vel after:",i.vel)
                     
                     """
@@ -193,7 +195,53 @@ def collide(par):
                     i.collided_with.append(par)
                     
                     
+def solve_link(par):
+    broken_links = []
+    for link in par.links:
+        
+        stiff = link.stiffness
+        timestep = 1/(fps * (substep +1))
+        par1 = link.start
+        par2 = link.end
+        Loc1 = par1.loc
+        Loc2 = par2.loc
+        V1 = link.start.vel
+        V2 = link.end.vel
+        LengthX = Loc2[0] - Loc1[0]
+        LengthY = Loc2[1] - Loc1[1]
+        LengthZ = Loc2[2] - Loc1[2]
+        Length = (LengthX**2 + LengthY**2 + LengthZ**2)**(0.5)
+        if link.lenght != Length:
+            Vx = V2[0] - V1[0]
+            Vy = V2[1] - V1[1]
+            Vz = V2[2] - V1[2]
+            V = (Vx * LengthX + Vy * LengthY+Vz * LengthZ) / Length
+            ForceSpring = (Length - link.lenght) * stiff
+            ForceDamper = link.damping * V
+            ForceX = (ForceSpring + ForceDamper) * LengthX / Length
+            ForceY = (ForceSpring + ForceDamper) * LengthY / Length
+            ForceZ = (ForceSpring + ForceDamper) * LengthZ / Length
+            Force1 = [ForceX,ForceY,ForceZ]
+            Force2 = [-ForceX,-ForceY,-ForceZ]
+            ratio1 = (par2.mass/(par1.mass + par2.mass)) * 2
+            ratio2 = (par1.mass/(par1.mass + par2.mass)) * 2
+            par1.vel[0] += Force1[0] * par1.mass * timestep * 2  # * ratio1
+            par1.vel[1] += Force1[1] * par1.mass * timestep * 2  # * ratio1
+            par1.vel[2] += Force1[2] * par1.mass * timestep * 2  # * ratio1
+            par2.vel[0] += Force2[0] * par2.mass * timestep * 2  # * ratio2
+            par2.vel[1] += Force2[1] * par2.mass * timestep * 2  # * ratio2
+            par2.vel[2] += Force2[2] * par2.mass * timestep * 2  # * ratio2
+            #GameLogic.Object1.applyForce(Force1, False)
+            #GameLogic.Object2.applyForce(Force2, False)
+            if Length > (link.lenght  * (1 + link.broken)) or Length < (link.lenght  * (1 - link.broken)):
+                #print("broke!!!!!")
+                broken_links.append(link)
+                if par2 in par1.link_with:
+                    par1.link_with.remove(par2)
+                if par1 in par2.link_with:
+                    par2.link_with.remove(par1)
                     
+    par.links = list(set(par.links) - set(broken_links))
                 
     
 
@@ -214,13 +262,36 @@ def update_ParSys(data):
             else:
                 par.state = data[i][2][ii]
             par.collided_with = []
-            print("state:",par.state)
+            #print("state:",par.state)
             ii += 1
         ii = 0
         i += 1
 
 def create_link(par):
-    neighbours = kdtree.rnn_query(par.loc,par.size * 2)
+    global kdtree
+    if par.sys.links_active == 0:
+        return
+    neighbours = kdtree.rnn_query(par.loc,par.sys.link_length)
+    
+    for ii in neighbours:
+        i = ii[0].particle
+        if par != i:
+            if par not in i.link_with:
+                link = links()
+                link.lenght = ii[1]**0.5
+                link.start = par
+                link.end = i
+                link.stiffness = (par.sys.link_stiff + i.sys.link_stiff)/2
+                link.damping = (par.sys.link_damp + i.sys.link_damp)/2
+                link.broken = (par.sys.link_broken + i.sys.link_broken)/2
+                par.links.append(link)
+                par.link_with.append(i)
+                i.link_with.append(par)
+                del link
+        
+        
+    
+    #print("num link",len(par.links))
     
    
 class links:
@@ -289,6 +360,8 @@ class Particle(ParSys):
         self.state = "is alive state"
         self.sys = "is parent system"
         self.collided_with = []
+        self.links = []
+        self.link_with = []
 
 class KDTree():
     root_node = "node on top"
