@@ -2,6 +2,7 @@
 from math import floor
 from sys import getsizeof
 from time import clock
+from random import random
 
 def init(importdata):
     global fps
@@ -62,6 +63,7 @@ def simulate(importdata):
         for par in parsys.particle:
             collide(par)
             solve_link(par)
+            #print(par.state)
     exportdata = []
     parloc = []
     parvel = []
@@ -100,9 +102,8 @@ def collide(par):
             stiff = (fps * (substep +1))
             target = (par.size + i.size) * 0.99
             sqtarget = target**2
-            #print(par.state)
             
-            if par.state <= 1 and i.state <= 1 and i not in par.link_with or par not in i.link_with:
+            if par.state <= 1 and i.state <= 1 and i not in par.link_with and par not in i.link_with:
                 lenghtx = par.loc[0] - i.loc[0]
                 lenghty = par.loc[1] - i.loc[1]
                 lenghtz = par.loc[2] - i.loc[2]
@@ -199,8 +200,10 @@ def solve_link(par):
     broken_links = []
     for link in par.links:
         
-        stiff = link.stiffness
+        stiff = link.stiffness * (fps * (substep +1))
+        damping = link.damping
         timestep = 1/(fps * (substep +1))
+        exp = link.exponent
         par1 = link.start
         par2 = link.end
         Loc1 = par1.loc
@@ -216,23 +219,21 @@ def solve_link(par):
             Vy = V2[1] - V1[1]
             Vz = V2[2] - V1[2]
             V = (Vx * LengthX + Vy * LengthY+Vz * LengthZ) / Length
-            ForceSpring = (Length - link.lenght) * stiff
-            ForceDamper = link.damping * V
+            ForceSpring = ((Length - link.lenght)**(exp)) * stiff
+            ForceDamper = damping * V
             ForceX = (ForceSpring + ForceDamper) * LengthX / Length
             ForceY = (ForceSpring + ForceDamper) * LengthY / Length
             ForceZ = (ForceSpring + ForceDamper) * LengthZ / Length
             Force1 = [ForceX,ForceY,ForceZ]
             Force2 = [-ForceX,-ForceY,-ForceZ]
-            ratio1 = (par2.mass/(par1.mass + par2.mass)) * 2
-            ratio2 = (par1.mass/(par1.mass + par2.mass)) * 2
-            par1.vel[0] += Force1[0] * par1.mass * timestep * 2  # * ratio1
-            par1.vel[1] += Force1[1] * par1.mass * timestep * 2  # * ratio1
-            par1.vel[2] += Force1[2] * par1.mass * timestep * 2  # * ratio1
-            par2.vel[0] += Force2[0] * par2.mass * timestep * 2  # * ratio2
-            par2.vel[1] += Force2[1] * par2.mass * timestep * 2  # * ratio2
-            par2.vel[2] += Force2[2] * par2.mass * timestep * 2  # * ratio2
-            #GameLogic.Object1.applyForce(Force1, False)
-            #GameLogic.Object2.applyForce(Force2, False)
+            ratio1 = (par2.mass/(par1.mass + par2.mass))
+            ratio2 = (par1.mass/(par1.mass + par2.mass))
+            par1.vel[0] += Force1[0] * ratio1
+            par1.vel[1] += Force1[1] * ratio1
+            par1.vel[2] += Force1[2] * ratio1
+            par2.vel[0] += Force2[0] * ratio2
+            par2.vel[1] += Force2[1] * ratio2
+            par2.vel[2] += Force2[2] * ratio2
             if Length > (link.lenght  * (1 + link.broken)) or Length < (link.lenght  * (1 - link.broken)):
                 #print("broke!!!!!")
                 broken_links.append(link)
@@ -257,8 +258,11 @@ def update_ParSys(data):
         for par in parsys.particle:
             par.loc = data[i][0][(ii * 3):(ii * 3 + 3)]
             par.vel = data[i][1][(ii * 3):(ii * 3 + 3)]
-            if par.state <= 1 and data[i][2][ii] == 0:
+            if par.state == 0 and data[i][2][ii] == 0:
                 par.state = data[i][2][ii] + 1
+                create_link(par)
+            elif par.state == 1 and data[i][2][ii] == 0:
+                par.state = 1
             else:
                 par.state = data[i][2][ii]
             par.collided_with = []
@@ -276,14 +280,21 @@ def create_link(par):
     for ii in neighbours:
         i = ii[0].particle
         if par != i:
-            if par not in i.link_with:
+            if par not in i.link_with and i.state <= 1 and par.state <= 1:
                 link = links()
                 link.lenght = ii[1]**0.5
                 link.start = par
                 link.end = i
-                link.stiffness = (par.sys.link_stiff + i.sys.link_stiff)/2
-                link.damping = (par.sys.link_damp + i.sys.link_damp)/2
-                link.broken = (par.sys.link_broken + i.sys.link_broken)/2
+                stiffrandom = (par.sys.link_stiffrand + i.sys.link_stiffrand) / 2 * 2
+                link.stiffness = ((par.sys.link_stiff + i.sys.link_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
+                #print(link.stiffness)
+                link.exponent = (par.sys.link_stiffexp + i.sys.link_stiffexp) / 2
+                damprandom = ((par.sys.link_damprand + i.sys.link_damprand) / 2) * 2
+                link.damping = ((par.sys.link_damp + i.sys.link_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
+                #print(link.damping)
+                brokenrandom = ((par.sys.link_brokenrand + i.sys.link_brokenrand) / 2) * 2
+                link.broken = ((par.sys.link_broken + i.sys.link_broken) / 2) * (((random() * brokenrandom) - (brokenrandom  / 2)) + 1)
+                #print(link.broken)
                 par.links.append(link)
                 par.link_with.append(i)
                 i.link_with.append(par)
@@ -300,6 +311,7 @@ class links:
         self.start = "first particle starting from"
         self.end = "second particle ending with"
         self.stiffness = "stiffness of the link"
+        self.exponent = "exponent of the stiffness"
         self.damping = "damping of the link"
         self.broken = "max stretch factor to link broken"
     
