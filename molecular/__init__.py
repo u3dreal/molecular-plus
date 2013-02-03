@@ -139,7 +139,7 @@ def pack_data(initiate):
                     params[5] = psys.settings.mol_link_stiff
                     params[6] = psys.settings.mol_link_stiffrand
                     params[7] = psys.settings.mol_link_stiffexp
-                    params[8] = psys.settings.mol_link_stiffinv
+                    #params[8] = psys.settings.mol_link_stiffinv
                     params[9] = psys.settings.mol_link_damp
                     params[10] = psys.settings.mol_link_damprand
                     params[11] = psys.settings.mol_link_broken
@@ -149,7 +149,7 @@ def pack_data(initiate):
                     params[15] = psys.settings.mol_relink_chancerand
                     params[16] = psys.settings.mol_relink_stiff
                     params[17] = psys.settings.mol_relink_stiffexp
-                    params[18] = psys.settings.mol_relink_stiffinv
+                    #params[18] = psys.settings.mol_relink_stiffinv
                     params[19] = psys.settings.mol_relink_damp
                     params[20] = psys.settings.mol_relink_damprand
                     params[21] = psys.settings.mol_relink_broken
