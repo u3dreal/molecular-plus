@@ -56,8 +56,10 @@ def init(importdata):
 
 def simulate(importdata):
     global kdtree
+    global parlist
     
     update_ParSys(importdata)
+    #print(len(parlist))
     kdtree.create_tree(parlist,"root")
     for parsys in psys:
         for par in parsys.particle:
@@ -167,7 +169,7 @@ def collide(par):
                     #print("yi_vel after:",yi_vel)
                     #print("xi_vel after:",xi_vel)
                     """
-                    friction = 0.995
+                    friction = 1 - ((par.sys.friction + i.sys.friction ) / 2)
                     xpar_vel[0] *= friction
                     xpar_vel[1] *= friction
                     xpar_vel[2] *= friction
@@ -192,8 +194,11 @@ def collide(par):
                         i.vel[1] += ((lenghty * factor * ratio2) * stiff)
                         i.vel[2] += ((lenghtz * factor * ratio2) * stiff)
                     """
-                                                       
+                    
                     i.collided_with.append(par)
+                    if (par.sys.relink_chance + par.sys.relink_chance / 2) > 0:
+                        create_link(par,[i,lenght**2])
+                    
                     
                     
 def solve_link(par):
@@ -251,9 +256,11 @@ def solve_link(par):
 def update_ParSys(data):
     global psys
     global substep
+    global parlist
     i = 0
     ii = 0
     #print(data[1][2])
+    parlist = []
     for parsys in psys:
         for par in parsys.particle:
             par.loc = data[i][0][(ii * 3):(ii * 3 + 3)]
@@ -261,8 +268,10 @@ def update_ParSys(data):
             if par.state == 0 and data[i][2][ii] == 0:
                 par.state = data[i][2][ii] + 1
                 create_link(par)
+                parlist.append(par)
             elif par.state == 1 and data[i][2][ii] == 0:
                 par.state = 1
+                parlist.append(par)
             else:
                 par.state = data[i][2][ii]
             par.collided_with = []
@@ -271,36 +280,54 @@ def update_ParSys(data):
         ii = 0
         i += 1
 
-def create_link(par):
+def create_link(par,parothers = None):
     global kdtree
     if par.sys.links_active == 0:
         return
-    neighbours = kdtree.rnn_query(par.loc,par.sys.link_length)
+    if parothers == None:
+        neighbours = kdtree.rnn_query(par.loc,par.sys.link_length)
+    else:
+        neighbours = [parothers]
     
     for ii in neighbours:
-        i = ii[0].particle
+        if parothers == None:
+            i = ii[0].particle
+        else:
+            i = ii[0]
         if par != i:
             if par not in i.link_with and i.state <= 1 and par.state <= 1:
                 link = links()
                 link.lenght = ii[1]**0.5
                 link.start = par
                 link.end = i
-                stiffrandom = (par.sys.link_stiffrand + i.sys.link_stiffrand) / 2 * 2
-                link.stiffness = ((par.sys.link_stiff + i.sys.link_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
-                #print(link.stiffness)
-                link.exponent = (par.sys.link_stiffexp + i.sys.link_stiffexp) / 2
-                damprandom = ((par.sys.link_damprand + i.sys.link_damprand) / 2) * 2
-                link.damping = ((par.sys.link_damp + i.sys.link_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
-                #print(link.damping)
-                brokenrandom = ((par.sys.link_brokenrand + i.sys.link_brokenrand) / 2) * 2
-                link.broken = ((par.sys.link_broken + i.sys.link_broken) / 2) * (((random() * brokenrandom) - (brokenrandom  / 2)) + 1)
-                #print(link.broken)
-                par.links.append(link)
-                par.link_with.append(i)
-                i.link_with.append(par)
-                del link
-        
-        
+                if parothers == None:
+                    stiffrandom = (par.sys.link_stiffrand + i.sys.link_stiffrand) / 2 * 2
+                    link.stiffness = ((par.sys.link_stiff + i.sys.link_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
+                    link.exponent = abs((par.sys.link_stiffexp + i.sys.link_stiffexp) / 2)
+                    damprandom = ((par.sys.link_damprand + i.sys.link_damprand) / 2) * 2
+                    link.damping = ((par.sys.link_damp + i.sys.link_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
+                    brokrandom = ((par.sys.link_brokenrand + i.sys.link_brokenrand) / 2) * 2
+                    link.broken = ((par.sys.link_broken + i.sys.link_broken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
+                    par.links.append(link)
+                    par.link_with.append(i)
+                    i.link_with.append(par)
+                    del link
+                if parothers != None and par.sys.relink_group == i.sys.relink_group:
+                    relinkrandom = random()
+                    chancerdom = (par.sys.relink_chancerand + i.sys.relink_chancerand) / 2 * 2
+                    if relinkrandom <= ((par.sys.relink_chance + i.sys.relink_chance) / 2) * (((random() * chancerdom) - (chancerdom / 2)) + 1):
+                        stiffrandom = (par.sys.relink_stiffrand + i.sys.relink_stiffrand) / 2 * 2
+                        link.stiffness = ((par.sys.relink_stiff + i.sys.relink_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.exponent = abs((par.sys.relink_stiffexp + i.sys.relink_stiffexp) / 2)
+                        damprandom = ((par.sys.relink_damprand + i.sys.relink_damprand) / 2) * 2
+                        link.damping = ((par.sys.relink_damp + i.sys.relink_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
+                        brokrandom = ((par.sys.relink_brokenrand + i.sys.relink_brokenrand) / 2) * 2
+                        link.broken = ((par.sys.relink_broken + i.sys.relink_broken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
+                        par.links.append(link)
+                        par.link_with.append(i)
+                        i.link_with.append(par)
+                        del link
+   
     
     #print("num link",len(par.links))
     
@@ -330,7 +357,7 @@ class ParSys:
         self.link_stiff = data[6][5]
         self.link_stiffrand = data[6][6]
         self.link_stiffexp = data[6][7]
-        self.link_stiffinv = data[6][8]
+        self.friction = data[6][8]
         self.link_damp = data[6][9]
         self.link_damprand = data[6][10]
         self.link_broken = data[6][11]
@@ -340,7 +367,7 @@ class ParSys:
         self.relink_chancerand = data[6][15]
         self.relink_stiff = data[6][16]
         self.relink_stiffexp = data[6][17]
-        self.relink_stiffinv = data[6][18]
+        self.relink_stiffrand = data[6][18]
         self.relink_damp = data[6][19]
         self.relink_damprand = data[6][20]
         self.relink_broken = data[6][21]

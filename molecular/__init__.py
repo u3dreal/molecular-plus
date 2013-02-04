@@ -20,12 +20,12 @@ bl_info = {
     "name": "Molecular script",
     "author": "Jean-Francois Gallant(PyroEvil)",
     "version": (0, 0, 1),
-    "blender": (2, 6, 4),
+    "blender": (2, 6, 5),
     "location": "Properties > Add > Curve",
     "description": ("Molecular script"),
     "warning": "",  # used for warning icon and text in addons panel
-    "wiki_url": "http://pyroevil.cu.cc/?cat=7",
-    "tracker_url": "http://pyroevil.cu.cc/?cat=7" ,
+    "wiki_url": "http://pyroevil.com/?cat=7",
+    "tracker_url": "http://pyroevil.com/?cat=7" ,
     "category": "Object"}
     
 
@@ -63,6 +63,7 @@ def define_props():
         
         parset.mol_selfcollision_active = bpy.props.BoolProperty(name = "mol_selfcollision_active", description = "Activate self collsion between particles in the system",default = False)
         parset.mol_othercollision_active = bpy.props.BoolProperty(name = "mol_othercollision_active", description = "Activate collision with particles from others systems",default = False)
+        parset.mol_friction = bpy.props.FloatProperty(name = "mol_friction", description = "Friction between particles at collision 0 = no friction , 1 = full friction",default = 0.005 , min = 0 , max = 1)
         item = []
         for i in range(1,12):
             item.append((str(i),"Collision Group " + str(i),"collide only with group " + str(i) ))
@@ -70,7 +71,7 @@ def define_props():
         
         parset.mol_links_active = bpy.props.BoolProperty(name = "mol_links_active", description = "Activate links between particles of this system",default = False)
         parset.mol_link_length = bpy.props.FloatProperty(name = "mol_link_length", description = "Searching range to make a link between particles",min = 0, precision = 6, default = 1)
-        parset.mol_link_stiff = bpy.props.FloatProperty(name = "mol_link_stiff", description = "Stiffness of links between particles",min = 0, default = 10)
+        parset.mol_link_stiff = bpy.props.FloatProperty(name = "mol_link_stiff", description = "Stiffness of links between particles",min = 0, default = 1)
         parset.mol_link_stiffrand = bpy.props.FloatProperty(name = "mol_link_stiffrand", description = "Random variation for stiffness",min = 0 ,max = 1 ,default = 0)
         parset.mol_link_stiffexp = bpy.props.IntProperty(name = "mol_link_stiffexp", description = "Give a exponent force to the spring links", default = 1, min = 1 , max = 10)
         parset.mol_link_damp = bpy.props.FloatProperty(name = "mol_link_damp", description = "Damping effect on spring links",min = 0, default = 1)
@@ -84,7 +85,7 @@ def define_props():
         parset.mol_relink_group = bpy.props.EnumProperty(items = item, description = "Choose a group that new link are possible")        
         parset.mol_relink_chance = bpy.props.FloatProperty(name = "mol_relink_chance", description = "Chance of a new link are created on collision. 0 = off , 100 = 100% of chance",min = 0, max = 100, default = 0)
         parset.mol_relink_chancerand = bpy.props.FloatProperty(name = "mol_relink_chancerand", description = "Give a random variation to the chance of new link", default = 0)
-        parset.mol_relink_stiff = bpy.props.FloatProperty(name = "mol_relink_stiff", description = "Stiffness of links between particles",min = 0, default = 10)
+        parset.mol_relink_stiff = bpy.props.FloatProperty(name = "mol_relink_stiff", description = "Stiffness of links between particles",min = 0, default = 1)
         parset.mol_relink_stiffrand = bpy.props.FloatProperty(name = "mol_relink_stiffrand", description = "Random variation for stiffness",min = 0, max = 1 ,default = 0)
         parset.mol_relink_stiffexp = bpy.props.IntProperty(name = "mol_relink_stiffexp", description = "Give a exponent force to the spring links",min = 1, max = 10, default = 1)
         parset.mol_relink_damp = bpy.props.FloatProperty(name = "mol_relink_damp", description = "Damping effect on spring links",min = 0, default = 1)
@@ -139,7 +140,7 @@ def pack_data(initiate):
                     params[5] = psys.settings.mol_link_stiff
                     params[6] = psys.settings.mol_link_stiffrand
                     params[7] = psys.settings.mol_link_stiffexp
-                    #params[8] = psys.settings.mol_link_stiffinv
+                    params[8] = psys.settings.mol_friction
                     params[9] = psys.settings.mol_link_damp
                     params[10] = psys.settings.mol_link_damprand
                     params[11] = psys.settings.mol_link_broken
@@ -149,7 +150,7 @@ def pack_data(initiate):
                     params[15] = psys.settings.mol_relink_chancerand
                     params[16] = psys.settings.mol_relink_stiff
                     params[17] = psys.settings.mol_relink_stiffexp
-                    #params[18] = psys.settings.mol_relink_stiffinv
+                    params[18] = psys.settings.mol_relink_stiffrand
                     params[19] = psys.settings.mol_relink_damp
                     params[20] = psys.settings.mol_relink_damprand
                     params[21] = psys.settings.mol_relink_broken
@@ -216,6 +217,7 @@ class MolecularPanel(bpy.types.Panel):
         box.prop(psys.settings,"mol_selfcollision_active", text = "Activate Self Collision")
         box.prop(psys.settings,"mol_othercollision_active", text = "Activate Collision with others")
         box.prop(psys.settings,"mol_collision_group",text = " Collide only with:")
+        box.prop(psys.settings,"mol_friction",text = " Friction:")
 
         row = layout.row()
         row.label(text = "Links:")
