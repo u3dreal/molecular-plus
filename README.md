@@ -3,16 +3,9 @@ Blender-Molecular-Script
 
 This is my molecular python script for blender. A bit similar to Lagoa Multiphysic in Softimage.
 
-In the "download" folder you can find dated folder with zip files for the addon.It's contain 
-the released version of the script.
+To download the latest version go on my blog:
 
-In the "molecular" folder is the latest change about the script. It's not always tested, can have 
-majors bugs or just not working at all.
-
-To download latest version:
-- go in the "download" folder
-- choose the most recent dated folder
-- download the zip file
+http://pyroevil.com/molecular-script-download/
 
 The script can be installed like any other addons in Blender:
 First way:
@@ -33,4 +26,6 @@ To activate the plugins:
 - Check it , close the "Blender user preferences" windows and have fun.
 
 
-Visit my blo about this script for donation, comments or more detail : http://pyroevil.cu.cc/?cat=7
+Visit my blog about this script for donation, comments or more detail : http://pyroevil.com
+
+You can find older version in the release folder.
