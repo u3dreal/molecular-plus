@@ -1,4 +1,3 @@
-#print("allo")
 from math import floor
 from sys import getsizeof
 from time import clock
@@ -11,7 +10,6 @@ def init(importdata):
     global kdtree
     global parlist
     
-    listsqsize = []
     fps = importdata[0][0]
     substep = importdata[0][1]
     psys = []
@@ -20,9 +18,6 @@ def init(importdata):
     parnum = 0
     for i in psys:
         parnum += i.parnum
-        listsqsize += i.sqsize_list
-    listsqsize = list(set(listsqsize))
-    listsqsize.reverse()
     parlist = []  
     for i in psys:
         for ii in i.particle:
@@ -51,6 +46,10 @@ def init(importdata):
     for i in psys:
         for ii in i.particle:
             create_link(ii)
+            
+    for i in kdtree.nodes:
+        ppar = i.particle.id
+        print(parlist[ppar].id)
     return parnum
 
 
@@ -402,7 +401,7 @@ class Particle(ParSys):
         self.links = []
         self.link_with = []
 
-class KDTree():
+class KDTree:
     root_node = "node on top"
     nodes = []
     result = []
@@ -481,7 +480,7 @@ class KDTree():
 
 
 
-class Nodes():
+class Nodes:
     def __init__(self):
         name = "node name"
         loc = [0,0,0]

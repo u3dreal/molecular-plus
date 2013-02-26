@@ -32,14 +32,17 @@ bl_info = {
 if "bpy" in locals():
     import imp
     imp.reload(molcore)
+    imp.reload(cmolcore)
 else:
     try:
         import bpy
         import sys
         sys.path.append(bpy.path.abspath('//'))
         import molcore
+        import cmolcore
     except:
         from molecular import molcore
+        #from molecular import cmolcore
         pass
 
 
@@ -48,6 +51,8 @@ from random import random
 from math import pi
 import imp
 from time import clock
+import cmolcore
+import pstats, cProfile
 
 
 
@@ -79,6 +84,7 @@ def define_props():
         parset.mol_link_broken = bpy.props.FloatProperty(name = "mol_link_broken", description = "How much link can stretch before they broken. 0.01 = 1% , 0.5 = 50% , 2.0 = 200% ...",min = 0, default = 0.5)
         parset.mol_link_brokenrand = bpy.props.FloatProperty(name = "mol_link_brokenrand", description = "Give a random variation to the stretch limit",min = 0 ,max = 1, default = 0)
         
+        
         item = []
         for i in range(1,12):
             item.append((str(i),"Relink Group " + str(i),"Relink only with group " + str(i) ))
@@ -97,12 +103,14 @@ def define_props():
         bpy.types.Scene.mol_fps_active = bpy.props.BoolProperty(name = "mol_fps_active", description = "Give another frame rate then the one set in the scene",default = False)
         bpy.types.Scene.mol_fps = bpy.props.IntProperty(name = "mol_fps", description = "Random variation on damping", default = 24)
         bpy.types.Scene.mol_substep = bpy.props.IntProperty(name = "mol_substep", description = "Substep. Higher equal more stable and accurate but more slower",min = 0, max = 900, default = 4)
+        bpy.types.Scene.mol_turbo = bpy.props.BoolProperty(name = "mol_turbo", description = "Active fast Cython script",default = True)
 
 
 def pack_data(initiate):
     global exportdata
     
     for obj in bpy.data.objects:
+        psyslen = 0
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
@@ -128,6 +136,7 @@ def pack_data(initiate):
                 psys.particles.foreach_get('velocity',par_vel)
                 
                 if initiate:
+                    psyslen += 1
                     #psys.settings.count = psys.settings.count
                     psys.particles.foreach_get('size',par_size)
                     
@@ -157,6 +166,7 @@ def pack_data(initiate):
                     params[22] = psys.settings.mol_relink_brokenrand                    
     
             if initiate:
+                exportdata[0][2] = psyslen
                 exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
                 pass
             else:
@@ -277,7 +287,7 @@ class MolecularPanel(bpy.types.Panel):
         row.label(text = "")
         row = layout.row()
         row.prop(scn,"mol_substep",text = "substep")
-        row.label(text = "")
+        row.prop(scn,"mol_turbo",text = "Turbo")
         row = layout.row()
         row.operator("object.mol_simulate",text = "Start Molecular Simulation")
 
@@ -293,8 +303,9 @@ class MolSimulate(bpy.types.Operator):
         global substep
         global old_endframe
         global exportdata
+        global report
 
-        print("Molecular Sim start...")
+        print("Molecular Sim start--------------------------------------------------")
         stime = clock()
         scene = bpy.context.scene
         object = bpy.context.object
@@ -311,17 +322,45 @@ class MolSimulate(bpy.types.Operator):
             fps = scene.render.fps
         
         exportdata = []
-        exportdata = [(fps,substep)]    
+        exportdata = [[fps,substep,0]]
+        stime = clock()
         pack_data(True)
+        print("sys number",exportdata[0][2])
+        etime = clock()
+        print("  " + "PackData take " + str(round(etime - stime,3)) + "sec")
+        stime = clock()
         imp.reload(molcore)
-        report = molcore.init(exportdata)
+        imp.reload(cmolcore)
+        if scene.mol_turbo:
+            print("  Fast compiled addon used")
+            cProfile.runctx('initcwrapper(exportdata)',globals(),locals(),"Profile.prof")
+            s = pstats.Stats("Profile.prof")
+            s.strip_dirs().sort_stats("time").print_stats()
+        else:
+            print("  slow python script addon used ( are you pressed Turbo ?)")
+            cProfile.runctx('initwrapper(exportdata)',globals(),locals(),"Profile.prof")
+            s = pstats.Stats("Profile.prof")
+            s.strip_dirs().sort_stats("time").print_stats()
         etime = clock()
         print("  " + "Export time take " + str(round(etime - stime,3)) + "sec")
         print("  total numbers of particles: " + str(report))
         print("  start processing:")
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
-    
+# temporary for profiling---
+def initwrapper(exportdata):
+    global report
+    report = molcore.init(exportdata)
+def initcwrapper(exportdata):
+    global report
+    report = cmolcore.init(exportdata)
+def simwrapper(exportdata):
+    global importdata
+    importdata = molcore.simulate(exportdata)
+def simcwrapper(exportdata):
+    global importdata
+    importdata = cmolcore.simulate(exportdata)
+# ---temporary for profiling
 
 class MolSimulateModal(bpy.types.Operator):
     """Operator which runs its self from a timer"""
@@ -334,6 +373,7 @@ class MolSimulateModal(bpy.types.Operator):
         global old_endframe
         global exportdata
         global stime
+        global importdata
         
         #stime = clock()
         scene = bpy.context.scene
@@ -344,7 +384,7 @@ class MolSimulateModal(bpy.types.Operator):
             scene.frame_end = old_endframe
             scene.frame_set(frame = scene.frame_start)
             #bpy.ops.render.render(animation=True)
-            print("...Molecular Sim end")
+            print("--------------------------------------------------Molecular Sim end")
             return self.cancel(context)
 
         if event.type == 'TIMER':
@@ -352,8 +392,16 @@ class MolSimulateModal(bpy.types.Operator):
                 stime = clock()
             exportdata = []
             pack_data(False)
-            importdata = molcore.simulate(exportdata)
-            #print(importdata[1])
+            if scene.mol_turbo:
+                #cProfile.runctx('simcwrapper(exportdata)',globals(),locals(),"Profile.prof")
+                #s = pstats.Stats("Profile.prof")
+                #s.strip_dirs().sort_stats("time").print_stats()
+                importdata = cmolcore.simulate(exportdata)
+            else:
+                #cProfile.runctx('simwrapper(exportdata)',globals(),locals(),"Profile.prof")
+                #s = pstats.Stats("Profile.prof")
+                #s.strip_dirs().sort_stats("time").print_stats()
+                importdata = molcore.simulate(exportdata)
             i = 0
             for obj in bpy.data.objects:
                 for psys in obj.particle_systems:
@@ -378,7 +426,7 @@ class MolSimulateModal(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
-        self._timer = context.window_manager.event_timer_add(0.1, context.window)
+        self._timer = context.window_manager.event_timer_add(0.001, context.window)
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
