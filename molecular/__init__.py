@@ -111,6 +111,7 @@ def pack_data(initiate):
     
     for obj in bpy.data.objects:
         psyslen = 0
+        parnum = 0
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
@@ -125,6 +126,7 @@ def pack_data(initiate):
                         par_mass.append(psys.settings.mol_density * (4/3*pi*((par.size/2)**3)))
                 par_alive = []
                 for par in psys.particles:
+                    parnum += 1
                     if par.alive_state == "UNBORN":
                         par_alive.append(2)
                     if par.alive_state == "ALIVE":
@@ -167,6 +169,7 @@ def pack_data(initiate):
     
             if initiate:
                 exportdata[0][2] = psyslen
+                exportdata[0][3] = parnum
                 exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
                 pass
             else:
@@ -322,7 +325,7 @@ class MolSimulate(bpy.types.Operator):
             fps = scene.render.fps
         
         exportdata = []
-        exportdata = [[fps,substep,0]]
+        exportdata = [[fps,substep,0,0]]
         stime = clock()
         pack_data(True)
         print("sys number",exportdata[0][2])

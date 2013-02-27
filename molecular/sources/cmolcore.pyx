@@ -11,6 +11,7 @@ cdef int substep = 0
 cdef int parnum = 0
 cdef int psysnum = 0
 cdef Particle *parlist
+cdef Particle *parlistcopy
 cdef ParSys *psys
 cdef KDTree *kdtree = <KDTree *>malloc( 1 *cython.sizeof(KDTree) )
 kdtree.result = <Node *>malloc( 1 *cython.sizeof(Node) )
@@ -20,6 +21,7 @@ cpdef init(importdata):
     global substep
     global parnum
     global parlist
+    global parlistcopy
     global kdtree
     global psysnum
     global psys
@@ -29,25 +31,28 @@ cpdef init(importdata):
     fps = float(importdata[0][0])
     substep = int(importdata[0][1])
     psysnum = importdata[0][2]
+    parnum = importdata[0][3]
     psys = <ParSys *>malloc( psysnum *cython.sizeof(ParSys) )
+    parlist = <Particle *>malloc( parnum *cython.sizeof(Particle) )
+    parlistcopy = <Particle *>malloc( parnum *cython.sizeof(Particle) )
     cdef int jj = 0
     for i in xrange(psysnum):
         psys[i].id = i
         psys[i].parnum = importdata[i+1][0]
-        parnum += psys[i].parnum
         psys[i].particles = <Particle *>malloc( psys[i].parnum *cython.sizeof(Particle) )
+        psys[i].particles = &parlist[jj]
         for ii in xrange(psys[i].parnum):
-            psys[i].particles[ii].id = jj
-            psys[i].particles[ii].loc[0] = importdata[i + 1][1][(ii * 3)]
-            psys[i].particles[ii].loc[1] = importdata[i + 1][1][(ii * 3) + 1]
-            psys[i].particles[ii].loc[2] = importdata[i + 1][1][(ii * 3) + 2]
-            psys[i].particles[ii].vel[0] = importdata[i + 1][2][(ii * 3)]
-            psys[i].particles[ii].vel[1] = importdata[i + 1][2][(ii * 3) + 1]
-            psys[i].particles[ii].vel[2] = importdata[i + 1][2][(ii * 3) + 2]
-            psys[i].particles[ii].size = importdata[i + 1][3][ii]
-            psys[i].particles[ii].sqsize = sq_number(importdata[i + 1][3][ii])
-            psys[i].particles[ii].mass = importdata[i + 1][4][ii]
-            psys[i].particles[ii].state = importdata[i + 1][5][ii]
+            parlist[jj].id = jj
+            parlist[jj].loc[0] = importdata[i + 1][1][(ii * 3)]
+            parlist[jj].loc[1] = importdata[i + 1][1][(ii * 3) + 1]
+            parlist[jj].loc[2] = importdata[i + 1][1][(ii * 3) + 2]
+            parlist[jj].vel[0] = importdata[i + 1][2][(ii * 3)]
+            parlist[jj].vel[1] = importdata[i + 1][2][(ii * 3) + 1]
+            parlist[jj].vel[2] = importdata[i + 1][2][(ii * 3) + 2]
+            parlist[jj].size = importdata[i + 1][3][ii]
+            parlist[jj].sqsize = sq_number(importdata[i + 1][3][ii])
+            parlist[jj].mass = importdata[i + 1][4][ii]
+            parlist[jj].state = importdata[i + 1][5][ii]
             psys[i].selfcollision_active = importdata[i + 1][6][0]
             psys[i].othercollision_active = importdata[i + 1][6][1]
             psys[i].collision_group = int(importdata[i + 1][6][2])
@@ -71,21 +76,19 @@ cpdef init(importdata):
             psys[i].relink_damprand = importdata[i + 1][6][20]
             psys[i].relink_broken = importdata[i + 1][6][21]
             psys[i].relink_brokenrand = importdata[i + 1][6][22]
-            psys[i].particles[ii].sys = psys[i]
-            psys[i].particles[ii].collided_with = <Particle *>malloc( 1 *cython.sizeof(Particle) )
-            psys[i].particles[ii].collided_num = 0
-            psys[i].particles[ii].link_with = <Particle *>malloc( 1 *cython.sizeof(Particle) )
-            psys[i].particles[ii].link_withnum = 0
+            parlist[jj].sys = &psys[i]
+            parlist[jj].collided_with = <Particle *>malloc( 1 *cython.sizeof(Particle) )
+            parlist[jj].collided_num = 0
+            parlist[jj].link_with = <Particle *>malloc( 1 *cython.sizeof(Particle) )
+            parlist[jj].link_withnum = 0
             jj += 1
             
     jj = 0
-    parlist = <Particle *>malloc( parnum *cython.sizeof(Particle) )
-    for i in xrange(psysnum):
-        for ii in xrange(psys[i].parnum):
-            parlist[jj] = psys[i].particles[ii]
-            jj += 1
+
     KDTree_create_nodes(kdtree,parnum)
-    KDTree_create_tree(kdtree,parlist,0,parnum - 1,"root",0)
+    for i in range(parnum):
+        parlistcopy[i] = parlist[i]
+    KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
     """
     print("RootNode:",kdtree.root_node[0].index)
     for i in xrange(parnum):
@@ -113,6 +116,7 @@ cpdef init(importdata):
 cpdef simulate(importdata):
     global kdtree
     global parlist
+    global parlistcopy
     global parnum
     global psysnum
     global psys
@@ -121,17 +125,13 @@ cpdef simulate(importdata):
     cdef int ii
     
     update(importdata)
-    jj = 0
-    for i in xrange(psysnum):
-        for ii in xrange(psys[i].parnum):
-            parlist[jj] = psys[i].particles[ii]
-            jj += 1
-    KDTree_create_tree(kdtree,parlist,0,parnum - 1,"root",0)
+    for i in range(parnum):
+        parlistcopy[i] = parlist[i]
+    KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
     
     for i in xrange(parnum):
-        print(parlist[i].id)
-        print("Z:",parlist[i].loc[2])
-        collide(parlist[i])
+        #print("simulate par:",parlist[i].id," z vel:",parlist[i].vel[2])
+        collide(&parlist[i])
     
     exportdata = []
     parloc = []
@@ -154,7 +154,7 @@ cpdef simulate(importdata):
     
     return exportdata
 
-cdef collide(Particle par):
+cdef collide(Particle *par):
     global kdtree
     cdef Node *neighbours
     cdef Particle par2
@@ -180,14 +180,14 @@ cdef collide(Particle par):
     cdef float friction
     cdef int i
     print("point0")
-    neighbours = KDTree_rnn_query(kdtree,par.loc,par.size * 2)
+    neighbours = KDTree_rnn_query(kdtree,par.loc,par.size)
     print("point0.1")
     for i in xrange(kdtree.num_result):
         print("point1.1")
         par2 = neighbours[i].particle[0]
         if par.id == par2.id:
             return
-        if arraysearch(par2,par.collided_with,par.collided_num) == -1: 
+        if arraysearch(&par2,par.collided_with,par.collided_num) == -1: 
         #if par2 not in par.collided_with:
             print("point1.2")
             if par2.sys.id != par.sys.id :
@@ -207,7 +207,7 @@ cdef collide(Particle par):
             target = (par.size + par2.size) * 0.99
             sqtarget = target**2
             print("point5.0")
-            if par.state <= 1 and par2.state <= 1 and arraysearch(par2,par.link_with,par.link_withnum) == -1 and arraysearch(par,par2.link_with,par2.link_withnum) == -1:
+            if par.state <= 1 and par2.state <= 1 and arraysearch(&par2,par.link_with,par.link_withnum) == -1 and arraysearch(par,par2.link_with,par2.link_withnum) == -1:
             #if par.state <= 1 and par2.state <= 1 and par2 not in par.link_with and par not in par2.link_with:
                 print("point6.0")
                 lenghtx = par.loc[0] - par2.loc[0]
@@ -357,7 +357,7 @@ cdef update(data):
             else:
                 psys[i].particles[ii].state = data[i][2][ii]
             psys[i].particles[ii].collided_num = 0
-            print("UpdateZ",psys[i].particles[ii].loc[2])
+            #print("update par:",psys[i].particles[ii].id," z vel:",psys[i].particles[ii].vel[2])
     
  
 cdef KDTree_create_nodes(KDTree *kdtree,int parnum):
@@ -543,7 +543,7 @@ cdef struct Particle:
     float sqsize
     float mass
     float state
-    ParSys sys
+    ParSys *sys
     Particle *collided_with
     Particle *link_with
     int collided_num
@@ -585,7 +585,7 @@ cdef int compare_id (const void *u, const void *v):
     return 0   
 
     
-cdef int arraysearch(Particle element,Particle *array,int len):
+cdef int arraysearch(Particle *element,Particle *array,int len):
     cdef int i
     for i in xrange(len):
         if element.id == array[i].id:
