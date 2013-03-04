@@ -144,6 +144,9 @@ cpdef simulate(importdata):
     
     #testkdtree(1)
     
+    #with nogil:
+    #for i in range(parnum + 1):
+        #print(kdtree.nodes[i].index,kdtree.nodes[i].particle[0].id)
     for i in xrange(parnum):
         #print("simulate par:",parlist[i].id," z vel:",parlist[i].vel[2])
         collide(&parlist[i])
@@ -169,8 +172,8 @@ cpdef simulate(importdata):
     
     return exportdata
     
-
-cdef collide(Particle *par):
+#@cython.cdivision(True)
+cdef void collide(Particle *par):
     global kdtree
     cdef Node *neighbours
     cdef Particle par2
@@ -200,6 +203,9 @@ cdef collide(Particle *par):
     #print("point0.1")
     for i in xrange(kdtree.num_result):
         #print("point1.1")
+        if neighbours[i].index == -1:
+            return
+        print(par.id," found ", par2.id , " near him from ", neighbours[i].index," node")
         par2 = neighbours[i].particle[0]
         if par.id == par2.id:
             return
@@ -232,9 +238,10 @@ cdef collide(Particle *par):
                 #print("Z:",par.loc[2] , par2.loc[2])
                 sqlenght  = square_dist(par.loc,par2.loc,3)
                 #print("point6.1")
-                #print(sqlenght,sqtarget)
+                print(sqlenght,sqtarget)
                 if sqlenght != 0 and sqlenght < sqtarget:
-                    #print("Hit!!!")
+                    print("Hit!!!")
+                    print(par.id," hit ", par2.id)
                     lenght = sqlenght**0.5
                     factor = (lenght - target) / lenght
                     ratio1 = (par2.mass/(par.mass + par2.mass))
@@ -348,7 +355,7 @@ cdef collide(Particle *par):
         #print("point11.0")
     #print("point12.0")
     
-cdef update(data):
+cdef void update(data):
     global parlist
     global parnum
     global psysnum
@@ -376,7 +383,7 @@ cdef update(data):
             #print("update par:",psys[i].particles[ii].id," z vel:",psys[i].particles[ii].vel[2])
     
  
-cdef KDTree_create_nodes(KDTree *kdtree,int parnum):
+cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):
     cdef int i
     kdtree.nodes = <Node *>malloc( (parnum + 1) *cython.sizeof(Node) )
     kdtree.root_node = <Node *>malloc( 1 *cython.sizeof(Node) )
@@ -460,8 +467,8 @@ cdef Node *KDTree_rnn_query(KDTree *kdtree,float point[3],float dist):
         KDTree_rnn_search(kdtree,kdtree.root_node[0],point,dist,sqdist,3,0)
     return kdtree.result
 
-
-cdef KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,float sqdist,int k,int depth):
+#@cython.cdivision(True)
+cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,float sqdist,int k,int depth):
     cdef int axis
     cdef float realdist
     #print("point0")
@@ -620,7 +627,7 @@ cdef float sq_number(float val):
             nearsq = nearsq / 2
     return nearsq
     
-  
+#@cython.cdivision(True)  
 cdef float square_dist(float point1[3],float point2[3],int k):
     cdef float sq_dist = 0
     for i in xrange(k):
