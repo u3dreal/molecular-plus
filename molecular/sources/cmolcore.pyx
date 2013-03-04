@@ -1,3 +1,4 @@
+# cython: profile=True
 cimport cython
 from cython.parallel import parallel,prange
 from libc.stdlib cimport malloc , realloc, free , rand , srand
@@ -108,8 +109,8 @@ cdef testkdtree(int verbose = 0):
     a[0] = 0
     a[1] = 0
     a[2] = 0
-    cdef Node *b
-    b = <Node *>malloc( parnum *cython.sizeof(Node) )
+    cdef int *b
+    b = <int *>malloc( parnum *cython.sizeof(int) )
     if verbose >= 1:
         print("start searching")
     b = KDTree_rnn_query(kdtree,a,2)
@@ -142,11 +143,11 @@ cpdef simulate(importdata):
         parlistcopy[i] = parlist[i]
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
     
-    #testkdtree(1)
+    #testkdtree(3)
     
     #with nogil:
-    #for i in range(parnum + 1):
-        #print(kdtree.nodes[i].index,kdtree.nodes[i].particle[0].id)
+    #for i in range(parnum):
+        #print("node:",kdtree.nodes[i].index,"particles:",kdtree.nodes[i].particle[0].id)
     for i in xrange(parnum):
         #print("simulate par:",parlist[i].id," z vel:",parlist[i].vel[2])
         collide(&parlist[i])
@@ -175,8 +176,8 @@ cpdef simulate(importdata):
 #@cython.cdivision(True)
 cdef void collide(Particle *par):
     global kdtree
-    cdef Node *neighbours
-    cdef Particle par2
+    cdef int *neighbours
+    cdef Particle *par2
     cdef float stiff
     cdef float target
     cdef float sqtarget
@@ -198,50 +199,54 @@ cdef void collide(Particle *par):
     cdef float xi_vel[3]
     cdef float friction
     cdef int i
+    cdef int check = 0
     #print("point0")
     neighbours = KDTree_rnn_query(kdtree,par.loc,par.size * 2)
     #print("point0.1")
+    #print(kdtree.num_result)
     for i in xrange(kdtree.num_result):
+        check = 0
         #print("point1.1")
-        if neighbours[i].index == -1:
-            return
-        print(par.id," found ", par2.id , " near him from ", neighbours[i].index," node")
-        par2 = neighbours[i].particle[0]
+        if parlist[i].id == -1:
+            check += 1
+        par2 = &parlist[neighbours[i]]
         if par.id == par2.id:
-            return
-        if arraysearch(&par2,par.collided_with,par.collided_num) == -1: 
+            check += 10
+        if arraysearch(par2,par.collided_with,par.collided_num) == -1: 
         #if par2 not in par.collided_with:
             #print("point1.2")
             if par2.sys.id != par.sys.id :
                 #print("point1.3")
                 if par2.sys.othercollision_active == False or par.sys.othercollision_active == False:
                     #print("point1.4")
-                    return
+                    check += 100
             #print(par.sys.collision_group)
             if par2.sys.collision_group != par.sys.collision_group:
                 #print("point2.0")
-                return
+                check += 1000
             if par2.sys.id == par.sys.id and par.sys.selfcollision_active == False:
                 #print("point3.0")
-                return
+                check += 10000
             #print("point4.0")
-            stiff = (fps * (substep +1))
-            target = (par.size + par2.size) * 0.99
+            stiff = (fps * (substep +1)) / 2
+            target = (par.size + par2.size) * 0.999
             sqtarget = target**2
             #print("point5.0")
-            if par.state <= 1 and par2.state <= 1 and arraysearch(&par2,par.link_with,par.link_withnum) == -1 and arraysearch(par,par2.link_with,par2.link_withnum) == -1:
+            #print("check:",check)
+            if check == 0 and par.state <= 1 and par2.state <= 1 and arraysearch(par2,par.link_with,par.link_withnum) == -1 and arraysearch(par,par2.link_with,par2.link_withnum) == -1:
             #if par.state <= 1 and par2.state <= 1 and par2 not in par.link_with and par not in par2.link_with:
                 #print("point6.0")
+                #print("collide:",par.id," with ",par2.id)
                 lenghtx = par.loc[0] - par2.loc[0]
                 lenghty = par.loc[1] - par2.loc[1]
                 lenghtz = par.loc[2] - par2.loc[2]
                 #print("Z:",par.loc[2] , par2.loc[2])
                 sqlenght  = square_dist(par.loc,par2.loc,3)
                 #print("point6.1")
-                print(sqlenght,sqtarget)
+                #print(sqlenght,sqtarget)
                 if sqlenght != 0 and sqlenght < sqtarget:
-                    print("Hit!!!")
-                    print(par.id," hit ", par2.id)
+                    #print("Hit!!!")
+                    #print(par.id," hit ", par2.id)
                     lenght = sqlenght**0.5
                     factor = (lenght - target) / lenght
                     ratio1 = (par2.mass/(par.mass + par2.mass))
@@ -255,7 +260,7 @@ cdef void collide(Particle *par):
                     par2.vel[2] += (lenghtz * factor * ratio2) * stiff
                     
                     #print("point6.2")
-                    """
+
                     col_normal1[0] = (par2.loc[0] - par.loc[0]) / lenght
                     col_normal1[1] = (par2.loc[1] - par.loc[1]) / lenght
                     col_normal1[2] = (par2.loc[2] - par.loc[2]) / lenght
@@ -285,7 +290,7 @@ cdef void collide(Particle *par):
                     #print("yi_vel:",yi_vel)
                     #print("xi_vel:",xi_vel)
                     
-
+                    """
                     Ua = factor1
                     #print("Ua:",Ua)       
                     Ub = -factor2
@@ -311,7 +316,7 @@ cdef void collide(Particle *par):
                     yi_vel[2] = col_normal1[2] * Vb * mulb
                     #print("yi_vel after:",yi_vel)
                     #print("xi_vel after:",xi_vel)
-
+                    """
                     #print("point6.4")
                     friction = 1 - ((par.sys.friction + par2.sys.friction ) / 2)
                     xpar_vel[0] *= friction
@@ -332,8 +337,7 @@ cdef void collide(Particle *par):
                     #print("par_vel after:",par.vel)
                     #print("i_vel after:",par2.vel)
                     #print("point6.5")
-                    par2.vel[1] += 1.0
-                    par.vel[1] -= 1.0
+                    """
 
                     if abs(Va) < abs(((factor * ratio1) * stiff)):
                         par.vel[0] -= ((lenghtx * factor * ratio1) * stiff)
@@ -449,18 +453,18 @@ cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int en
     return kdtree.nodes[index]
 
 
-cdef Node *KDTree_rnn_query(KDTree *kdtree,float point[3],float dist):
+cdef int *KDTree_rnn_query(KDTree *kdtree,float point[3],float dist):
     global parlist
     cdef float sqdist
     cdef int k 
     cdef int i
     kdtree.num_result = 0
     free(kdtree.result)
-    kdtree.result = <Node *>malloc( 1 *cython.sizeof(Node) )
-    kdtree.result[0] = kdtree.nodes[parnum + 1]
+    kdtree.result = <int *>malloc( 1 *cython.sizeof(int) )
+    kdtree.result[0] = -1
     if kdtree.root_node[0].index != kdtree.nodes[0].index:
-        kdtree.result[0] = kdtree.nodes[parnum + 1]
-        num_result = 1
+        kdtree.result[0] = -1
+        num_result = 0
         return kdtree.result
     else:
         sqdist = dist**2
@@ -491,11 +495,11 @@ cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,f
         if realdist <= sqdist:
             #print("point1")
             #print("Result number:",kdtree.num_result)
-            kdtree.result[kdtree.num_result] = node
-            #print("Node found:",node.index)
+            kdtree.result[kdtree.num_result] = node.particle[0].id
+            #print("particle found:",kdtree.result[kdtree.num_result])
             #print("Node recorded:",kdtree.result[kdtree.num_result].index)
             kdtree.num_result += 1
-            kdtree.result = <Node *>realloc(kdtree.result,(kdtree.num_result + 1) *cython.sizeof(Node) )
+            kdtree.result = <int *>realloc(kdtree.result,(kdtree.num_result + 1) *cython.sizeof(int) )
             #print("point1.1")
 
         #print("point1.2")
@@ -517,7 +521,7 @@ cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,f
 cdef struct KDTree:
     int index
     int num_result
-    Node *result
+    int *result
     Node *root_node
     Node *nodes
 
