@@ -47,9 +47,9 @@ def init(importdata):
         for ii in i.particle:
             create_link(ii)
             
-    for i in kdtree.nodes:
-        ppar = i.particle.id
-        print(parlist[ppar].id)
+    #for i in kdtree.nodes:
+        #ppar = i.particle.id
+        #print(parlist[ppar].id)
     return parnum
 
 
