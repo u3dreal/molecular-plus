@@ -429,7 +429,7 @@ class MolSimulateModal(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
-        self._timer = context.window_manager.event_timer_add(0.001, context.window)
+        self._timer = context.window_manager.event_timer_add(0.00001, context.window)
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
