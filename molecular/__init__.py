@@ -108,10 +108,9 @@ def define_props():
 
 def pack_data(initiate):
     global exportdata
-    
+    psyslen = 0
+    parnum = 0
     for obj in bpy.data.objects:
-        psyslen = 0
-        parnum = 0
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
