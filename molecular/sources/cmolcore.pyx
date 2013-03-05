@@ -1,5 +1,6 @@
 # cython: profile=True
 cimport cython
+from random import random
 from cython.parallel import parallel,prange
 from libc.stdlib cimport malloc , realloc, free , rand , srand
 
@@ -78,9 +79,11 @@ cpdef init(importdata):
             psys[i].relink_broken = importdata[i + 1][6][21]
             psys[i].relink_brokenrand = importdata[i + 1][6][22]
             parlist[jj].sys = &psys[i]
-            parlist[jj].collided_with = <Particle *>malloc( 1 *cython.sizeof(Particle) )
+            parlist[jj].collided_with = <int *>malloc( 1 *cython.sizeof(int) )
             parlist[jj].collided_num = 0
-            parlist[jj].link_with = <Particle *>malloc( 1 *cython.sizeof(Particle) )
+            parlist[jj].links = <Links *>malloc( 1 *cython.sizeof(Links) )
+            parlist[jj].links_num = 0
+            parlist[jj].link_with = <int *>malloc( 1 *cython.sizeof(int) )
             parlist[jj].link_withnum = 0
             jj += 1
             
@@ -212,7 +215,7 @@ cdef void collide(Particle *par):
         par2 = &parlist[neighbours[i]]
         if par.id == par2.id:
             check += 10
-        if arraysearch(par2,par.collided_with,par.collided_num) == -1: 
+        if arraysearch(par2.id,par.collided_with,par.collided_num) == -1: 
         #if par2 not in par.collided_with:
             #print("point1.2")
             if par2.sys.id != par.sys.id :
@@ -230,10 +233,10 @@ cdef void collide(Particle *par):
             #print("point4.0")
             stiff = (fps * (substep +1)) / 2
             target = (par.size + par2.size) * 0.999
-            sqtarget = target**2
+            sqtarget = target * target
             #print("point5.0")
             #print("check:",check)
-            if check == 0 and par.state <= 1 and par2.state <= 1 and arraysearch(par2,par.link_with,par.link_withnum) == -1 and arraysearch(par,par2.link_with,par2.link_withnum) == -1:
+            if check == 0 and par.state <= 1 and par2.state <= 1 and arraysearch(par2.id,par.link_with,par.link_withnum) == -1 and arraysearch(par.id,par2.link_with,par2.link_withnum) == -1:
             #if par.state <= 1 and par2.state <= 1 and par2 not in par.link_with and par not in par2.link_with:
                 #print("point6.0")
                 #print("collide:",par.id," with ",par2.id)
@@ -349,7 +352,10 @@ cdef void collide(Particle *par):
                         par2.vel[2] += ((lenghtz * factor * ratio2) * stiff)
                     """
                     
-                    #par2.collided_with.append(par)
+                    par2.collided_with[par2.collided_num] = par.id
+                    par2.collided_num += 1
+                    par2.collided_with = <int *>realloc(par2.collided_with,(par2.collided_num + 1) * cython.sizeof(int) )
+                    
                     #if (par.sys.relink_chance + par.sys.relink_chance / 2) > 0:
                         #create_link(par,[par2,lenght**2])
 
@@ -376,16 +382,19 @@ cdef void update(data):
             psys[i].particles[ii].vel[2] = data[i][1][(ii * 3) + 2]
             if psys[i].particles[ii].state == 0 and data[i][2][ii] == 0:
                 psys[i].particles[ii].state = data[i][2][ii] + 1
-                #create_link(par)
+                print("point 385")
+                create_link(psys[i].particles[ii].id)
+                print("point 387")
                 #parlist.append(par)
             elif psys[i].particles[ii].state == 1 and data[i][2][ii] == 0:
                 psys[i].particles[ii].state = 1
                 #parlist.append(par)
             else:
                 psys[i].particles[ii].state = data[i][2][ii]
+            psys[i].particles[ii].collided_with = <int *>realloc(psys[i].particles[ii].collided_with, 1 *cython.sizeof(int) )
             psys[i].particles[ii].collided_num = 0
             #print("update par:",psys[i].particles[ii].id," z vel:",psys[i].particles[ii].vel[2])
-    
+    print("point 397")
  
 cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):
     cdef int i
@@ -467,7 +476,7 @@ cdef int *KDTree_rnn_query(KDTree *kdtree,float point[3],float dist):
         num_result = 0
         return kdtree.result
     else:
-        sqdist = dist**2
+        sqdist = dist * dist
         KDTree_rnn_search(kdtree,kdtree.root_node[0],point,dist,sqdist,3,0)
     return kdtree.result
 
@@ -486,7 +495,7 @@ cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,f
     #print("Depth:",depth)
     #print("Axis:",axis)
     #print("point0.1")
-    if (point[axis] - tparticle.loc[axis])**2 <= sqdist:
+    if ((point[axis] - tparticle.loc[axis]) * (point[axis] - tparticle.loc[axis])) <= sqdist:
         #print("sqdist:",sqdist)
         #print("par loc:",tparticle.loc[0],tparticle.loc[1],tparticle.loc[2])
         realdist = square_dist(point,tparticle.loc,3)
@@ -517,6 +526,102 @@ cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,f
             #print("point2.2")
             KDTree_rnn_search(kdtree, node.right_child[0],point,dist,sqdist,3,depth + 1)
     #print("point3")
+  
+  
+cdef void create_link(int par_id,int parothers_id = -1):
+    print("point 530")
+    global kdtree
+    global parlist
+    cdef Links *link = <Links *>malloc( 1 * cython.sizeof(Links) )
+    cdef int *neighbours
+    cdef int ii
+    cdef Particle par = parlist[par_id]
+    cdef Particle par2
+    print("point 537")
+    if par.sys.links_active == 0:
+        return
+    if parothers_id == -1:
+        neighbours = KDTree_rnn_query(kdtree,par.loc,par.sys.link_length)
+        #neighbours = kdtree.rnn_query(par.loc,par.sys.link_length)
+    else:
+        neighbours[0] = parothers_id
+    print("point 545")
+    for ii in xrange(kdtree.num_result):
+        if parothers_id == -1:
+            par2 = parlist[neighbours[ii]]
+        else:
+            par2 = parlist[neighbours[0]]
+        if par.id != par2.id:
+            print("point 552")
+            arraysearch(par2.id,par.link_with,par.link_withnum)
+            print("point 554")
+            if arraysearch(par.id,par2.link_with,par.link_withnum) == -1 and par2.state <= 1 and par.state <= 1:
+            #if par not in par2.link_with and par2.state <= 1 and par.state <= 1:
+                print("point 556")
+                #print(par.loc[0],par.loc[1],par.loc[2])
+                #print(par2.loc[0],par2.loc[1],par2.loc[2])
+                #print(square_dist(par.loc,par2.loc,3))
+                link.lenght = (square_dist(par.loc,par2.loc,3))**0.5
+                print("point 558")
+                link.start = par.id
+                link.end = par2.id
+                print("point 561")
+                if parothers_id == -1:
+                    stiffrandom = (par.sys.link_stiffrand + par2.sys.link_stiffrand) / 2 * 2
+                    link.stiffness = ((par.sys.link_stiff + par2.sys.link_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
+                    link.exponent = abs((par.sys.link_stiffexp + par2.sys.link_stiffexp) / 2)
+                    damprandom = ((par.sys.link_damprand + par2.sys.link_damprand) / 2) * 2
+                    link.damping = ((par.sys.link_damp + par2.sys.link_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
+                    brokrandom = ((par.sys.link_brokenrand + par2.sys.link_brokenrand) / 2) * 2
+                    link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
+                    print("point 567")
+                    par.links[par.links_num] = link[0]
+                    par.links_num += 1
+                    par.links = <Links *>realloc(par.links,(par.links_num + 1) * cython.sizeof(Links) )
+                    par.link_with[par.link_withnum] = par2.id
+                    par.link_withnum += 1
+                    print("point 573")
+                    par.link_with = <int *>realloc(par.link_with,(par.link_withnum + 1) * cython.sizeof(int) )
+                    par2.link_with[par2.link_withnum] = par.id
+                    par2.link_withnum += 1
+                    print("point 584")
+                    par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 1) * cython.sizeof(int) )
+                    free(link)
+                    print("point 587")
+                    
+                if parothers_id != -1 and par.sys.relink_group == par2.sys.relink_group:
+                    print("point 580")
+                    relinkrandom = random()
+                    chancerdom = (par.sys.relink_chancerand + par2.sys.relink_chancerand) / 2 * 2
+                    if relinkrandom <= ((par.sys.relink_chance + par2.sys.relink_chance) / 2) * (((random() * chancerdom) - (chancerdom / 2)) + 1):
+                        stiffrandom = (par.sys.relink_stiffrand + par2.sys.relink_stiffrand) / 2 * 2
+                        link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.exponent = abs((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2)
+                        damprandom = ((par.sys.relink_damprand + par2.sys.relink_damprand) / 2) * 2
+                        link.damping = ((par.sys.relink_damp + par2.sys.relink_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
+                        brokrandom = ((par.sys.relink_brokenrand + par2.sys.relink_brokenrand) / 2) * 2
+                        link.broken = ((par.sys.relink_broken + par2.sys.relink_broken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
+                        par.links[par.links_num] = link[0]
+                        par.links_num += 1
+                        par.links = <Links *>realloc(par.links,(par.links_num + 1) * cython.sizeof(Links) )
+                        par.link_with[par.link_withnum] = par2.id
+                        par.link_withnum += 1
+                        par.link_with = <int *>realloc(par.link_with,(par.link_withnum + 1) * cython.sizeof(int) )
+                        par2.link_with[par2.link_withnum] = par.id
+                        par2.link_withnum += 1
+                        par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 1) * cython.sizeof(int) )
+                        free(link)
+            
+cdef struct Links:
+    float lenght
+    int start
+    int end
+    float stiffness
+    float exponent
+    float damping
+    float broken
+            
+            
             
 cdef struct KDTree:
     int index
@@ -573,10 +678,14 @@ cdef struct Particle:
     float mass
     float state
     ParSys *sys
-    Particle *collided_with
-    Particle *link_with
+    int *collided_with
     int collided_num
+    Links *links
+    int links_num
+    int *link_with
     int link_withnum
+    
+    
  
  
 cdef int compare_x (const void *u, const void *v):
@@ -614,10 +723,10 @@ cdef int compare_id (const void *u, const void *v):
     return 0   
 
   
-cdef int arraysearch(Particle *element,Particle *array,int len):
+cdef int arraysearch(int element,int *array,int len):
     cdef int i
     for i in xrange(len):
-        if element.id == array[i].id:
+        if element == array[i]:
             return i
     return -1
     
@@ -635,7 +744,7 @@ cdef float sq_number(float val):
 cdef float square_dist(float point1[3],float point2[3],int k):
     cdef float sq_dist = 0
     for i in xrange(k):
-        sq_dist += (point1[i] - point2[i])**2
+        sq_dist += (point1[i] - point2[i]) * (point1[i] - point2[i])
     return sq_dist
 
     
