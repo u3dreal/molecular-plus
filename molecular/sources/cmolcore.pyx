@@ -1,4 +1,6 @@
-# cython: profile=True
+#cython: profile=True
+#cython: boundscheck=True
+#cython: cdivision=False
 cimport cython
 from random import random
 from cython.parallel import parallel,prange
@@ -371,8 +373,8 @@ cdef void collide(Particle *par):
                     par2.collided_num += 1
                     par2.collided_with = <int *>realloc(par2.collided_with,(par2.collided_num + 1) * cython.sizeof(int) )
                     
-                    #if (par.sys.relink_chance + par.sys.relink_chance / 2) > 0:
-                        #create_link(par,[par2,lenght**2])
+                    if (par.sys.relink_chance + par2.sys.relink_chance / 2) > 0:
+                        create_link(par.id,par2.id)
 
                     #print("point271")
                 #print("point272")
@@ -416,65 +418,67 @@ cdef void solve_link(Particle *par):
     cdef float ratio1
     cdef float ratio2
     #broken_links = []
+    
     for i in xrange(par.links_num):
-        
-        stiff = par.links[i].stiffness * (fps * (substep +1))
-        damping = par.links[i].damping
-        timestep = 1/(fps * (substep +1))
-        exp = par.links[i].exponent
-        par1 = &parlist[par.links[i].start]
-        par2 = &parlist[par.links[i].end]
-        Loc1[0] = par1.loc[0]
-        Loc1[1] = par1.loc[1]
-        Loc1[2] = par1.loc[2]
-        Loc2[0] = par2.loc[0]
-        Loc2[1] = par2.loc[1]
-        Loc2[2] = par2.loc[2]
-        V1[0] = par1.vel[0]
-        V1[1] = par1.vel[1]
-        V1[2] = par1.vel[2]
-        V2[0] = par2.vel[0]
-        V2[1] = par2.vel[1]
-        V2[2] = par2.vel[2]
-        LengthX = Loc2[0] - Loc1[0]
-        LengthY = Loc2[1] - Loc1[1]
-        LengthZ = Loc2[2] - Loc1[2]
-        Length = (LengthX**2 + LengthY**2 + LengthZ**2)**(0.5)
-        if par.links[i].lenght != Length:
-            Vx = V2[0] - V1[0]
-            Vy = V2[1] - V1[1]
-            Vz = V2[2] - V1[2]
-            V = (Vx * LengthX + Vy * LengthY+Vz * LengthZ) / Length
-            ForceSpring = ((Length - par.links[i].lenght)**(exp)) * stiff
-            ForceDamper = damping * V
-            ForceX = (ForceSpring + ForceDamper) * LengthX / Length
-            ForceY = (ForceSpring + ForceDamper) * LengthY / Length
-            ForceZ = (ForceSpring + ForceDamper) * LengthZ / Length
-            Force1[0] = ForceX
-            Force1[1] = ForceY
-            Force1[2] = ForceZ
-            Force2[0] = -ForceX
-            Force2[1] = -ForceY
-            Force2[2] = -ForceZ
-            ratio1 = (par2.mass/(par1.mass + par2.mass))
-            ratio2 = (par1.mass/(par1.mass + par2.mass))
-            par1.vel[0] += Force1[0] * ratio1
-            par1.vel[1] += Force1[1] * ratio1
-            par1.vel[2] += Force1[2] * ratio1
-            par2.vel[0] += Force2[0] * ratio2
-            par2.vel[1] += Force2[1] * ratio2
-            par2.vel[2] += Force2[2] * ratio2
-            """
-            if Length > (link.lenght  * (1 + link.broken)) or Length < (link.lenght  * (1 - link.broken)):
-                #print("broke!!!!!")
-                broken_links.append(link)
-                if par2 in par1.link_with:
-                    par1.link_with.remove(par2)
-                if par1 in par2.link_with:
-                    par2.link_with.remove(par1)
-                    
-    par.links = list(set(par.links) - set(broken_links))
-    """
+        if par.links[i].start != -1:
+            stiff = par.links[i].stiffness * (fps * (substep +1))
+            damping = par.links[i].damping
+            timestep = 1/(fps * (substep +1))
+            exp = par.links[i].exponent
+            par1 = &parlist[par.links[i].start]
+            par2 = &parlist[par.links[i].end]
+            Loc1[0] = par1.loc[0]
+            Loc1[1] = par1.loc[1]
+            Loc1[2] = par1.loc[2]
+            Loc2[0] = par2.loc[0]
+            Loc2[1] = par2.loc[1]
+            Loc2[2] = par2.loc[2]
+            V1[0] = par1.vel[0]
+            V1[1] = par1.vel[1]
+            V1[2] = par1.vel[2]
+            V2[0] = par2.vel[0]
+            V2[1] = par2.vel[1]
+            V2[2] = par2.vel[2]
+            LengthX = Loc2[0] - Loc1[0]
+            LengthY = Loc2[1] - Loc1[1]
+            LengthZ = Loc2[2] - Loc1[2]
+            Length = (LengthX**2 + LengthY**2 + LengthZ**2)**(0.5)
+            if par.links[i].lenght != Length:
+                Vx = V2[0] - V1[0]
+                Vy = V2[1] - V1[1]
+                Vz = V2[2] - V1[2]
+                V = (Vx * LengthX + Vy * LengthY+Vz * LengthZ) / Length
+                ForceSpring = ((Length - par.links[i].lenght)**(exp)) * stiff
+                ForceDamper = damping * V
+                ForceX = (ForceSpring + ForceDamper) * LengthX / Length
+                ForceY = (ForceSpring + ForceDamper) * LengthY / Length
+                ForceZ = (ForceSpring + ForceDamper) * LengthZ / Length
+                Force1[0] = ForceX
+                Force1[1] = ForceY
+                Force1[2] = ForceZ
+                Force2[0] = -ForceX
+                Force2[1] = -ForceY
+                Force2[2] = -ForceZ
+                ratio1 = (par2.mass/(par1.mass + par2.mass))
+                ratio2 = (par1.mass/(par1.mass + par2.mass))
+                par1.vel[0] += Force1[0] * ratio1
+                par1.vel[1] += Force1[1] * ratio1
+                par1.vel[2] += Force1[2] * ratio1
+                par2.vel[0] += Force2[0] * ratio2
+                par2.vel[1] += Force2[1] * ratio2
+                par2.vel[2] += Force2[2] * ratio2
+                
+                if Length > (par.links[i].lenght  * (1 + par.links[i].broken)) or Length < (par.links[i].lenght  * (1 - par.links[i].broken)):
+                    #print("broke!!!")
+                    par.links[i].start = -1
+                    #broken_links.append(link)
+                    #if par2 in par1.link_with:
+                        #par1.link_with.remove(par2)
+                    #if par1 in par2.link_with:
+                        #par2.link_with.remove(par1)
+                            
+    #par.links = list(set(par.links) - set(broken_links))
+    
     #free(par1)
     #free(par2)
 
@@ -674,6 +678,7 @@ cdef void create_link(int par_id,int parothers_id = -1):
         #neighbours = kdtree.rnn_query(par.loc,par.sys.link_length)
     else:
         #print("point 543")
+        neighbours = <int *>malloc( 1 * cython.sizeof(int))
         neighbours[0] = parothers_id
     #print("point 545")
     for ii in xrange(kdtree.num_result):
