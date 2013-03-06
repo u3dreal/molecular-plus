@@ -94,6 +94,11 @@ cpdef init(importdata):
         parlistcopy[i] = parlist[i]
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
     
+    for i in xrange(parnum):
+        print("point 98")
+        create_link(parlist[i].id)
+        print("point 100")
+    
     #testkdtree(3)
     
     return parnum
@@ -153,7 +158,11 @@ cpdef simulate(importdata):
         #print("node:",kdtree.nodes[i].index,"particles:",kdtree.nodes[i].particle[0].id)
     for i in xrange(parnum):
         #print("simulate par:",parlist[i].id," z vel:",parlist[i].vel[2])
+        print("point 159")
         collide(&parlist[i])
+        print("point 161")
+        solve_link(&parlist[i])
+        print("point 162")
     
     exportdata = []
     parloc = []
@@ -231,7 +240,7 @@ cdef void collide(Particle *par):
                 #print("point3.0")
                 check += 10000
             #print("point4.0")
-            stiff = (fps * (substep +1)) / 2
+            stiff = (fps * (substep +1))
             target = (par.size + par2.size) * 0.999
             sqtarget = target * target
             #print("point5.0")
@@ -364,6 +373,80 @@ cdef void collide(Particle *par):
             #print("point10.0")
         #print("point11.0")
     #print("point12.0")
+
+
+cdef solve_link(Particle *par):
+    global parlist
+    global fps
+    global substep
+    cdef int i
+    cdef float stiff
+    cdef float damping
+    cdef float timestep
+    cdef float exp
+    cdef Particle *par1
+    cdef Particle *par2
+    cdef float Loc1[3]
+    cdef float Loc2[3]
+    cdef float V1[3]
+    cdef float V2[3]
+    #broken_links = []
+    for i in xrange(par.links_num):
+        
+        stiff = par.links[i].stiffness * (fps * (substep +1))
+        damping = par.links[i].damping
+        timestep = 1/(fps * (substep +1))
+        exp = par.links[i].exponent
+        par1 = &parlist[par.links[i].start]
+        par2 = &parlist[par.links[i].end]
+        Loc1[0] = par1.loc[0]
+        Loc1[1] = par1.loc[1]
+        Loc1[2] = par1.loc[2]
+        Loc2[0] = par2.loc[0]
+        Loc2[1] = par2.loc[1]
+        Loc2[2] = par2.loc[2]
+        V1[0] = par1.vel[0]
+        V1[1] = par1.vel[1]
+        V1[2] = par1.vel[2]
+        V2[0] = par2.vel[0]
+        V2[1] = par2.vel[1]
+        V2[2] = par2.vel[2]
+        LengthX = Loc2[0] - Loc1[0]
+        LengthY = Loc2[1] - Loc1[1]
+        LengthZ = Loc2[2] - Loc1[2]
+        Length = (LengthX**2 + LengthY**2 + LengthZ**2)**(0.5)
+        if par.links[i].lenght != Length:
+            Vx = V2[0] - V1[0]
+            Vy = V2[1] - V1[1]
+            Vz = V2[2] - V1[2]
+            V = (Vx * LengthX + Vy * LengthY+Vz * LengthZ) / Length
+            ForceSpring = ((Length - par.links[i].lenght)**(exp)) * stiff
+            ForceDamper = damping * V
+            ForceX = (ForceSpring + ForceDamper) * LengthX / Length
+            ForceY = (ForceSpring + ForceDamper) * LengthY / Length
+            ForceZ = (ForceSpring + ForceDamper) * LengthZ / Length
+            Force1 = [ForceX,ForceY,ForceZ]
+            Force2 = [-ForceX,-ForceY,-ForceZ]
+            ratio1 = (par2.mass/(par1.mass + par2.mass))
+            ratio2 = (par1.mass/(par1.mass + par2.mass))
+            par1.vel[0] += Force1[0] * ratio1
+            par1.vel[1] += Force1[1] * ratio1
+            par1.vel[2] += Force1[2] * ratio1
+            par2.vel[0] += Force2[0] * ratio2
+            par2.vel[1] += Force2[1] * ratio2
+            par2.vel[2] += Force2[2] * ratio2
+            """
+            if Length > (link.lenght  * (1 + link.broken)) or Length < (link.lenght  * (1 - link.broken)):
+                #print("broke!!!!!")
+                broken_links.append(link)
+                if par2 in par1.link_with:
+                    par1.link_with.remove(par2)
+                if par1 in par2.link_with:
+                    par2.link_with.remove(par1)
+                    
+    par.links = list(set(par.links) - set(broken_links))
+    """
+
     
 cdef void update(data):
     global parlist
@@ -394,7 +477,7 @@ cdef void update(data):
             psys[i].particles[ii].collided_with = <int *>realloc(psys[i].particles[ii].collided_with, 1 *cython.sizeof(int) )
             psys[i].particles[ii].collided_num = 0
             #print("update par:",psys[i].particles[ii].id," z vel:",psys[i].particles[ii].vel[2])
-    print("point 397")
+    #print("point 397")
  
 cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):
     cdef int i
@@ -529,28 +612,41 @@ cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,f
   
   
 cdef void create_link(int par_id,int parothers_id = -1):
-    print("point 530")
+    print("point 531")
     global kdtree
     global parlist
+    global parnum
+    print("point 535")
     cdef Links *link = <Links *>malloc( 1 * cython.sizeof(Links) )
-    cdef int *neighbours
-    cdef int ii
-    cdef Particle par = parlist[par_id]
-    cdef Particle par2
     print("point 537")
+    cdef int *neighbours = <int *>malloc(parnum * cython.sizeof(int))
+    cdef int ii
+    cdef Particle *par = <Particle *>malloc(1 * cython.sizeof(Particle))
+    cdef Particle *par2 = <Particle *>malloc(1 * cython.sizeof(Particle))
+    par = &parlist[par_id]
+    print("point 538")
     if par.sys.links_active == 0:
+        print("point 539")
+        free(link)
+        free(par)
+        free(par2)
+        free(neighbours)
         return
+    print("point 540")
     if parothers_id == -1:
+        print("point 541")
         neighbours = KDTree_rnn_query(kdtree,par.loc,par.sys.link_length)
+        print("point 542")
         #neighbours = kdtree.rnn_query(par.loc,par.sys.link_length)
     else:
+        print("point 543")
         neighbours[0] = parothers_id
     print("point 545")
     for ii in xrange(kdtree.num_result):
         if parothers_id == -1:
-            par2 = parlist[neighbours[ii]]
+            par2 = &parlist[neighbours[ii]]
         else:
-            par2 = parlist[neighbours[0]]
+            par2 = &parlist[neighbours[0]]
         if par.id != par2.id:
             print("point 552")
             arraysearch(par2.id,par.link_with,par.link_withnum)
@@ -586,7 +682,7 @@ cdef void create_link(int par_id,int parothers_id = -1):
                     par2.link_withnum += 1
                     print("point 584")
                     par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 1) * cython.sizeof(int) )
-                    free(link)
+                    #free(link)
                     print("point 587")
                     
                 if parothers_id != -1 and par.sys.relink_group == par2.sys.relink_group:
@@ -610,7 +706,11 @@ cdef void create_link(int par_id,int parothers_id = -1):
                         par2.link_with[par2.link_withnum] = par.id
                         par2.link_withnum += 1
                         par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 1) * cython.sizeof(int) )
-                        free(link)
+                        #free(link)
+    free(neighbours)
+    free(link)
+    free(par)
+    free(par2)
             
 cdef struct Links:
     float lenght
