@@ -6,6 +6,7 @@ import Cython.Compiler.Options
 Cython.Compiler.Options.annotate = True
 
 ext_modules = [Extension("cmolcore", ["cmolcore.pyx"],extra_compile_args=['-march=i686'])]
+#ext_modules = [Extension("cmolcore", ["cmolcore.pyx"],extra_compile_args=['-march=i686','-O3','-ffast-math'])]
 
 setup(
   name = 'Molecular script',
