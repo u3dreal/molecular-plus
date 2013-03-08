@@ -1,3 +1,4 @@
+x fix zero devision in some case
 - Separate compression / extension stiffness
 - Max links per particles option
 - Wolrd environnement density ( to make particule have the density of helium go up in a air environnement )
