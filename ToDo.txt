@@ -1,0 +1,7 @@
+- Separate compression / extension stiffness
+- Max links per particles option
+- Wolrd environnement density ( to make particule have the density of helium go up in a air environnement )
+- Max velocity info to give some keys on how substep needed
+- Optimisation in the code ( kdtree search and creation take most of the time when profiling )
+- Multithread kdtree searching
+- Multithread kdtree creation
