@@ -1,10 +1,11 @@
-x fix zero devision can happen in somes normal cases
-- Separate compression / extension stiffness
-- Max links per particles option
-- Bake when finish option
-- start render when finish option
-- Wolrd environnement density ( to make particule have the density of helium go up in a air environnement )
-- Max velocity info to give some keys on how substep needed
-- Optimisation in the code ( kdtree search and creation take most of the time when profiling )
-- Multithread kdtree searching
-- Multithread kdtree creation
+[x] fix zero devision can happen in somes normal cases
+[ ] Separate compression / extension stiffness
+[ ] Link tension ( bigger or smaller than when is created )
+[ ] Max links per particles option
+[ ] Bake when finish option
+[ ] start render when finish option
+[ ] Wolrd environnement density ( to make particule have the density of helium go up in a air environnement )
+[ ] Max velocity info to give some keys on how substep needed
+[ ] Optimisation in the code ( kdtree search and creation take most of the time when profiling )
+[ ] Multithread kdtree searching
+[ ] Multithread kdtree creation
