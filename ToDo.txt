@@ -1,4 +1,4 @@
-x fix zero devision in some case
+x fix zero devision can happen in somes normal cases
 - Separate compression / extension stiffness
 - Max links per particles option
 - Bake when finish option
