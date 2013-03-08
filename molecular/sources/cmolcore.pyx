@@ -443,7 +443,7 @@ cdef void solve_link(Particle *par):
             LengthY = Loc2[1] - Loc1[1]
             LengthZ = Loc2[2] - Loc1[2]
             Length = (LengthX**2 + LengthY**2 + LengthZ**2)**(0.5)
-            if par.links[i].lenght != Length:
+            if par.links[i].lenght != Length and Length != 0:
                 Vx = V2[0] - V1[0]
                 Vy = V2[1] - V1[1]
                 Vz = V2[2] - V1[2]
