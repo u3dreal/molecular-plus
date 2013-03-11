@@ -79,15 +79,23 @@ def define_props():
         parset.mol_link_tension = bpy.props.FloatProperty(name = "mol_link_tension", description = "Make link bigger or smaller than it's created (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
         parset.mol_link_tensionrand = bpy.props.FloatProperty(name = "mol_link_tensionrand", description = "Tension random",min = 0,max = 1, precision = 3, default = 0)
         parset.mol_link_max = bpy.props.IntProperty(name = "mol_link_max", description = "Maximum of links per particles",min = 0,default = 16)
-        parset.mol_link_cstiff = bpy.props.FloatProperty(name = "mol_link_cstiff", description = "Compression stiffness of links between particles",min = 0, default = 1)
-        parset.mol_link_cstiffrand = bpy.props.FloatProperty(name = "mol_link_cstiffrand", description = "Random variation for compression stiffness",min = 0 ,max = 1 ,default = 0)
-        parset.mol_link_estiff = bpy.props.FloatProperty(name = "mol_link_estiff", description = "Expension stiffness of links between particles",min = 0, default = 1)
-        parset.mol_link_estiffrand = bpy.props.FloatProperty(name = "mol_link_estiffrand", description = "Random variation for expansion stiffness",min = 0 ,max = 1 ,default = 0)
+        parset.mol_link_stiff = bpy.props.FloatProperty(name = "mol_link_stiff", description = "Stiffness of links between particles",min = 0, default = 1)
+        parset.mol_link_stiffrand = bpy.props.FloatProperty(name = "mol_link_stiffrand", description = "Random variation for stiffness",min = 0 ,max = 1 ,default = 0)
         parset.mol_link_stiffexp = bpy.props.IntProperty(name = "mol_link_stiffexp", description = "Give a exponent force to the spring links", default = 1, min = 1 , max = 10)
         parset.mol_link_damp = bpy.props.FloatProperty(name = "mol_link_damp", description = "Damping effect on spring links",min = 0, default = 1)
         parset.mol_link_damprand = bpy.props.FloatProperty(name = "mol_link_damprand", description = "Random variation on damping", default = 0)
         parset.mol_link_broken = bpy.props.FloatProperty(name = "mol_link_broken", description = "How much link can stretch before they broken. 0.01 = 1% , 0.5 = 50% , 2.0 = 200% ...",min = 0, default = 0.5)
         parset.mol_link_brokenrand = bpy.props.FloatProperty(name = "mol_link_brokenrand", description = "Give a random variation to the stretch limit",min = 0 ,max = 1, default = 0)
+        
+        parset.mol_link_samevalue = bpy.props.BoolProperty(name = "mol_link_samevalue", description = "When active , expansion and compression of the spring have same value",default = True)
+        
+        parset.mol_link_estiff = bpy.props.FloatProperty(name = "mol_link_estiff", description = "Expension stiffness of links between particles",min = 0, default = 1)
+        parset.mol_link_estiffrand = bpy.props.FloatProperty(name = "mol_link_estiffrand", description = "Random variation for expansion stiffness",min = 0 ,max = 1 ,default = 0)
+        parset.mol_link_estiffexp = bpy.props.IntProperty(name = "mol_link_estiffexp", description = "Give a exponent force to the expension spring links", default = 1, min = 1 , max = 10)
+        parset.mol_link_edamp = bpy.props.FloatProperty(name = "mol_link_edamp", description = "Damping effect on expension spring links",min = 0, default = 1)
+        parset.mol_link_edamprand = bpy.props.FloatProperty(name = "mol_link_edamprand", description = "Random variation on expension damping", default = 0)
+        parset.mol_link_ebroken = bpy.props.FloatProperty(name = "mol_link_ebroken", description = "How much link can expand before they broken. 0.01 = 1% , 0.5 = 50% , 2.0 = 200% ...",min = 0, default = 0.5)
+        parset.mol_link_ebrokenrand = bpy.props.FloatProperty(name = "mol_link_ebrokenrand", description = "Give a random variation to the expension stretch limit",min = 0 ,max = 1, default = 0)
         
         
         item = []
@@ -96,6 +104,9 @@ def define_props():
         parset.mol_relink_group = bpy.props.EnumProperty(items = item, description = "Choose a group that new link are possible")        
         parset.mol_relink_chance = bpy.props.FloatProperty(name = "mol_relink_chance", description = "Chance of a new link are created on collision. 0 = off , 100 = 100% of chance",min = 0, max = 100, default = 0)
         parset.mol_relink_chancerand = bpy.props.FloatProperty(name = "mol_relink_chancerand", description = "Give a random variation to the chance of new link", default = 0)
+        parset.mol_relink_tension = bpy.props.FloatProperty(name = "mol_relink_tension", description = "Make link bigger or smaller than it's created (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
+        parset.mol_relink_tensionrand = bpy.props.FloatProperty(name = "mol_relink_tensionrand", description = "Tension random",min = 0,max = 1, precision = 3, default = 0)
+        parset.mol_relink_max = bpy.props.IntProperty(name = "mol_relink_max", description = "Maximum of links per particles",min = 0,default = 16)
         parset.mol_relink_stiff = bpy.props.FloatProperty(name = "mol_relink_stiff", description = "Stiffness of links between particles",min = 0, default = 1)
         parset.mol_relink_stiffrand = bpy.props.FloatProperty(name = "mol_relink_stiffrand", description = "Random variation for stiffness",min = 0, max = 1 ,default = 0)
         parset.mol_relink_stiffexp = bpy.props.IntProperty(name = "mol_relink_stiffexp", description = "Give a exponent force to the spring links",min = 1, max = 10, default = 1)
@@ -104,6 +115,15 @@ def define_props():
         parset.mol_relink_broken = bpy.props.FloatProperty(name = "mol_relink_broken", description = "How much link can stretch before they broken. 0.01 = 1% , 0.5 = 50% , 2.0 = 200% ...",min = 0, default = 0.5)
         parset.mol_relink_brokenrand = bpy.props.FloatProperty(name = "mol_relink_brokenrand", description = "Give a random variation to the stretch limit",min = 0, max = 1, default = 0)
 
+        parset.mol_relink_samevalue = bpy.props.BoolProperty(name = "mol_relink_samevalue", description = "When active , expansion and compression of the spring have same value",default = True)
+
+        parset.mol_relink_estiff = bpy.props.FloatProperty(name = "mol_relink_estiff", description = "Stiffness of links between particles",min = 0, default = 1)
+        parset.mol_relink_estiffrand = bpy.props.FloatProperty(name = "mol_relink_estiffrand", description = "Random variation for stiffness",min = 0, max = 1 ,default = 0)
+        parset.mol_relink_estiffexp = bpy.props.IntProperty(name = "mol_relink_estiffexp", description = "Give a exponent force to the spring links",min = 1, max = 10, default = 1)
+        parset.mol_relink_edamp = bpy.props.FloatProperty(name = "mol_relink_edamp", description = "Damping effect on spring links",min = 0, default = 1)
+        parset.mol_relink_edamprand = bpy.props.FloatProperty(name = "mol_relink_deamprand", description = "Random variation on damping",min = 0 , max = 0, default = 0)
+        parset.mol_relink_ebroken = bpy.props.FloatProperty(name = "mol_relink_ebroken", description = "How much link can stretch before they broken. 0.01 = 1% , 0.5 = 50% , 2.0 = 200% ...",min = 0, default = 0.5)
+        parset.mol_relink_ebrokenrand = bpy.props.FloatProperty(name = "mol_relink_ebrokenrand", description = "Give a random variation to the stretch limit",min = 0, max = 1, default = 0)
         
         bpy.types.Scene.mol_fps_active = bpy.props.BoolProperty(name = "mol_fps_active", description = "Give another frame rate then the one set in the scene",default = False)
         bpy.types.Scene.mol_fps = bpy.props.IntProperty(name = "mol_fps", description = "Random variation on damping", default = 24)
@@ -227,7 +247,7 @@ class MolecularPanel(bpy.types.Panel):
         pmass = (psys.settings.particle_size**3) * psys.settings.mol_density
         #row.label(icon = "INFO",text = "mass: " + str(round(pmass,5)) + " kg")
         row = subbox.row()
-        row.label(icon = "INFO",text = "Total system weight: " + str(round(len(psys.particles) * pmass,5)) + " kg") 
+        row.label(icon = "INFO",text = "Total system approx weight: " + str(round(len(psys.particles) * pmass,4)) + " kg") 
         row = layout.row()
         row.label(text = "Collision:")
         box = layout.box()
@@ -248,16 +268,14 @@ class MolecularPanel(bpy.types.Panel):
         row.prop(psys.settings,"mol_link_length",text = "search length")
         row = subbox.row()
         row.prop(psys.settings,"mol_link_max",text = "Max links")
-        row.label(text = "")
+        row = subbox.row()
+        layout.separator()
         row = subbox.row()
         row.prop(psys.settings,"mol_link_tension",text = "Tension")
         row.prop(psys.settings,"mol_link_tensionrand",text = "Rand Tension")
         row = subbox.row()
-        row.prop(psys.settings,"mol_link_cstiff",text = "C Stiff")
-        row.prop(psys.settings,"mol_link_cstiffrand",text = "Rand C Stiff")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_link_estiff",text = "E Stiff")
-        row.prop(psys.settings,"mol_link_estiffrand",text = "Rand E Stiff")
+        row.prop(psys.settings,"mol_link_stiff",text = "Stiff")
+        row.prop(psys.settings,"mol_link_stiffrand",text = "Rand Stiff")
         row = subbox.row()
         row.prop(psys.settings,"mol_link_stiffexp",text = "Exponent")
         row.label(text = "")
@@ -267,6 +285,27 @@ class MolecularPanel(bpy.types.Panel):
         row = subbox.row()
         row.prop(psys.settings,"mol_link_broken",text = "broken")
         row.prop(psys.settings,"mol_link_brokenrand",text = "Random Broken")
+        row = subbox.row()
+        layout.separator()
+        row = subbox.row()
+        row.prop(psys.settings,"mol_link_samevalue", text = "Same values for compression/expansion")
+        row = subbox.row()
+        row.enabled  = not psys.settings.mol_link_samevalue
+        row.prop(psys.settings,"mol_link_estiff",text = "E Stiff")
+        row.prop(psys.settings,"mol_link_estiffrand",text = "Rand E Stiff")
+        row = subbox.row()
+        row.enabled  = not psys.settings.mol_link_samevalue
+        row.prop(psys.settings,"mol_link_estiffexp",text = "E Exponent")
+        row.label(text = "")
+        row = subbox.row()
+        row.enabled  = not psys.settings.mol_link_samevalue
+        row.prop(psys.settings,"mol_link_edamp",text = "E Damping")
+        row.prop(psys.settings,"mol_link_edamprand",text = "E Random Damping")
+        row = subbox.row()
+        row.enabled  = not psys.settings.mol_link_samevalue
+        row.prop(psys.settings,"mol_link_ebroken",text = "E broken")
+        row.prop(psys.settings,"mol_link_ebrokenrand",text = "E Random Broken")
+
         
         subbox = box.box()
         subbox.active = psys.settings.mol_links_active
@@ -275,6 +314,14 @@ class MolecularPanel(bpy.types.Panel):
         row.prop(psys.settings,"mol_relink_group",text = "Only links with:")
         row = subbox.row()
         row.prop(psys.settings,"mol_relink_chance",text = "% linking")
+        row = subbox.row()
+        row.prop(psys.settings,"mol_relink_max",text = "Max links")
+        row = subbox.row()
+        layout.separator()
+        row = subbox.row()
+        row.prop(psys.settings,"mol_relink_tension",text = "Tension")
+        row.prop(psys.settings,"mol_relink_tensionrand",text = "Rand Tension")
+        row = subbox.row()
         row.prop(psys.settings,"mol_relink_chancerand",text = "Random % linking")
         row = subbox.row()
         row.prop(psys.settings,"mol_relink_stiff",text = "Stiffness")
@@ -288,6 +335,26 @@ class MolecularPanel(bpy.types.Panel):
         row = subbox.row()
         row.prop(psys.settings,"mol_relink_broken",text = "broken")
         row.prop(psys.settings,"mol_relink_brokenrand",text = "Random broken")
+        row = subbox.row()
+        layout.separator()
+        row = subbox.row()
+        row.prop(psys.settings,"mol_relink_samevalue", text = "Same values for compression/expansion")
+        row = subbox.row()
+        row.enabled  = not psys.settings.mol_relink_samevalue
+        row.prop(psys.settings,"mol_relink_estiff",text = "Stiffness")
+        row.prop(psys.settings,"mol_relink_estiffrand",text = "Random Stiffness")
+        row = subbox.row()
+        row.enabled  = not psys.settings.mol_relink_samevalue
+        row.prop(psys.settings,"mol_relink_estiffexp",text = "Exp")
+        row.label(text = "")
+        row = subbox.row()
+        row.enabled  = not psys.settings.mol_relink_samevalue
+        row.prop(psys.settings,"mol_relink_edamp",text = "Damping")
+        row.prop(psys.settings,"mol_relink_edamprand",text = "Random Damping")
+        row = subbox.row()
+        row.enabled  = not psys.settings.mol_relink_samevalue
+        row.prop(psys.settings,"mol_relink_ebroken",text = "broken")
+        row.prop(psys.settings,"mol_relink_ebrokenrand",text = "Random broken")
         
         row = layout.row()
         scn = bpy.context.scene
@@ -306,6 +373,14 @@ class MolecularPanel(bpy.types.Panel):
         row.prop(scn,"mol_turbo",text = "Turbo")
         row = layout.row()
         row.operator("object.mol_simulate",text = "Start Molecular Simulation")
+        box = layout.box()
+        row = box.row()
+        box.enabled = False
+        row.label(text = "Thanks to all donators ! If you want donate")
+        row = box.row()
+        row.label(text = "to help me creating more stuffs like that")
+        row = box.row()
+        row.label(text = "just visit: www.pyroevil.com")
 
 
 
