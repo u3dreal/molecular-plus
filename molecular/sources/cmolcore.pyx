@@ -69,7 +69,7 @@ cpdef init(importdata):
             psys[i].link_tensionrand = importdata[i + 1][6][8]
             psys[i].link_stiff = importdata[i + 1][6][9]
             psys[i].link_stiffrand = importdata[i + 1][6][10]
-            psys[i].link_stiffexp = importdata[i + 1][6][1]
+            psys[i].link_stiffexp = importdata[i + 1][6][11]
             psys[i].link_damp = importdata[i + 1][6][12]
             psys[i].link_damprand = importdata[i + 1][6][13]
             psys[i].link_broken = importdata[i + 1][6][14]
@@ -444,10 +444,7 @@ cdef void solve_link(Particle *par):
     
     for i in xrange(par.links_num):
         if par.links[i].start != -1:
-            stiff = par.links[i].stiffness * (fps * (substep +1))
-            damping = par.links[i].damping
             timestep = 1/(fps * (substep +1))
-            exp = par.links[i].exponent
             par1 = &parlist[par.links[i].start]
             par2 = &parlist[par.links[i].end]
             Loc1[0] = par1.loc[0]
@@ -467,6 +464,14 @@ cdef void solve_link(Particle *par):
             LengthZ = Loc2[2] - Loc1[2]
             Length = (LengthX**2 + LengthY**2 + LengthZ**2)**(0.5)
             if par.links[i].lenght != Length and Length != 0:
+                if par.links[i].lenght > Length:
+                    stiff = par.links[i].stiffness * (fps * (substep +1))
+                    damping = par.links[i].damping
+                    exp = par.links[i].exponent
+                if par.links[i].lenght < Length:
+                    stiff = par.links[i].estiffness * (fps * (substep +1))
+                    damping = par.links[i].edamping
+                    exp = par.links[i].eexponent
                 Vx = V2[0] - V1[0]
                 Vy = V2[1] - V1[1]
                 Vz = V2[2] - V1[2]
@@ -491,7 +496,7 @@ cdef void solve_link(Particle *par):
                 par2.vel[1] += Force2[1] * ratio2
                 par2.vel[2] += Force2[2] * ratio2
                 
-                if Length > (par.links[i].lenght  * (1 + par.links[i].broken)) or Length < (par.links[i].lenght  * (1 - par.links[i].broken)):
+                if Length > (par.links[i].lenght  * (1 + par.links[i].ebroken)) or Length < (par.links[i].lenght  * (1 - par.links[i].broken)):
                     #print("broke!!!")
                     par.links[i].start = -1
                     par.links_activnum -= 1
@@ -736,11 +741,15 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):
                     link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                     stiffrandom = (par.sys.link_stiffrand + par2.sys.link_stiffrand) / 2 * 2
                     link.stiffness = ((par.sys.link_stiff + par2.sys.link_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
+                    link.estiffness = ((par.sys.link_estiff + par2.sys.link_estiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
                     link.exponent = abs((par.sys.link_stiffexp + par2.sys.link_stiffexp) / 2)
+                    link.eexponent = abs((par.sys.link_estiffexp + par2.sys.link_estiffexp) / 2)
                     damprandom = ((par.sys.link_damprand + par2.sys.link_damprand) / 2) * 2
                     link.damping = ((par.sys.link_damp + par2.sys.link_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
+                    link.edamping = ((par.sys.link_edamp + par2.sys.link_edamp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
                     brokrandom = ((par.sys.link_brokenrand + par2.sys.link_brokenrand) / 2) * 2
                     link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
+                    link.ebroken = ((par.sys.link_ebroken + par2.sys.link_ebroken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
                     #print("point 567")
                     par.links[par.links_num] = link[0]
                     par.links_num += 1
@@ -771,11 +780,15 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):
                         link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                         stiffrandom = (par.sys.relink_stiffrand + par2.sys.relink_stiffrand) / 2 * 2
                         link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.estiffness = ((par.sys.relink_estiff + par2.sys.relink_estiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
                         link.exponent = abs((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2)
+                        link.eexponent = abs((par.sys.relink_estiffexp + par2.sys.relink_estiffexp) / 2)
                         damprandom = ((par.sys.relink_damprand + par2.sys.relink_damprand) / 2) * 2
                         link.damping = ((par.sys.relink_damp + par2.sys.relink_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
+                        link.edamping = ((par.sys.relink_edamp + par2.sys.relink_edamp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
                         brokrandom = ((par.sys.relink_brokenrand + par2.sys.relink_brokenrand) / 2) * 2
                         link.broken = ((par.sys.relink_broken + par2.sys.relink_broken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.ebroken = ((par.sys.relink_ebroken + par2.sys.relink_ebroken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
                         par.links[par.links_num] = link[0]
                         par.links_num += 1
                         par.links_activnum += 1
@@ -800,6 +813,10 @@ cdef struct Links:
     float exponent
     float damping
     float broken
+    float estiffness
+    float eexponent
+    float edamping
+    float ebroken
             
             
             
