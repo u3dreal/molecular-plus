@@ -1,7 +1,7 @@
 [x] fix zero devision can happen in somes normal cases
-[o] Separate compression / expansion stiffness
-[o] Link tension ( bigger or smaller than when is created )
-[o] Max links per particles option
+[x] Separate compression / expansion stiffness
+[x] Link tension ( bigger or smaller than when is created )
+[x] Max links per particles option
 [ ] Bake when finish option
 [ ] start render when finish option
 [ ] Wolrd environnement density ( to make particule have the density of helium go up in a air environnement )
