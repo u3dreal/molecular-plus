@@ -11,6 +11,7 @@ cdef extern from "stdlib.h":
     ctypedef void const_void "const void"
     void qsort(void *base, int nmemb, int size,int(*compar)(const_void *, const_void *)) nogil
 
+    
 cdef float fps = 0
 cdef int substep = 0
 cdef int parnum = 0
@@ -60,31 +61,53 @@ cpdef init(importdata):
             psys[i].selfcollision_active = importdata[i + 1][6][0]
             psys[i].othercollision_active = importdata[i + 1][6][1]
             psys[i].collision_group = int(importdata[i + 1][6][2])
-            psys[i].links_active = importdata[i + 1][6][3]
-            psys[i].link_length = importdata[i + 1][6][4]
-            psys[i].link_stiff = importdata[i + 1][6][5]
-            psys[i].link_stiffrand = importdata[i + 1][6][6]
-            psys[i].link_stiffexp = importdata[i + 1][6][7]
-            psys[i].friction = importdata[i + 1][6][8]
-            psys[i].link_damp = importdata[i + 1][6][9]
-            psys[i].link_damprand = importdata[i + 1][6][10]
-            psys[i].link_broken = importdata[i + 1][6][11]
-            psys[i].link_brokenrand = importdata[i + 1][6][12]
-            psys[i].relink_group = int(importdata[i + 1][6][13])
-            psys[i].relink_chance = importdata[i + 1][6][14]
-            psys[i].relink_chancerand = importdata[i + 1][6][15]
-            psys[i].relink_stiff = importdata[i + 1][6][16]
-            psys[i].relink_stiffexp = importdata[i + 1][6][17]
-            psys[i].relink_stiffrand = importdata[i + 1][6][18]
-            psys[i].relink_damp = importdata[i + 1][6][19]
-            psys[i].relink_damprand = importdata[i + 1][6][20]
-            psys[i].relink_broken = importdata[i + 1][6][21]
-            psys[i].relink_brokenrand = importdata[i + 1][6][22]
+            psys[i].friction = importdata[i + 1][6][3]
+            psys[i].links_active = importdata[i + 1][6][4]
+            psys[i].link_length = importdata[i + 1][6][5]
+            psys[i].link_max = importdata[i + 1][6][6]
+            psys[i].link_tension = importdata[i + 1][6][7]
+            psys[i].link_tensionrand = importdata[i + 1][6][8]
+            psys[i].link_stiff = importdata[i + 1][6][9]
+            psys[i].link_stiffrand = importdata[i + 1][6][10]
+            psys[i].link_stiffexp = importdata[i + 1][6][1]
+            psys[i].link_damp = importdata[i + 1][6][12]
+            psys[i].link_damprand = importdata[i + 1][6][13]
+            psys[i].link_broken = importdata[i + 1][6][14]
+            psys[i].link_brokenrand = importdata[i + 1][6][15]
+            psys[i].link_estiff = importdata[i + 1][6][16]
+            psys[i].link_estiffrand = importdata[i + 1][6][17]
+            psys[i].link_estiffexp = importdata[i + 1][6][18]
+            psys[i].link_edamp = importdata[i + 1][6][19]
+            psys[i].link_edamprand = importdata[i + 1][6][20]
+            psys[i].link_ebroken = importdata[i + 1][6][21]
+            psys[i].link_ebrokenrand = importdata[i + 1][6][22]
+            psys[i].relink_group = int(importdata[i + 1][6][23])
+            psys[i].relink_chance = importdata[i + 1][6][24]
+            psys[i].relink_chancerand = importdata[i + 1][6][25]
+            psys[i].relink_max = importdata[i + 1][6][26]
+            psys[i].relink_tension = importdata[i + 1][6][27]
+            psys[i].relink_tensionrand = importdata[i + 1][6][28]
+            psys[i].relink_stiff = importdata[i + 1][6][29]
+            psys[i].relink_stiffexp = importdata[i + 1][6][30]
+            psys[i].relink_stiffrand = importdata[i + 1][6][31]
+            psys[i].relink_damp = importdata[i + 1][6][32]
+            psys[i].relink_damprand = importdata[i + 1][6][33]
+            psys[i].relink_broken = importdata[i + 1][6][34]
+            psys[i].relink_brokenrand = importdata[i + 1][6][35]
+            psys[i].relink_stiff = importdata[i + 1][6][36]
+            psys[i].relink_stiffexp = importdata[i + 1][6][37]
+            psys[i].relink_stiffrand = importdata[i + 1][6][38]
+            psys[i].relink_damp = importdata[i + 1][6][39]
+            psys[i].relink_damprand = importdata[i + 1][6][40]
+            psys[i].relink_broken = importdata[i + 1][6][41]
+            psys[i].relink_brokenrand = importdata[i + 1][6][42]
+            
             parlist[jj].sys = &psys[i]
             parlist[jj].collided_with = <int *>malloc( 1 * cython.sizeof(int) )
             parlist[jj].collided_num = 0
             parlist[jj].links = <Links *>malloc( 1 * cython.sizeof(Links) )
             parlist[jj].links_num = 0
+            parlist[jj].links_activnum = 0
             parlist[jj].link_with = <int *>malloc( 1 * cython.sizeof(int) )
             parlist[jj].link_withnum = 0
             jj += 1
@@ -98,7 +121,7 @@ cpdef init(importdata):
     
     for i in xrange(parnum):
         #print("point 98")
-        create_link(parlist[i].id)
+        create_link(parlist[i].id,parlist[i].sys.link_max)
         #print("point 100")
     
     #testkdtree(3)
@@ -374,7 +397,7 @@ cdef void collide(Particle *par):
                     par2.collided_with = <int *>realloc(par2.collided_with,(par2.collided_num + 1) * cython.sizeof(int) )
                     
                     if (par.sys.relink_chance + par2.sys.relink_chance / 2) > 0:
-                        create_link(par.id,par2.id)
+                        create_link(par.id,par.sys.link_max,par2.id)
 
                     #print("point271")
                 #print("point272")
@@ -471,6 +494,7 @@ cdef void solve_link(Particle *par):
                 if Length > (par.links[i].lenght  * (1 + par.links[i].broken)) or Length < (par.links[i].lenght  * (1 - par.links[i].broken)):
                     #print("broke!!!")
                     par.links[i].start = -1
+                    par.links_activnum -= 1
                     #broken_links.append(link)
                     #if par2 in par1.link_with:
                         #par1.link_with.remove(par2)
@@ -501,7 +525,7 @@ cdef void update(data):
             if psys[i].particles[ii].state == 0 and data[i][2][ii] == 0:
                 psys[i].particles[ii].state = data[i][2][ii] + 1
                 #print("point 385")
-                create_link(psys[i].particles[ii].id)
+                create_link(psys[i].particles[ii].id,psys[i].link_max)
                 #print("point 387")
                 #parlist.append(par)
             elif psys[i].particles[ii].state == 1 and data[i][2][ii] == 0:
@@ -646,7 +670,7 @@ cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,f
     #print("point3")
   
   
-cdef void create_link(int par_id,int parothers_id = -1):
+cdef void create_link(int par_id, int max_link, int parothers_id = -1):
     #print("point 531")
     global kdtree
     global parlist
@@ -661,8 +685,12 @@ cdef void create_link(int par_id,int parothers_id = -1):
     cdef float stiffrandom
     cdef float damprandom
     cdef float brokrandom
+    cdef float tension
+    cdef float tensionrandom
     par = &parlist[par_id]
     #print("point 538")
+    if par.links_activnum >= max_link:
+        return
     if par.sys.links_active == 0:
         #print("point 539")
         #free(link)
@@ -684,8 +712,10 @@ cdef void create_link(int par_id,int parothers_id = -1):
     for ii in xrange(kdtree.num_result):
         if parothers_id == -1:
             par2 = &parlist[neighbours[ii]]
+            tension = par.sys.link_tension
         else:
             par2 = &parlist[neighbours[0]]
+            tension = (par.sys.link_tension + par2.sys.link_tension) / 2
         if par.id != par2.id:
             #print("point 552")
             arraysearch(par2.id,par.link_with,par.link_withnum)
@@ -696,12 +726,14 @@ cdef void create_link(int par_id,int parothers_id = -1):
                 #print(par.loc[0],par.loc[1],par.loc[2])
                 #print(par2.loc[0],par2.loc[1],par2.loc[2])
                 #print(square_dist(par.loc,par2.loc,3))
-                link.lenght = (square_dist(par.loc,par2.loc,3))**0.5
                 #print("point 558")
                 link.start = par.id
                 link.end = par2.id
                 #print("point 561")
                 if parothers_id == -1:
+                    tensionrandom = (par.sys.link_tensionrand + par2.sys.link_tensionrand) / 2 * 2
+                    tension = ((par.sys.link_tension + par2.sys.link_tension)/2) * (((random() * tensionrandom) - (tensionrandom / 2)) + 1)
+                    link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                     stiffrandom = (par.sys.link_stiffrand + par2.sys.link_stiffrand) / 2 * 2
                     link.stiffness = ((par.sys.link_stiff + par2.sys.link_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
                     link.exponent = abs((par.sys.link_stiffexp + par2.sys.link_stiffexp) / 2)
@@ -712,6 +744,7 @@ cdef void create_link(int par_id,int parothers_id = -1):
                     #print("point 567")
                     par.links[par.links_num] = link[0]
                     par.links_num += 1
+                    par.links_activnum += 1
                     #print("point 568")
                     par.links = <Links *>realloc(par.links,(par.links_num + 2) * cython.sizeof(Links) )
                     
@@ -733,6 +766,9 @@ cdef void create_link(int par_id,int parothers_id = -1):
                     relinkrandom = random()
                     chancerdom = (par.sys.relink_chancerand + par2.sys.relink_chancerand) / 2 * 2
                     if relinkrandom <= ((par.sys.relink_chance + par2.sys.relink_chance) / 2) * (((random() * chancerdom) - (chancerdom / 2)) + 1):
+                        tensionrandom = (par.sys.relink_tensionrand + par2.sys.relink_tensionrand) / 2 * 2
+                        tension = ((par.sys.relink_tension + par2.sys.relink_tension)/2) * (((random() * tensionrandom) - (tensionrandom / 2)) + 1)
+                        link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                         stiffrandom = (par.sys.relink_stiffrand + par2.sys.relink_stiffrand) / 2 * 2
                         link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
                         link.exponent = abs((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2)
@@ -742,6 +778,7 @@ cdef void create_link(int par_id,int parothers_id = -1):
                         link.broken = ((par.sys.relink_broken + par2.sys.relink_broken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
                         par.links[par.links_num] = link[0]
                         par.links_num += 1
+                        par.links_activnum += 1
                         par.links = <Links *>realloc(par.links,(par.links_num + 1) * cython.sizeof(Links) )
                         par.link_with[par.link_withnum] = par2.id
                         par.link_withnum += 1
@@ -790,19 +827,32 @@ cdef struct ParSys:
     int selfcollision_active
     int othercollision_active
     int collision_group
+    float friction
     int links_active
     float link_length
+    int link_max
+    float link_tension
+    float link_tensionrand
     float link_stiff
     float link_stiffrand
     float link_stiffexp
-    float friction
     float link_damp
     float link_damprand
     float link_broken
     float link_brokenrand
+    float link_estiff
+    float link_estiffrand
+    float link_estiffexp
+    float link_edamp
+    float link_edamprand
+    float link_ebroken
+    float link_ebrokenrand
     int relink_group
     float relink_chance
     float relink_chancerand
+    int relink_max
+    float relink_tension
+    float relink_tensionrand
     float relink_stiff
     float relink_stiffexp
     float relink_stiffrand
@@ -810,6 +860,13 @@ cdef struct ParSys:
     float relink_damprand
     float relink_broken
     float relink_brokenrand
+    float relink_estiff
+    float relink_estiffexp
+    float relink_estiffrand
+    float relink_edamp
+    float relink_edamprand
+    float relink_ebroken
+    float relink_ebrokenrand
 
     
 cdef struct Particle:
@@ -825,12 +882,12 @@ cdef struct Particle:
     int collided_num
     Links *links
     int links_num
+    int links_activnum
     int *link_with
     int link_withnum
-    
-    
- 
- 
+
+
+
 cdef int compare_x (const void *u, const void *v):
     cdef float w = ((<Particle*>u)).loc[0] - ((<Particle*>v)).loc[0]
     if w < 0:

@@ -76,7 +76,7 @@ def define_props():
         
         parset.mol_links_active = bpy.props.BoolProperty(name = "mol_links_active", description = "Activate links between particles of this system",default = False)
         parset.mol_link_length = bpy.props.FloatProperty(name = "mol_link_length", description = "Searching range to make a link between particles",min = 0, precision = 6, default = 1)
-        parset.mol_link_tension = bpy.props.FloatProperty(name = "mol_link_tension", description = "Make link bigger or smaller than it's created (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
+        parset.mol_link_tension = bpy.props.FloatProperty(name = "mol_link_tension", description = "Make link bigger or smaller than it's created.Can make your system explode really fast(1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
         parset.mol_link_tensionrand = bpy.props.FloatProperty(name = "mol_link_tensionrand", description = "Tension random",min = 0,max = 1, precision = 3, default = 0)
         parset.mol_link_max = bpy.props.IntProperty(name = "mol_link_max", description = "Maximum of links per particles",min = 0,default = 16)
         parset.mol_link_stiff = bpy.props.FloatProperty(name = "mol_link_stiff", description = "Stiffness of links between particles",min = 0, default = 1)
@@ -104,7 +104,7 @@ def define_props():
         parset.mol_relink_group = bpy.props.EnumProperty(items = item, description = "Choose a group that new link are possible")        
         parset.mol_relink_chance = bpy.props.FloatProperty(name = "mol_relink_chance", description = "Chance of a new link are created on collision. 0 = off , 100 = 100% of chance",min = 0, max = 100, default = 0)
         parset.mol_relink_chancerand = bpy.props.FloatProperty(name = "mol_relink_chancerand", description = "Give a random variation to the chance of new link", default = 0)
-        parset.mol_relink_tension = bpy.props.FloatProperty(name = "mol_relink_tension", description = "Make link bigger or smaller than it's created (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
+        parset.mol_relink_tension = bpy.props.FloatProperty(name = "mol_relink_tension", description = "Make link bigger or smaller than it's created. Can make your system explode really fast (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
         parset.mol_relink_tensionrand = bpy.props.FloatProperty(name = "mol_relink_tensionrand", description = "Tension random",min = 0,max = 1, precision = 3, default = 0)
         parset.mol_relink_max = bpy.props.IntProperty(name = "mol_relink_max", description = "Maximum of links per particles",min = 0,default = 16)
         parset.mol_relink_stiff = bpy.props.FloatProperty(name = "mol_relink_stiff", description = "Stiffness of links between particles",min = 0, default = 1)
@@ -166,30 +166,68 @@ def pack_data(initiate):
                     #psys.settings.count = psys.settings.count
                     psys.particles.foreach_get('size',par_size)
                     
-                    params = [0] * 23
+                    if psys.settings.mol_link_samevalue:
+                        psys.settings.mol_link_estiff = psys.settings.mol_link_stiff
+                        psys.settings.mol_link_estiffrand = psys.settings.mol_link_stiffrand
+                        psys.settings.mol_link_estiffexp = psys.settings.mol_link_stiffexp
+                        psys.settings.mol_link_edamp = psys.settings.mol_link_damp
+                        psys.settings.mol_link_edamprand = psys.settings.mol_link_damprand
+                        psys.settings.mol_link_ebroken = psys.settings.mol_link_broken
+                        psys.settings.mol_link_ebrokenrand = psys.settings.mol_link_brokenrand
+                        
+                    if psys.settings.mol_relink_samevalue:
+                        psys.settings.mol_relink_estiff = psys.settings.mol_relink_stiff
+                        psys.settings.mol_relink_estiffrand = psys.settings.mol_relink_stiffrand
+                        psys.settings.mol_relink_estiffexp = psys.settings.mol_relink_stiffexp
+                        psys.settings.mol_relink_edamp = psys.settings.mol_relink_damp
+                        psys.settings.mol_relink_edamprand = psys.settings.mol_relink_damprand
+                        psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
+                        psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
+                    
+                    params = [0] * 43
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
                     params[2] = psys.settings.mol_collision_group
-                    params[3] = psys.settings.mol_links_active
-                    params[4] = psys.settings.mol_link_length
-                    params[5] = psys.settings.mol_link_stiff
-                    params[6] = psys.settings.mol_link_stiffrand
-                    params[7] = psys.settings.mol_link_stiffexp
-                    params[8] = psys.settings.mol_friction
-                    params[9] = psys.settings.mol_link_damp
-                    params[10] = psys.settings.mol_link_damprand
-                    params[11] = psys.settings.mol_link_broken
-                    params[12] = psys.settings.mol_link_brokenrand
-                    params[13] = psys.settings.mol_relink_group
-                    params[14] = psys.settings.mol_relink_chance
-                    params[15] = psys.settings.mol_relink_chancerand
-                    params[16] = psys.settings.mol_relink_stiff
-                    params[17] = psys.settings.mol_relink_stiffexp
-                    params[18] = psys.settings.mol_relink_stiffrand
-                    params[19] = psys.settings.mol_relink_damp
-                    params[20] = psys.settings.mol_relink_damprand
-                    params[21] = psys.settings.mol_relink_broken
-                    params[22] = psys.settings.mol_relink_brokenrand                    
+                    params[3] = psys.settings.mol_friction
+                    params[4] = psys.settings.mol_links_active
+                    params[5] = psys.settings.mol_link_length
+                    params[6] = psys.settings.mol_link_max
+                    params[7] = psys.settings.mol_link_tension
+                    params[8] = psys.settings.mol_link_tensionrand
+                    params[9] = psys.settings.mol_link_stiff
+                    params[10] = psys.settings.mol_link_stiffrand
+                    params[11] = psys.settings.mol_link_stiffexp
+                    params[12] = psys.settings.mol_link_damp
+                    params[13] = psys.settings.mol_link_damprand
+                    params[14] = psys.settings.mol_link_broken
+                    params[15] = psys.settings.mol_link_brokenrand
+                    params[16] = psys.settings.mol_link_estiff
+                    params[17] = psys.settings.mol_link_estiffrand
+                    params[18] = psys.settings.mol_link_estiffexp
+                    params[19] = psys.settings.mol_link_edamp
+                    params[20] = psys.settings.mol_link_edamprand
+                    params[21] = psys.settings.mol_link_ebroken
+                    params[22] = psys.settings.mol_link_ebrokenrand
+                    params[23] = psys.settings.mol_relink_group
+                    params[24] = psys.settings.mol_relink_chance
+                    params[25] = psys.settings.mol_relink_chancerand
+                    params[26] = psys.settings.mol_relink_max
+                    params[27] = psys.settings.mol_relink_tension
+                    params[28] = psys.settings.mol_relink_tensionrand
+                    params[29] = psys.settings.mol_relink_stiff
+                    params[30] = psys.settings.mol_relink_stiffexp
+                    params[31] = psys.settings.mol_relink_stiffrand
+                    params[32] = psys.settings.mol_relink_damp
+                    params[33] = psys.settings.mol_relink_damprand
+                    params[34] = psys.settings.mol_relink_broken
+                    params[35] = psys.settings.mol_relink_brokenrand
+                    params[36] = psys.settings.mol_relink_estiff
+                    params[37] = psys.settings.mol_relink_estiffexp
+                    params[38] = psys.settings.mol_relink_estiffrand
+                    params[39] = psys.settings.mol_relink_edamp
+                    params[40] = psys.settings.mol_relink_edamprand
+                    params[41] = psys.settings.mol_relink_ebroken
+                    params[42] = psys.settings.mol_relink_ebrokenrand                   
     
             if initiate:
                 exportdata[0][2] = psyslen
@@ -314,6 +352,7 @@ class MolecularPanel(bpy.types.Panel):
         row.prop(psys.settings,"mol_relink_group",text = "Only links with:")
         row = subbox.row()
         row.prop(psys.settings,"mol_relink_chance",text = "% linking")
+        row.prop(psys.settings,"mol_relink_chancerand",text = "Random % linking")
         row = subbox.row()
         row.prop(psys.settings,"mol_relink_max",text = "Max links")
         row = subbox.row()
@@ -321,8 +360,6 @@ class MolecularPanel(bpy.types.Panel):
         row = subbox.row()
         row.prop(psys.settings,"mol_relink_tension",text = "Tension")
         row.prop(psys.settings,"mol_relink_tensionrand",text = "Rand Tension")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_chancerand",text = "Random % linking")
         row = subbox.row()
         row.prop(psys.settings,"mol_relink_stiff",text = "Stiffness")
         row.prop(psys.settings,"mol_relink_stiffrand",text = "Random Stiffness")
