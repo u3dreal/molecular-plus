@@ -134,6 +134,7 @@ def define_props():
 
 def pack_data(initiate):
     global exportdata
+    global minsize
     psyslen = 0
     parnum = 0
     for obj in bpy.data.objects:
@@ -166,6 +167,8 @@ def pack_data(initiate):
                     psyslen += 1
                     psys.settings.count = psys.settings.count
                     psys.particles.foreach_get('size',par_size)
+                    if minsize > min(par_size):
+                        minsize = min(par_size)
                     
                     if psys.settings.mol_link_samevalue:
                         psys.settings.mol_link_estiff = psys.settings.mol_link_stiff
@@ -436,7 +439,10 @@ class MolSimulate(bpy.types.Operator):
         global old_endframe
         global exportdata
         global report
-
+        global minsize
+        
+        minsize = 1000000000
+        
         print("Molecular Sim start--------------------------------------------------")
         stime = clock()
         scene = bpy.context.scene
@@ -506,6 +512,7 @@ class MolSimulateModal(bpy.types.Operator):
         global exportdata
         global stime
         global importdata
+        global minsize
         
         #stime = clock()
         scene = bpy.context.scene
@@ -524,6 +531,7 @@ class MolSimulateModal(bpy.types.Operator):
             if frame_current == frame_end and scene.mol_render == True:
                 bpy.ops.render.render(animation=True)
             scene.frame_set(frame = scene.frame_start)
+            cmolcore.memfree()
             print("--------------------------------------------------Molecular Sim end")
             return self.cancel(context)
 
@@ -553,6 +561,8 @@ class MolSimulateModal(bpy.types.Operator):
             framesubstep = frame_current/(substep+1)        
             if framesubstep == int(framesubstep):
                 etime = clock()
+                print("      max velocity:",round(importdata[2],4))
+                #print("      substep suggested :",int((importdata[2] / (scene.render.fps)) /  (minsize / 3)))
                 print("    frame " + str(framesubstep + 1) + " take:")
                 print("      Molecular Script: " + str(round(etime - stime,3)) + " sec")
                 stime = clock()
