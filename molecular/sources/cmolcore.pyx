@@ -169,6 +169,9 @@ cpdef simulate(importdata):
     
     cdef int i
     cdef int ii
+    cdef float zeropoint[3]
+    cdef float velmagn = 0
+    cdef float velmaxmagn = 0
     
     update(importdata)
     
@@ -188,7 +191,13 @@ cpdef simulate(importdata):
         #print("point 161")
         solve_link(&parlist[i])
         #print("point 162")
-    
+    velmagn = 0
+    velmaxmagn = 0
+    for i in xrange(parnum):
+        if parlist[i].state <= 1:
+            velmagn = square_dist(zeropoint,parlist[i].vel , 3)
+            if velmagn >= velmaxmagn:
+                velmaxmagn = velmagn
     exportdata = []
     parloc = []
     parvel = []
@@ -204,11 +213,41 @@ cpdef simulate(importdata):
             parveltmp.append(psys[i].particles[ii].vel[2])
         parloc.append(parloctmp)  
         parvel.append(parveltmp)
+        pyvelmaxmagn = velmaxmagn**0.5
         parloctmp = []
         parveltmp = []   
-    exportdata = [parloc,parvel]
+    exportdata = [parloc,parvel,pyvelmaxmagn]
     
     return exportdata
+
+cpdef memfree():
+    global kdtree
+    global psysnum
+    global parnum
+    global psys
+    global parlist
+    global parlistcopy
+    global fps
+    global substep
+    
+    fps = 0
+    substep = 0
+    #for i in xrange(psysnum):
+        #free(psys[i].particles)
+    
+    if psysnum > 1:
+        free(psys)
+    if parnum > 1:
+        free(parlistcopy)
+        free(parlist)
+    parnum = 0
+    psysnum = 0
+    #free(kdtree.result)
+    #free(kdtree.nodes)
+    #free(kdtree.root_node)
+    #free(kdtree)
+    
+    return
     
 #@cython.cdivision(True)
 cdef void collide(Particle *par):
@@ -237,6 +276,8 @@ cdef void collide(Particle *par):
     cdef float friction
     cdef int i
     cdef int check = 0
+    if  par.state >= 2:
+        return
     #print("point215")
     neighbours = KDTree_rnn_query(kdtree,par.loc,par.size * 2)
     #print("point217")
@@ -276,7 +317,7 @@ cdef void collide(Particle *par):
             sqtarget = target * target
             #print("point246")
             #print("check:",check)
-            if check == 0 and par.state <= 1 and par2.state <= 1 and arraysearch(par2.id,par.link_with,par.link_withnum) == -1 and arraysearch(par.id,par2.link_with,par2.link_withnum) == -1:
+            if check == 0 and par2.state <= 1 and arraysearch(par2.id,par.link_with,par.link_withnum) == -1 and arraysearch(par.id,par2.link_with,par2.link_withnum) == -1:
             #if par.state <= 1 and par2.state <= 1 and par2 not in par.link_with and par not in par2.link_with:
                 #print("point250")
                 #print("collide:",par.id," with ",par2.id)
@@ -441,7 +482,8 @@ cdef void solve_link(Particle *par):
     cdef float ratio1
     cdef float ratio2
     #broken_links = []
-    
+    if  par.state >= 2:
+        return
     for i in xrange(par.links_num):
         if par.links[i].start != -1:
             timestep = 1/(fps * (substep +1))
@@ -694,6 +736,8 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):
     cdef float tensionrandom
     par = &parlist[par_id]
     #print("point 538")
+    if  par.state >= 2:
+        return
     if par.links_activnum >= max_link:
         return
     if par.sys.links_active == 0:
