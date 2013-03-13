@@ -76,9 +76,9 @@ def define_props():
         
         parset.mol_links_active = bpy.props.BoolProperty(name = "mol_links_active", description = "Activate links between particles of this system",default = False)
         parset.mol_link_length = bpy.props.FloatProperty(name = "mol_link_length", description = "Searching range to make a link between particles",min = 0, precision = 6, default = 1)
-        parset.mol_link_tension = bpy.props.FloatProperty(name = "mol_link_tension", description = "Make link bigger or smaller than it's created.Can make your system explode really fast(1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
+        parset.mol_link_tension = bpy.props.FloatProperty(name = "mol_link_tension", description = "Make link bigger or smaller than it's created (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
         parset.mol_link_tensionrand = bpy.props.FloatProperty(name = "mol_link_tensionrand", description = "Tension random",min = 0,max = 1, precision = 3, default = 0)
-        parset.mol_link_max = bpy.props.IntProperty(name = "mol_link_max", description = "Maximum of links per particles",min = 0,default = 8)
+        parset.mol_link_max = bpy.props.IntProperty(name = "mol_link_max", description = "Maximum of links per particles",min = 0,default = 16)
         parset.mol_link_stiff = bpy.props.FloatProperty(name = "mol_link_stiff", description = "Stiffness of links between particles",min = 0, default = 1)
         parset.mol_link_stiffrand = bpy.props.FloatProperty(name = "mol_link_stiffrand", description = "Random variation for stiffness",min = 0 ,max = 1 ,default = 0)
         parset.mol_link_stiffexp = bpy.props.IntProperty(name = "mol_link_stiffexp", description = "Give a exponent force to the spring links", default = 1, min = 1 , max = 10)
@@ -104,9 +104,9 @@ def define_props():
         parset.mol_relink_group = bpy.props.EnumProperty(items = item, description = "Choose a group that new link are possible")        
         parset.mol_relink_chance = bpy.props.FloatProperty(name = "mol_relink_chance", description = "Chance of a new link are created on collision. 0 = off , 100 = 100% of chance",min = 0, max = 100, default = 0)
         parset.mol_relink_chancerand = bpy.props.FloatProperty(name = "mol_relink_chancerand", description = "Give a random variation to the chance of new link", default = 0)
-        parset.mol_relink_tension = bpy.props.FloatProperty(name = "mol_relink_tension", description = "Make link bigger or smaller than it's created. Can make your system explode really fast (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
+        parset.mol_relink_tension = bpy.props.FloatProperty(name = "mol_relink_tension", description = "Make link bigger or smaller than it's created (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
         parset.mol_relink_tensionrand = bpy.props.FloatProperty(name = "mol_relink_tensionrand", description = "Tension random",min = 0,max = 1, precision = 3, default = 0)
-        parset.mol_relink_max = bpy.props.IntProperty(name = "mol_relink_max", description = "Maximum of links per particles",min = 0,default = 8)
+        parset.mol_relink_max = bpy.props.IntProperty(name = "mol_relink_max", description = "Maximum of links per particles",min = 0,default = 16)
         parset.mol_relink_stiff = bpy.props.FloatProperty(name = "mol_relink_stiff", description = "Stiffness of links between particles",min = 0, default = 1)
         parset.mol_relink_stiffrand = bpy.props.FloatProperty(name = "mol_relink_stiffrand", description = "Random variation for stiffness",min = 0, max = 1 ,default = 0)
         parset.mol_relink_stiffexp = bpy.props.IntProperty(name = "mol_relink_stiffexp", description = "Give a exponent force to the spring links",min = 1, max = 10, default = 1)
@@ -129,7 +129,8 @@ def define_props():
         bpy.types.Scene.mol_fps = bpy.props.IntProperty(name = "mol_fps", description = "Random variation on damping", default = 24)
         bpy.types.Scene.mol_substep = bpy.props.IntProperty(name = "mol_substep", description = "Substep. Higher equal more stable and accurate but more slower",min = 0, max = 900, default = 4)
         bpy.types.Scene.mol_turbo = bpy.props.BoolProperty(name = "mol_turbo", description = "Active fast Cython script",default = True)
-
+        bpy.types.Scene.mol_bake = bpy.props.BoolProperty(name = "mol_bake", description = "Bake simulation when finish",default = True)
+        bpy.types.Scene.mol_render = bpy.props.BoolProperty(name = "mol_render", description = "Start rendering animation when simulation is finish. WARNING: It's freeze blender until render is finish.",default = False)
 
 def pack_data(initiate):
     global exportdata
@@ -163,7 +164,7 @@ def pack_data(initiate):
                 
                 if initiate:
                     psyslen += 1
-                    #psys.settings.count = psys.settings.count
+                    psys.settings.count = psys.settings.count
                     psys.particles.foreach_get('size',par_size)
                     
                     if psys.settings.mol_link_samevalue:
@@ -409,6 +410,9 @@ class MolecularPanel(bpy.types.Panel):
         row.prop(scn,"mol_substep",text = "substep")
         row.prop(scn,"mol_turbo",text = "Turbo")
         row = layout.row()
+        row.prop(scn,"mol_bake",text = "Bake all at ending")
+        row.prop(scn,"mol_render",text = "Render at ending")
+        row = layout.row()
         row.operator("object.mol_simulate",text = "Start Molecular Simulation")
         box = layout.box()
         row = box.row()
@@ -453,7 +457,7 @@ class MolSimulate(bpy.types.Operator):
         exportdata = [[fps,substep,0,0]]
         stime = clock()
         pack_data(True)
-        print("sys number",exportdata[0][2])
+        #print("sys number",exportdata[0][2])
         etime = clock()
         print("  " + "PackData take " + str(round(etime - stime,3)) + "sec")
         stime = clock()
@@ -508,10 +512,18 @@ class MolSimulateModal(bpy.types.Operator):
         frame_end = scene.frame_end
         frame_current = scene.frame_current
         if event.type == 'ESC' or frame_current == frame_end:
+            if frame_current == frame_end and scene.mol_bake == True:
+                fake_context = bpy.context.copy()
+                for obj in bpy.data.objects:
+                    for psys in obj.particle_systems:
+                        if psys.settings.mol_active == True:
+                            fake_context["point_cache"] = psys.point_cache
+                            bpy.ops.ptcache.bake_from_cache(fake_context)
             scene.render.frame_map_new = 1
             scene.frame_end = old_endframe
+            if frame_current == frame_end and scene.mol_render == True:
+                bpy.ops.render.render(animation=True)
             scene.frame_set(frame = scene.frame_start)
-            #bpy.ops.render.render(animation=True)
             print("--------------------------------------------------Molecular Sim end")
             return self.cancel(context)
 
@@ -550,7 +562,6 @@ class MolSimulateModal(bpy.types.Operator):
                 etime2 = clock()
                 print("      Blender: " + str(round(etime2 - stime2,3)) + " sec")
                 stime2 = clock()
-
         return {'PASS_THROUGH'}
 
     def execute(self, context):
@@ -560,10 +571,7 @@ class MolSimulateModal(bpy.types.Operator):
 
     def cancel(self, context):
         context.window_manager.event_timer_remove(self._timer)
-        return {'CANCELLED'}
-
-
-    
+        return {'CANCELLED'}   
 
 def register():
     define_props()
