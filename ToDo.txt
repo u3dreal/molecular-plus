@@ -4,7 +4,7 @@
 [x] Max links per particles option
 [x] Bake when finish option
 [x] start render when finish option
-[o] Free the memory when finish or stopped
+[x] Free the memory when finish or stopped
 [ ] Max velocity info to give some keys on how much substeps needed
 [ ] Optimisation in the code ( kdtree search and creation take most of the time when profiling )
 [ ] clean and comment the code
