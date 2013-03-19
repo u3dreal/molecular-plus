@@ -1,10 +1,12 @@
-#cython: profile=True
-#cython: boundscheck=True
-#cython: cdivision=False
+#cython: profile=False
+#cython: boundscheck=False
+#cython: cdivision=True
+
+#NOTE: order of slow fonction to be optimize/multithreaded: kdtreesearching , kdtreecreating , linksolving
+
 cimport cython
-from random import random
 from cython.parallel import parallel,prange
-from libc.stdlib cimport malloc , realloc, free , rand , srand
+from libc.stdlib cimport malloc , realloc, free , rand , srand, abs
 
 
 cdef extern from "stdlib.h":
@@ -120,13 +122,19 @@ cpdef init(importdata):
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
     
     for i in xrange(parnum):
-        #print("point 98")
+        #printdb(123)
         create_link(parlist[i].id,parlist[i].sys.link_max)
-        #print("point 100")
+        #printdb(125)
     
     #testkdtree(3)
     
     return parnum
+    
+    
+cdef void printdb (int linenumber, text = ""):
+    cdef int dbactive = 1
+    if dbactive == 1:
+        print(linenumber)
 
 cdef testkdtree(int verbose = 0):
     global kdtree
@@ -152,8 +160,6 @@ cdef testkdtree(int verbose = 0):
         print("Result")
         for i in xrange(kdtree.num_result):
             print("Query Node:",b[i].index," Query Particle:",b[i].particle[0].id)
-            #print("Query Node:",b[i].index)
-            #print("Query Particle:",b[i].particle[0].id)
     if verbose >= 1:
         print("number of particle find:",kdtree.num_result)
     free(b)
@@ -175,22 +181,20 @@ cpdef simulate(importdata):
     
     update(importdata)
     
+    #with nogil:
     for i in range(parnum):
         parlistcopy[i] = parlist[i]
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
     
     #testkdtree(3)
-    
-    #with nogil:
-    #for i in range(parnum):
-        #print("node:",kdtree.nodes[i].index,"particles:",kdtree.nodes[i].particle[0].id)
+
     for i in xrange(parnum):
-        #print("simulate par:",parlist[i].id," z vel:",parlist[i].vel[2])
-        #print("point 159")
+        #printdb(190)
         collide(&parlist[i])
-        #print("point 161")
+        #printdb(192)
         solve_link(&parlist[i])
-        #print("point 162")
+        #printdb(194)
+            
     velmagn = 0
     velmaxmagn = 0
     for i in xrange(parnum):
@@ -247,10 +251,9 @@ cpdef memfree():
     #free(kdtree.root_node)
     #free(kdtree)
     
-    return
     
 #@cython.cdivision(True)
-cdef void collide(Particle *par):
+cdef void collide(Particle *par):# nogil:
     global kdtree
     cdef int *neighbours
     cdef Particle *par2
@@ -278,59 +281,50 @@ cdef void collide(Particle *par):
     cdef int check = 0
     if  par.state >= 2:
         return
-    #print("point215")
+    if par.sys.selfcollision_active == False and par.sys.othercollision_active == False:
+        return
+    #printdb(282)
     neighbours = KDTree_rnn_query(kdtree,par.loc,par.size * 2)
-    #print("point217")
-    #print(kdtree.num_result)
+    #printdb(284)
     for i in xrange(kdtree.num_result):
         check = 0
-        #print("point221")
+        #printdb(287)
         if parlist[i].id == -1:
             check += 1
-        #print("point224")
-        #print(kdtree.num_result)
-        #print(i)
-        #print(neighbours[i])
+        #printdb(290)
         par2 = &parlist[neighbours[i]]
-        #print("point226")
+        #printdb(292)
         if par.id == par2.id:
             check += 10
-        #print("point227")
+        #printdb(295)
         if arraysearch(par2.id,par.collided_with,par.collided_num) == -1: 
         #if par2 not in par.collided_with:
-            #print("point229")
+            #printdb(298)
             if par2.sys.id != par.sys.id :
-                #print("point231")
+                #printdb(300)
                 if par2.sys.othercollision_active == False or par.sys.othercollision_active == False:
-                    #print("point233")
+                    #printdb(302)
                     check += 100
-            #print(par.sys.collision_group)
             if par2.sys.collision_group != par.sys.collision_group:
-                print("point237")
+                #printdb(304)
                 check += 1000
             if par2.sys.id == par.sys.id and par.sys.selfcollision_active == False:
-                #print("point240")
+                #printdb(308)
                 check += 10000
-            #print("point242")
+            #printdb(310)
             stiff = (fps * (substep +1))
             target = (par.size + par2.size) * 0.999
             sqtarget = target * target
-            #print("point246")
-            #print("check:",check)
+            #printdb(314)
             if check == 0 and par2.state <= 1 and arraysearch(par2.id,par.link_with,par.link_withnum) == -1 and arraysearch(par.id,par2.link_with,par2.link_withnum) == -1:
             #if par.state <= 1 and par2.state <= 1 and par2 not in par.link_with and par not in par2.link_with:
-                #print("point250")
-                #print("collide:",par.id," with ",par2.id)
+                #printdb(317)
                 lenghtx = par.loc[0] - par2.loc[0]
                 lenghty = par.loc[1] - par2.loc[1]
                 lenghtz = par.loc[2] - par2.loc[2]
-                #print("Z:",par.loc[2] , par2.loc[2])
                 sqlenght  = square_dist(par.loc,par2.loc,3)
-                #print("point257")
-                #print(sqlenght,sqtarget)
+                #printdb(322)
                 if sqlenght != 0 and sqlenght < sqtarget:
-                    #print("Hit!!!")
-                    #print(par.id," hit ", par2.id)
                     lenght = sqlenght**0.5
                     factor = (lenght - target) / lenght
                     ratio1 = (par2.mass/(par.mass + par2.mass))
@@ -343,14 +337,11 @@ cdef void collide(Particle *par):
                     par2.vel[1] += (lenghty * factor * ratio2) * stiff
                     par2.vel[2] += (lenghtz * factor * ratio2) * stiff
                     
-                    #print("point274")
+                    #printdb(336)
 
                     col_normal1[0] = (par2.loc[0] - par.loc[0]) / lenght
                     col_normal1[1] = (par2.loc[1] - par.loc[1]) / lenght
                     col_normal1[2] = (par2.loc[2] - par.loc[2]) / lenght
-                    #print("par2.vel:",par2.vel)
-                    #print("Normal",col_normal1)
-                    #print("Normal_length",(col_normal1[0]**2 + col_normal1[1]**2 + col_normal1[2]**2)**0.5)
                     col_normal2[0] = col_normal1[0] * -1
                     col_normal2[1] = col_normal1[1] * -1
                     col_normal2[2] = col_normal1[2] * -1
@@ -362,7 +353,7 @@ cdef void collide(Particle *par):
                     xpar_vel[0] = par.vel[0] - ypar_vel[0]
                     xpar_vel[1] = par.vel[1] - ypar_vel[1]
                     xpar_vel[2] = par.vel[2] - ypar_vel[2]
-                    #print("point293")
+                    #printdb(352)
                     factor2 = dot_product(par2.vel,col_normal2)
                     yi_vel[0] = factor2 * col_normal2[0]
                     yi_vel[1] = factor2 * col_normal2[1]
@@ -371,37 +362,27 @@ cdef void collide(Particle *par):
                     xi_vel[1] = par2.vel[1] - yi_vel[1]
                     xi_vel[2] = par2.vel[2] - yi_vel[2]
                     
-                    #print("yi_vel:",yi_vel)
-                    #print("xi_vel:",xi_vel)
                     
                     """
-                    Ua = factor1
-                    #print("Ua:",Ua)       
-                    Ub = -factor2
-                    #print("Ub:",Ub)  
+                    Ua = factor1     
+                    Ub = -factor2 
                     Cr = 1
                     Ma = par.mass
                     Mb = par2.mass     
                     Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
                     Vb = (Cr*Ma*(Ua-Ub)+Ma*Ua+Mb*Ub)/(Ma+Mb)
-                    #print("Va:",Va)
-                    #print("Vb:",Vb)  
                     
-                    #print("factor:",-(factor * ratio1) * stiff)
                     mula = 1
-                    #print("mula:",mula)
                     mulb = 1
-                    #print("mulb:",mulb)
                     ypar_vel[0] = col_normal1[0] * Va * mula
                     ypar_vel[1] = col_normal1[1] * Va * mula
                     ypar_vel[2] = col_normal1[2] * Va * mula
                     yi_vel[0] = col_normal1[0] * Vb * mulb
                     yi_vel[1] = col_normal1[1] * Vb * mulb
                     yi_vel[2] = col_normal1[2] * Vb * mulb
-                    #print("yi_vel after:",yi_vel)
-                    #print("xi_vel after:",xi_vel)
+
                     """
-                    #print("point332")
+                    #printdb(381)
                     friction = 1 - ((par.sys.friction + par2.sys.friction ) / 2)
                     xpar_vel[0] *= friction
                     xpar_vel[1] *= friction
@@ -410,17 +391,13 @@ cdef void collide(Particle *par):
                     xi_vel[1] *= friction
                     xi_vel[2] *= friction
                     
-                    #print("par_vel befor:",par.vel)
-                    #print("i_vel befor:",par2.vel)
                     par.vel[0] = ypar_vel[0] + xpar_vel[0]
                     par.vel[1] = ypar_vel[1] + xpar_vel[1]
                     par.vel[2] = ypar_vel[2] + xpar_vel[2]
                     par2.vel[0] = yi_vel[0] + xi_vel[0]
                     par2.vel[1] = yi_vel[1] + xi_vel[1]
                     par2.vel[2] = yi_vel[2] + xi_vel[2]
-                    #print("par_vel after:",par.vel)
-                    #print("i_vel after:",par2.vel)
-                    #print("point351")
+                    #printdb(396)
                     """
 
                     if abs(Va) < abs(((factor * ratio1) * stiff)):
@@ -440,16 +417,16 @@ cdef void collide(Particle *par):
                     if (par.sys.relink_chance + par2.sys.relink_chance / 2) > 0:
                         create_link(par.id,par.sys.link_max,par2.id)
 
-                    #print("point271")
-                #print("point272")
-            #print("point273")
-        #print("point274")
+                    #printdb(416)
+                #printdb(417)
+            #printdb(418)
+        #printdb(419)
     #free(neighbours)
     #free(par2)
-    #print("point277")
+    #printdb(422)
 
 
-cdef void solve_link(Particle *par):
+cdef void solve_link(Particle *par):# nogil:
     global parlist
     global fps
     global substep
@@ -539,7 +516,6 @@ cdef void solve_link(Particle *par):
                 par2.vel[2] += Force2[2] * ratio2
                 
                 if Length > (par.links[i].lenght  * (1 + par.links[i].ebroken)) or Length < (par.links[i].lenght  * (1 - par.links[i].broken)):
-                    #print("broke!!!")
                     par.links[i].start = -1
                     par.links_activnum -= 1
                     #broken_links.append(link)
@@ -571,21 +547,21 @@ cdef void update(data):
             psys[i].particles[ii].vel[2] = data[i][1][(ii * 3) + 2]
             if psys[i].particles[ii].state == 0 and data[i][2][ii] == 0:
                 psys[i].particles[ii].state = data[i][2][ii] + 1
-                #print("point 385")
+                #printdb(546)
                 create_link(psys[i].particles[ii].id,psys[i].link_max)
-                #print("point 387")
-                #parlist.append(par)
+                #printdb(548)
+
             elif psys[i].particles[ii].state == 1 and data[i][2][ii] == 0:
                 psys[i].particles[ii].state = 1
-                #parlist.append(par)
+
             else:
                 psys[i].particles[ii].state = data[i][2][ii]
             psys[i].particles[ii].collided_with = <int *>realloc(psys[i].particles[ii].collided_with, 1 * cython.sizeof(int) )
             psys[i].particles[ii].collided_num = 0
-            #print("update par:",psys[i].particles[ii].id," z vel:",psys[i].particles[ii].vel[2])
-    #print("point 397")
+
+    #printdb(558)
  
-cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):
+cdef void KDTree_create_nodes(KDTree *kdtree,int parnum) nogil:
     cdef int i
     kdtree.nodes = <Node *>malloc( (parnum + 1) * cython.sizeof(Node) )
     kdtree.root_node = <Node *>malloc( 1 * cython.sizeof(Node) )
@@ -605,8 +581,8 @@ cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):
     kdtree.nodes[parnum + 1].right_child[0].index = -1
     return
 
-    
-cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int end,char *name,int depth):
+   
+cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int end,char *name,int depth):# nogil:
     global parnum
     cdef int index
     cdef int len = (end - start) + 1
@@ -615,7 +591,7 @@ cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int en
     cdef int axis
     cdef int k = 3
     axis = depth % k
-    #print("point0")
+    #printdb(590)
     if axis == 0:
         qsort(kdparlist + start,len,sizeof(Particle),compare_x)
     elif axis == 1:
@@ -623,35 +599,29 @@ cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int en
     elif axis == 2:
         qsort(kdparlist + start,len,sizeof(Particle),compare_z)
     cdef int median = (start + end) / 2
-    #print("start:",start)
-    #print("median:",median)
-    #print("end:",end)
-    #print("len:",len)
-    #print("depth:",depth)
-    #print("parnum:",parnum)
-    #print("point1")
+    #printdb(598)
     if depth == 0:
             kdtree.index = 0
             index = kdtree.index
     else:
         kdtree.index += 1
         index = kdtree.index
-    #print("point2")
+    #printdb(605)
     kdtree.nodes[index].name = name
-    #print("point2.1")
+    #printdb(607)
     if len >= 1 and depth == 0:
         kdtree.root_node[0] = kdtree.nodes[0]
-    #print("point2.2")
+    #printdb(610)
     kdtree.nodes[index].particle[0] = kdparlist[median]
-    #print("point3")
+    #printdb(612)
     kdtree.nodes[index].left_child[0] = KDTree_create_tree(kdtree,kdparlist,start,median - 1,"left",depth + 1)
-    #print("point4")
+    #printdb(614)
     kdtree.nodes[index].right_child[0] = KDTree_create_tree(kdtree,kdparlist,median + 1,end,"right",depth + 1)
-    #print("point5")
+    #printdb(616)
     return kdtree.nodes[index]
 
 
-cdef int *KDTree_rnn_query(KDTree *kdtree,float point[3],float dist):
+cdef int *KDTree_rnn_query(KDTree *kdtree,float point[3],float dist):# nogil:
     global parlist
     cdef float sqdist
     cdef int k 
@@ -670,63 +640,53 @@ cdef int *KDTree_rnn_query(KDTree *kdtree,float point[3],float dist):
     return kdtree.result
 
 #@cython.cdivision(True)
-cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,float sqdist,int k,int depth):
+cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,float sqdist,int k,int depth):# nogil:
     cdef int axis
     cdef float realdist
-    #print("point0")
-    #print("nodeID:",node.index)
+    #printdb(642)
     if node.index == -1:
         return
         
     cdef Particle tparticle = node.particle[0]
     
     axis = depth % k
-    #print("Depth:",depth)
-    #print("Axis:",axis)
-    #print("point0.1")
+    #printdb(649)
     if ((point[axis] - tparticle.loc[axis]) * (point[axis] - tparticle.loc[axis])) <= sqdist:
-        #print("sqdist:",sqdist)
-        #print("par loc:",tparticle.loc[0],tparticle.loc[1],tparticle.loc[2])
         realdist = square_dist(point,tparticle.loc,3)
-        #print("realdist:",realdist)
-        #print("point0.2")
+        #printdb(652)
         if realdist <= sqdist:
-            #print("point1")
-            #print("Result number:",kdtree.num_result)
+            #printdb(654)
             kdtree.result[kdtree.num_result] = node.particle[0].id
-            #print("particle found:",kdtree.result[kdtree.num_result])
-            #print("Node recorded:",kdtree.result[kdtree.num_result].index)
             kdtree.num_result += 1
             kdtree.result = <int *>realloc(kdtree.result,(kdtree.num_result + 1) * cython.sizeof(int) )
-            #print("point1.1")
+            #printdb(658)
 
-        #print("point1.2")
-        #print("nodeID:",node.index)
+        #printdb(660)
         KDTree_rnn_search(kdtree,node.left_child[0],point,dist,sqdist,3,depth + 1)
-        #print("point1.3")
-        #print("nodeID:",node.index)
+        #printdb(662)
         KDTree_rnn_search(kdtree,node.right_child[0],point,dist,sqdist,3,depth + 1)
-        #print("point2")
+        #printdb(664)
     else:
         if point[axis] <= tparticle.loc[axis]:
-            #print("point2.1")
+            #printdb(667)
             KDTree_rnn_search(kdtree, node.left_child[0],point,dist,sqdist,3,depth + 1)
         if point[axis] >= tparticle.loc[axis]:
-            #print("point2.2")
+            #printdb(670)
             KDTree_rnn_search(kdtree, node.right_child[0],point,dist,sqdist,3,depth + 1)
-    #print("point3")
+    #printdb(672)
   
   
-cdef void create_link(int par_id, int max_link, int parothers_id = -1):
-    #print("point 531")
+cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
+    #printdb(676)
     global kdtree
     global parlist
     global parnum
-    #print("point 535")
+    #printdb(680)
     cdef Links *link = <Links *>malloc( 1 * cython.sizeof(Links))
-    #print("point 537")
+    #printdb(682)
     cdef int *neighbours
     cdef int ii
+    cdef rand_max = 32767 
     cdef Particle *par
     cdef Particle *par2
     cdef float stiffrandom
@@ -734,30 +694,30 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):
     cdef float brokrandom
     cdef float tension
     cdef float tensionrandom
+    cdef float chancerdom
     par = &parlist[par_id]
-    #print("point 538")
+    #printdb(693)
     if  par.state >= 2:
         return
     if par.links_activnum >= max_link:
         return
     if par.sys.links_active == 0:
-        #print("point 539")
+        #printdb(699)
         #free(link)
         #free(par)
         #free(par2)
         #free(neighbours)
         return
-    #print("point 540")
+    #printdb(705)
     if parothers_id == -1:
-        #print("point 541")
+        #printdb(707)
         neighbours = KDTree_rnn_query(kdtree,par.loc,par.sys.link_length)
-        #print("point 542")
-        #neighbours = kdtree.rnn_query(par.loc,par.sys.link_length)
+        #printdb(709)
     else:
-        #print("point 543")
+        #printdb(711)
         neighbours = <int *>malloc( 1 * cython.sizeof(int))
         neighbours[0] = parothers_id
-    #print("point 545")
+    #printdb(714)
     for ii in xrange(kdtree.num_result):
         if parothers_id == -1:
             par2 = &parlist[neighbours[ii]]
@@ -766,73 +726,70 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):
             par2 = &parlist[neighbours[0]]
             tension = (par.sys.link_tension + par2.sys.link_tension) / 2
         if par.id != par2.id:
-            #print("point 552")
-            arraysearch(par2.id,par.link_with,par.link_withnum)
-            #print("point 554")
-            if arraysearch(par.id,par2.link_with,par.link_withnum) == -1 and par2.state <= 1 and par.state <= 1:
+            #printdb(723)
+            #arraysearch(par2.id,par.link_with,par.link_withnum)
+            ##printdb(725)
+            if arraysearch(par.id,par2.link_with,par2.link_withnum) == -1 and par2.state <= 1 and par.state <= 1:
             #if par not in par2.link_with and par2.state <= 1 and par.state <= 1:
-                #print("point 556")
-                #print(par.loc[0],par.loc[1],par.loc[2])
-                #print(par2.loc[0],par2.loc[1],par2.loc[2])
-                #print(square_dist(par.loc,par2.loc,3))
-                #print("point 558")
+                #printdb(728)
+                #printdb(729)
                 link.start = par.id
                 link.end = par2.id
-                #print("point 561")
+                #printdb(732)
                 if parothers_id == -1:
                     tensionrandom = (par.sys.link_tensionrand + par2.sys.link_tensionrand) / 2 * 2
-                    tension = ((par.sys.link_tension + par2.sys.link_tension)/2) * (((random() * tensionrandom) - (tensionrandom / 2)) + 1)
+                    tension = ((par.sys.link_tension + par2.sys.link_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
                     link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                     stiffrandom = (par.sys.link_stiffrand + par2.sys.link_stiffrand) / 2 * 2
-                    link.stiffness = ((par.sys.link_stiff + par2.sys.link_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
-                    link.estiffness = ((par.sys.link_estiff + par2.sys.link_estiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
-                    link.exponent = abs((par.sys.link_stiffexp + par2.sys.link_stiffexp) / 2)
-                    link.eexponent = abs((par.sys.link_estiffexp + par2.sys.link_estiffexp) / 2)
+                    link.stiffness = ((par.sys.link_stiff + par2.sys.link_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                    link.estiffness = ((par.sys.link_estiff + par2.sys.link_estiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                    link.exponent =  abs(int((par.sys.link_stiffexp + par2.sys.link_stiffexp) / 2))####
+                    link.eexponent = abs(int((par.sys.link_estiffexp + par2.sys.link_estiffexp) / 2))####
                     damprandom = ((par.sys.link_damprand + par2.sys.link_damprand) / 2) * 2
-                    link.damping = ((par.sys.link_damp + par2.sys.link_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
-                    link.edamping = ((par.sys.link_edamp + par2.sys.link_edamp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
+                    link.damping = ((par.sys.link_damp + par2.sys.link_damp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
+                    link.edamping = ((par.sys.link_edamp + par2.sys.link_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
                     brokrandom = ((par.sys.link_brokenrand + par2.sys.link_brokenrand) / 2) * 2
-                    link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
-                    link.ebroken = ((par.sys.link_ebroken + par2.sys.link_ebroken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
-                    #print("point 567")
+                    link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                    link.ebroken = ((par.sys.link_ebroken + par2.sys.link_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                    #printdb(748)
                     par.links[par.links_num] = link[0]
                     par.links_num += 1
                     par.links_activnum += 1
-                    #print("point 568")
+                    #printdb(752)
                     par.links = <Links *>realloc(par.links,(par.links_num + 2) * cython.sizeof(Links) )
                     
-                    #print("point 569")
+                    #printdb(755)
                     par.link_with[par.link_withnum] = par2.id
                     par.link_withnum += 1
-                    #print("point 573")
+                    #printdb(758)
                     par.link_with = <int *>realloc(par.link_with,(par.link_withnum + 2) * cython.sizeof(int) )
                     
                     par2.link_with[par2.link_withnum] = par.id
                     par2.link_withnum += 1
-                    #print("point 584")
+                    #printdb(763)
                     par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 2) * cython.sizeof(int) )
                     #free(link)
-                    #print("point 587")
+                    #printdb(766)
                     
                 if parothers_id != -1 and par.sys.relink_group == par2.sys.relink_group:
-                    #print("point 580")
-                    relinkrandom = random()
+                    #printdb(769)
+                    relinkrandom = (rand() / rand_max)
                     chancerdom = (par.sys.relink_chancerand + par2.sys.relink_chancerand) / 2 * 2
-                    if relinkrandom <= ((par.sys.relink_chance + par2.sys.relink_chance) / 2) * (((random() * chancerdom) - (chancerdom / 2)) + 1):
+                    if relinkrandom <= ((par.sys.relink_chance + par2.sys.relink_chance) / 2) * ((((rand() / rand_max) * chancerdom) - (chancerdom / 2)) + 1):
                         tensionrandom = (par.sys.relink_tensionrand + par2.sys.relink_tensionrand) / 2 * 2
-                        tension = ((par.sys.relink_tension + par2.sys.relink_tension)/2) * (((random() * tensionrandom) - (tensionrandom / 2)) + 1)
+                        tension = ((par.sys.relink_tension + par2.sys.relink_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
                         link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                         stiffrandom = (par.sys.relink_stiffrand + par2.sys.relink_stiffrand) / 2 * 2
-                        link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
-                        link.estiffness = ((par.sys.relink_estiff + par2.sys.relink_estiff)/2) * (((random() * stiffrandom) - (stiffrandom / 2)) + 1)
-                        link.exponent = abs((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2)
-                        link.eexponent = abs((par.sys.relink_estiffexp + par2.sys.relink_estiffexp) / 2)
+                        link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.estiffness = ((par.sys.relink_estiff + par2.sys.relink_estiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.exponent = abs(int((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2))####
+                        link.eexponent = abs(int((par.sys.relink_estiffexp + par2.sys.relink_estiffexp) / 2))####
                         damprandom = ((par.sys.relink_damprand + par2.sys.relink_damprand) / 2) * 2
-                        link.damping = ((par.sys.relink_damp + par2.sys.relink_damp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
-                        link.edamping = ((par.sys.relink_edamp + par2.sys.relink_edamp) / 2) * (((random() * damprandom) - (damprandom / 2)) + 1)
+                        link.damping = ((par.sys.relink_damp + par2.sys.relink_damp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
+                        link.edamping = ((par.sys.relink_edamp + par2.sys.relink_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
                         brokrandom = ((par.sys.relink_brokenrand + par2.sys.relink_brokenrand) / 2) * 2
-                        link.broken = ((par.sys.relink_broken + par2.sys.relink_broken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
-                        link.ebroken = ((par.sys.relink_ebroken + par2.sys.relink_ebroken) / 2) * (((random() * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.broken = ((par.sys.relink_broken + par2.sys.relink_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.ebroken = ((par.sys.relink_ebroken + par2.sys.relink_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         par.links[par.links_num] = link[0]
                         par.links_num += 1
                         par.links_activnum += 1
@@ -854,11 +811,11 @@ cdef struct Links:
     int start
     int end
     float stiffness
-    float exponent
+    int exponent
     float damping
     float broken
     float estiffness
-    float eexponent
+    int eexponent
     float edamping
     float ebroken
             
@@ -949,7 +906,7 @@ cdef struct Particle:
 
 
 
-cdef int compare_x (const void *u, const void *v):
+cdef int compare_x (const void *u, const void *v):# nogil:
     cdef float w = ((<Particle*>u)).loc[0] - ((<Particle*>v)).loc[0]
     if w < 0:
         return -1
@@ -958,7 +915,7 @@ cdef int compare_x (const void *u, const void *v):
     return 0
 
     
-cdef int compare_y (const void *u, const void *v):
+cdef int compare_y (const void *u, const void *v):# nogil:
     cdef float w = ((<Particle*>u)).loc[1] - ((<Particle*>v)).loc[1]
     if w < 0:
         return -1
@@ -967,7 +924,7 @@ cdef int compare_y (const void *u, const void *v):
     return 0
  
  
-cdef int compare_z (const void *u, const void *v):
+cdef int compare_z (const void *u, const void *v):# nogil:
     cdef float w = ((<Particle*>u)).loc[2] - ((<Particle*>v)).loc[2]
     if w < 0:
         return -1
@@ -975,7 +932,7 @@ cdef int compare_z (const void *u, const void *v):
         return 1
     return 0
     
-cdef int compare_id (const void *u, const void *v):
+cdef int compare_id (const void *u, const void *v):# nogil:
     cdef float w = ((<Particle*>u)).id - ((<Particle*>v)).id
     if w < 0:
         return -1
@@ -984,15 +941,17 @@ cdef int compare_id (const void *u, const void *v):
     return 0   
 
   
-cdef int arraysearch(int element,int *array,int len):
+cdef int arraysearch(int element,int *array,int len):# nogil:
     cdef int i
+    #printdb(939)
     for i in xrange(len):
         if element == array[i]:
             return i
+    #printdb(943)
     return -1
     
  
-cdef float sq_number(float val):
+cdef float sq_number(float val) nogil:
     cdef float nearsq = 8
     while val > nearsq or val < nearsq / 2:
         if val > nearsq:
@@ -1002,14 +961,14 @@ cdef float sq_number(float val):
     return nearsq
     
 #@cython.cdivision(True)  
-cdef float square_dist(float point1[3],float point2[3],int k):
+cdef float square_dist(float point1[3],float point2[3],int k):# nogil:
     cdef float sq_dist = 0
     for i in xrange(k):
         sq_dist += (point1[i] - point2[i]) * (point1[i] - point2[i])
     return sq_dist
 
     
-cdef float dot_product(float u[3],float v[3]):
+cdef float dot_product(float u[3],float v[3]) nogil:
     cdef float dot
     dot = (u[0] * v[0]) + (u[1] * v[1]) + (u[2] * v[2])
     return dot
