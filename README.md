@@ -1,7 +1,7 @@
 Blender-Molecular-Script
 ========================
 
-This is my molecular python script for blender. A bit similar to Lagoa Multiphysic in Softimage.
+This is my molecular python script for blender.Inspired from the 2d simulator Really (1998) and Lagoa Multiphysic in Softimage.
 
 To download the latest version go on my blog:
 
