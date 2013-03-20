@@ -539,18 +539,23 @@ class MolSimulateModal(bpy.types.Operator):
             if frame_current == scene.frame_start:            
                 stime = clock()
             exportdata = []
+            stimex = clock()
             pack_data(False)
+            print("packdata time",clock() - stimex,"sec")
             if scene.mol_turbo:
+                stimex = clock()
                 #cProfile.runctx('simcwrapper(exportdata)',globals(),locals(),"Profile.prof")
                 #s = pstats.Stats("Profile.prof")
                 #s.strip_dirs().sort_stats("time").print_stats()
                 importdata = cmolcore.simulate(exportdata)
+                print("molcore out time",clock() - stimex,"sec")
             else:
                 #cProfile.runctx('simwrapper(exportdata)',globals(),locals(),"Profile.prof")
                 #s = pstats.Stats("Profile.prof")
                 #s.strip_dirs().sort_stats("time").print_stats()
                 importdata = molcore.simulate(exportdata)
             i = 0
+            stimex = clock()
             for obj in bpy.data.objects:
                 for psys in obj.particle_systems:
                     if psys.settings.mol_active == True:
@@ -558,6 +563,7 @@ class MolSimulateModal(bpy.types.Operator):
                         #print(len(psys.particles))
                         psys.particles.foreach_set('velocity',importdata[1][i])
                     i += 1
+            print("inject new velocity time",clock() - stimex,"sec")
             framesubstep = frame_current/(substep+1)        
             if framesubstep == int(framesubstep):
                 etime = clock()
@@ -575,7 +581,7 @@ class MolSimulateModal(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
-        self._timer = context.window_manager.event_timer_add(0.00001, context.window)
+        self._timer = context.window_manager.event_timer_add(0.000000001, context.window)
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 

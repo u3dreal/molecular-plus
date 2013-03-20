@@ -2,9 +2,10 @@
 #cython: boundscheck=False
 #cython: cdivision=True
 
-#NOTE: order of slow fonction to be optimize/multithreaded: kdtreesearching , kdtreecreating , linksolving
+#NOTE: order of slow fonction to be optimize/multithreaded: kdtreesearching , kdtreecreating , linksolving 
 
 cimport cython
+from time import clock
 from cython.parallel import parallel,prange
 from libc.stdlib cimport malloc , realloc, free , rand , srand, abs
 
@@ -150,18 +151,18 @@ cdef testkdtree(int verbose = 0):
     a[0] = 0
     a[1] = 0
     a[2] = 0
-    cdef int *b
-    b = <int *>malloc( parnum * cython.sizeof(int) )
+    cdef Particle *b
+    b = <Particle *>malloc( 1 * cython.sizeof(Particle) )
     if verbose >= 1:
         print("start searching")
-    b = KDTree_rnn_query(kdtree,a,2)
+    KDTree_rnn_query(kdtree,b,a,2)
     output = []
     if verbose >= 2:
         print("Result")
-        for i in xrange(kdtree.num_result):
-            print("Query Node:",b[i].index," Query Particle:",b[i].particle[0].id)
+        for i in xrange(b[0].neighboursnum):
+            print(" Query Particle:",parlist[b[0].neighbours[i]].id)
     if verbose >= 1:
-        print("number of particle find:",kdtree.num_result)
+        print("number of particle find:",b[0].neighboursnum)
     free(b)
     
     
@@ -178,30 +179,46 @@ cpdef simulate(importdata):
     cdef float zeropoint[3]
     cdef float velmagn = 0
     cdef float velmaxmagn = 0
-    
+    print("start simulate")
+    stime2 = clock()
+    stime = clock()
     update(importdata)
-    
-    #with nogil:
+    print("update time", clock() - stime,"sec")
+    stime = clock()
     for i in range(parnum):
         parlistcopy[i] = parlist[i]
+        
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
-    
+    print("create tree time", clock() - stime,"sec")
     #testkdtree(3)
-
+    
+    cdef int *test
+    #printdb(188)
+    stime = clock()
+    with nogil:
+        for i in prange(parnum,schedule='dynamic'):
+            KDTree_rnn_query(kdtree,&parlist[i],parlist[i].loc,parlist[i].size * 2)
+            
+    #printdb(189)
+    print("neighbours time", clock() - stime,"sec")
+    stime = clock()
     for i in xrange(parnum):
         #printdb(190)
         collide(&parlist[i])
         #printdb(192)
         solve_link(&parlist[i])
         #printdb(194)
-            
+    print("collide/solve link time", clock() - stime,"sec")        
     velmagn = 0
     velmaxmagn = 0
+    stime = clock()
     for i in xrange(parnum):
         if parlist[i].state <= 1:
             velmagn = square_dist(zeropoint,parlist[i].vel , 3)
             if velmagn >= velmaxmagn:
                 velmaxmagn = velmagn
+    print("found max velocity time", clock() - stime,"sec")
+    stime = clock()
     exportdata = []
     parloc = []
     parvel = []
@@ -221,7 +238,8 @@ cpdef simulate(importdata):
         parloctmp = []
         parveltmp = []   
     exportdata = [parloc,parvel,pyvelmaxmagn]
-    
+    print("export time", clock() - stime,"sec")
+    print("all process time", clock() - stime2,"sec")
     return exportdata
 
 cpdef memfree():
@@ -284,9 +302,11 @@ cdef void collide(Particle *par):# nogil:
     if par.sys.selfcollision_active == False and par.sys.othercollision_active == False:
         return
     #printdb(282)
-    neighbours = KDTree_rnn_query(kdtree,par.loc,par.size * 2)
+    #neighbours = KDTree_rnn_query(kdtree,par.loc,par.size * 2)
+    neighbours = par.neighbours
     #printdb(284)
-    for i in xrange(kdtree.num_result):
+    #for i in xrange(kdtree.num_result):
+    for i in xrange(par.neighboursnum):
         check = 0
         #printdb(287)
         if parlist[i].id == -1:
@@ -561,7 +581,7 @@ cdef void update(data):
 
     #printdb(558)
  
-cdef void KDTree_create_nodes(KDTree *kdtree,int parnum) nogil:
+cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):# nogil:
     cdef int i
     kdtree.nodes = <Node *>malloc( (parnum + 1) * cython.sizeof(Node) )
     kdtree.root_node = <Node *>malloc( 1 * cython.sizeof(Node) )
@@ -621,26 +641,30 @@ cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int en
     return kdtree.nodes[index]
 
 
-cdef int *KDTree_rnn_query(KDTree *kdtree,float point[3],float dist):# nogil:
+cdef int KDTree_rnn_query(KDTree *kdtree,Particle *par,float point[3],float dist)nogil:
     global parlist
     cdef float sqdist
     cdef int k 
     cdef int i
-    kdtree.num_result = 0
-    free(kdtree.result)
-    kdtree.result = <int *>malloc( 1 * cython.sizeof(int) )
-    kdtree.result[0] = -1
+    par.neighboursnum = 0
+    #printdb(639)
+    #free(par.neighbours)
+    #printdb(641)
+    par.neighbours = <int *>malloc( 1 * cython.sizeof(int) )
+    #printdb(643)
+    par.neighbours[0] = -1
+    #printdb(645)
     if kdtree.root_node[0].index != kdtree.nodes[0].index:
-        kdtree.result[0] = -1
-        num_result = 0
-        return kdtree.result
+        par.neighbours[0] = -1
+        par.neighboursnum = 0
+        return -1
     else:
         sqdist = dist * dist
-        KDTree_rnn_search(kdtree,kdtree.root_node[0],point,dist,sqdist,3,0)
-    return kdtree.result
+        KDTree_rnn_search(kdtree,&par[0],kdtree.root_node[0],point,dist,sqdist,3,0)
+
 
 #@cython.cdivision(True)
-cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,float sqdist,int k,int depth):# nogil:
+cdef void KDTree_rnn_search(KDTree *kdtree,Particle *par,Node node,float point[3],float dist,float sqdist,int k,int depth)nogil:
     cdef int axis
     cdef float realdist
     #printdb(642)
@@ -656,23 +680,23 @@ cdef void KDTree_rnn_search(KDTree *kdtree,Node node,float point[3],float dist,f
         #printdb(652)
         if realdist <= sqdist:
             #printdb(654)
-            kdtree.result[kdtree.num_result] = node.particle[0].id
-            kdtree.num_result += 1
-            kdtree.result = <int *>realloc(kdtree.result,(kdtree.num_result + 1) * cython.sizeof(int) )
+            par.neighbours[par.neighboursnum] = node.particle[0].id
+            par.neighboursnum += 1
+            par.neighbours = <int *>realloc(par.neighbours,(par.neighboursnum + 1) * cython.sizeof(int) )
             #printdb(658)
 
         #printdb(660)
-        KDTree_rnn_search(kdtree,node.left_child[0],point,dist,sqdist,3,depth + 1)
+        KDTree_rnn_search(kdtree,&par[0],node.left_child[0],point,dist,sqdist,3,depth + 1)
         #printdb(662)
-        KDTree_rnn_search(kdtree,node.right_child[0],point,dist,sqdist,3,depth + 1)
+        KDTree_rnn_search(kdtree,&par[0],node.right_child[0],point,dist,sqdist,3,depth + 1)
         #printdb(664)
     else:
         if point[axis] <= tparticle.loc[axis]:
             #printdb(667)
-            KDTree_rnn_search(kdtree, node.left_child[0],point,dist,sqdist,3,depth + 1)
+            KDTree_rnn_search(kdtree,&par[0],node.left_child[0],point,dist,sqdist,3,depth + 1)
         if point[axis] >= tparticle.loc[axis]:
             #printdb(670)
-            KDTree_rnn_search(kdtree, node.right_child[0],point,dist,sqdist,3,depth + 1)
+            KDTree_rnn_search(kdtree,&par[0],node.right_child[0],point,dist,sqdist,3,depth + 1)
     #printdb(672)
   
   
@@ -695,6 +719,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
     cdef float tension
     cdef float tensionrandom
     cdef float chancerdom
+    cdef Particle *fakepar = <Particle *>malloc( 1 * cython.sizeof(Particle))
     par = &parlist[par_id]
     #printdb(693)
     if  par.state >= 2:
@@ -711,14 +736,15 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
     #printdb(705)
     if parothers_id == -1:
         #printdb(707)
-        neighbours = KDTree_rnn_query(kdtree,par.loc,par.sys.link_length)
+        KDTree_rnn_query(kdtree,&fakepar[0],par.loc,par.sys.link_length)
+        neighbours = fakepar[0].neighbours
         #printdb(709)
     else:
         #printdb(711)
         neighbours = <int *>malloc( 1 * cython.sizeof(int))
         neighbours[0] = parothers_id
     #printdb(714)
-    for ii in xrange(kdtree.num_result):
+    for ii in xrange(fakepar[0].neighboursnum):
         if parothers_id == -1:
             par2 = &parlist[neighbours[ii]]
             tension = par.sys.link_tension
@@ -823,8 +849,8 @@ cdef struct Links:
             
 cdef struct KDTree:
     int index
-    int num_result
-    int *result
+    #int num_result
+    #int *result
     Node *root_node
     Node *nodes
 
@@ -903,6 +929,8 @@ cdef struct Particle:
     int links_activnum
     int *link_with
     int link_withnum
+    int *neighbours
+    int neighboursnum
 
 
 
@@ -951,7 +979,7 @@ cdef int arraysearch(int element,int *array,int len):# nogil:
     return -1
     
  
-cdef float sq_number(float val) nogil:
+cdef float sq_number(float val):# nogil:
     cdef float nearsq = 8
     while val > nearsq or val < nearsq / 2:
         if val > nearsq:
@@ -961,14 +989,14 @@ cdef float sq_number(float val) nogil:
     return nearsq
     
 #@cython.cdivision(True)  
-cdef float square_dist(float point1[3],float point2[3],int k):# nogil:
+cdef float square_dist(float point1[3],float point2[3],int k)nogil:
     cdef float sq_dist = 0
     for i in xrange(k):
         sq_dist += (point1[i] - point2[i]) * (point1[i] - point2[i])
     return sq_dist
 
     
-cdef float dot_product(float u[3],float v[3]) nogil:
+cdef float dot_product(float u[3],float v[3])nogil:
     cdef float dot
     dot = (u[0] * v[0]) + (u[1] * v[1]) + (u[2] * v[2])
     return dot
