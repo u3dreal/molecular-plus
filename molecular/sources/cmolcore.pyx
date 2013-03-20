@@ -122,9 +122,15 @@ cpdef init(importdata):
         parlistcopy[i] = parlist[i]
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
     
+    with nogil:
+        for i in prange(parnum,schedule='dynamic'):
+            KDTree_rnn_query(kdtree,&parlist[i],parlist[i].loc,parlist[i].sys.link_length)
+    
     for i in xrange(parnum):
         #printdb(123)
         create_link(parlist[i].id,parlist[i].sys.link_max)
+        free(parlist[i].neighbours)
+        parlist[i].neighboursnum = 0
         #printdb(125)
     
     #testkdtree(3)
@@ -179,46 +185,48 @@ cpdef simulate(importdata):
     cdef float zeropoint[3]
     cdef float velmagn = 0
     cdef float velmaxmagn = 0
-    print("start simulate")
-    stime2 = clock()
-    stime = clock()
+    #print("start simulate")
+    #stime2 = clock()
+    #stime = clock()
     update(importdata)
-    print("update time", clock() - stime,"sec")
-    stime = clock()
+    #print("update time", clock() - stime,"sec")
+    #stime = clock()
     for i in range(parnum):
         parlistcopy[i] = parlist[i]
         
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
-    print("create tree time", clock() - stime,"sec")
+    #print("create tree time", clock() - stime,"sec")
     #testkdtree(3)
     
-    cdef int *test
+    #cdef int *test
     #printdb(188)
-    stime = clock()
+    #stime = clock()
     with nogil:
         for i in prange(parnum,schedule='dynamic'):
             KDTree_rnn_query(kdtree,&parlist[i],parlist[i].loc,parlist[i].size * 2)
             
     #printdb(189)
-    print("neighbours time", clock() - stime,"sec")
-    stime = clock()
+    #print("neighbours time", clock() - stime,"sec")
+    #stime = clock()
     for i in xrange(parnum):
         #printdb(190)
         collide(&parlist[i])
         #printdb(192)
         solve_link(&parlist[i])
+        free(parlist[i].neighbours)
+        parlist[i].neighboursnum = 0
         #printdb(194)
-    print("collide/solve link time", clock() - stime,"sec")        
+    #print("collide/solve link time", clock() - stime,"sec")        
     velmagn = 0
     velmaxmagn = 0
-    stime = clock()
+    #stime = clock()
     for i in xrange(parnum):
         if parlist[i].state <= 1:
             velmagn = square_dist(zeropoint,parlist[i].vel , 3)
             if velmagn >= velmaxmagn:
                 velmaxmagn = velmagn
-    print("found max velocity time", clock() - stime,"sec")
-    stime = clock()
+    #print("found max velocity time", clock() - stime,"sec")
+    #stime = clock()
     exportdata = []
     parloc = []
     parvel = []
@@ -238,8 +246,8 @@ cpdef simulate(importdata):
         parloctmp = []
         parveltmp = []   
     exportdata = [parloc,parvel,pyvelmaxmagn]
-    print("export time", clock() - stime,"sec")
-    print("all process time", clock() - stime2,"sec")
+    #print("export time", clock() - stime,"sec")
+    #print("all process time", clock() - stime2,"sec")
     return exportdata
 
 cpdef memfree():
@@ -435,7 +443,7 @@ cdef void collide(Particle *par):# nogil:
                     par2.collided_with = <int *>realloc(par2.collided_with,(par2.collided_num + 1) * cython.sizeof(int) )
                     
                     if (par.sys.relink_chance + par2.sys.relink_chance / 2) > 0:
-                        create_link(par.id,par.sys.link_max,par2.id)
+                        create_link(par.id,par.sys.link_max * 2,par2.id)
 
                     #printdb(416)
                 #printdb(417)
@@ -568,7 +576,10 @@ cdef void update(data):
             if psys[i].particles[ii].state == 0 and data[i][2][ii] == 0:
                 psys[i].particles[ii].state = data[i][2][ii] + 1
                 #printdb(546)
+                KDTree_rnn_query(kdtree,&psys[i].particles[ii],psys[i].particles[ii].loc,psys[i].particles[ii].sys.link_length)
                 create_link(psys[i].particles[ii].id,psys[i].link_max)
+                free(psys[i].particles[ii].neighbours)
+                psys[i].particles[ii].neighboursnum = 0
                 #printdb(548)
 
             elif psys[i].particles[ii].state == 1 and data[i][2][ii] == 0:
@@ -710,6 +721,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
     #printdb(682)
     cdef int *neighbours
     cdef int ii
+    cdef int neighboursnum
     cdef rand_max = 32767 
     cdef Particle *par
     cdef Particle *par2
@@ -736,20 +748,27 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
     #printdb(705)
     if parothers_id == -1:
         #printdb(707)
-        KDTree_rnn_query(kdtree,&fakepar[0],par.loc,par.sys.link_length)
-        neighbours = fakepar[0].neighbours
+        #KDTree_rnn_query(kdtree,&fakepar[0],par.loc,par.sys.link_length)
+        #neighbours = fakepar[0].neighbours
+        neighbours = par.neighbours
+        neighboursnum = par.neighboursnum
         #printdb(709)
     else:
-        #printdb(711)
+        printdb(711)
+        print(parothers_id)
         neighbours = <int *>malloc( 1 * cython.sizeof(int))
         neighbours[0] = parothers_id
+        neighboursnum = 1
+        
     #printdb(714)
-    for ii in xrange(fakepar[0].neighboursnum):
+    for ii in xrange(neighboursnum):
+        #printdb(720)
         if parothers_id == -1:
             par2 = &parlist[neighbours[ii]]
-            tension = par.sys.link_tension
+            tension = (par.sys.link_tension + par2.sys.link_tension) / 2
         else:
             par2 = &parlist[neighbours[0]]
+            print(par2.id,par2.sys.link_tension)
             tension = (par.sys.link_tension + par2.sys.link_tension) / 2
         if par.id != par2.id:
             #printdb(723)
@@ -762,6 +781,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
                 link.start = par.id
                 link.end = par2.id
                 #printdb(732)
+                
                 if parothers_id == -1:
                     tensionrandom = (par.sys.link_tensionrand + par2.sys.link_tensionrand) / 2 * 2
                     tension = ((par.sys.link_tension + par2.sys.link_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
@@ -803,16 +823,16 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
                     chancerdom = (par.sys.relink_chancerand + par2.sys.relink_chancerand) / 2 * 2
                     if relinkrandom <= ((par.sys.relink_chance + par2.sys.relink_chance) / 2) * ((((rand() / rand_max) * chancerdom) - (chancerdom / 2)) + 1):
                         tensionrandom = (par.sys.relink_tensionrand + par2.sys.relink_tensionrand) / 2 * 2
-                        tension = ((par.sys.relink_tension + par2.sys.relink_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
+                        tension = 1#((par.sys.relink_tension + par2.sys.relink_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
                         link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                         stiffrandom = (par.sys.relink_stiffrand + par2.sys.relink_stiffrand) / 2 * 2
-                        link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
-                        link.estiffness = ((par.sys.relink_estiff + par2.sys.relink_estiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
-                        link.exponent = abs(int((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2))####
-                        link.eexponent = abs(int((par.sys.relink_estiffexp + par2.sys.relink_estiffexp) / 2))####
+                        link.stiffness = 0.5#((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.estiffness = 0.5#((par.sys.relink_estiff + par2.sys.relink_estiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.exponent = 1#abs(int((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2))####
+                        link.eexponent = 1#abs(int((par.sys.relink_estiffexp + par2.sys.relink_estiffexp) / 2))####
                         damprandom = ((par.sys.relink_damprand + par2.sys.relink_damprand) / 2) * 2
-                        link.damping = ((par.sys.relink_damp + par2.sys.relink_damp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
-                        link.edamping = ((par.sys.relink_edamp + par2.sys.relink_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
+                        link.damping = 0.5#((par.sys.relink_damp + par2.sys.relink_damp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
+                        link.edamping = 0.5#((par.sys.relink_edamp + par2.sys.relink_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
                         brokrandom = ((par.sys.relink_brokenrand + par2.sys.relink_brokenrand) / 2) * 2
                         link.broken = ((par.sys.relink_broken + par2.sys.relink_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         link.ebroken = ((par.sys.relink_ebroken + par2.sys.relink_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
