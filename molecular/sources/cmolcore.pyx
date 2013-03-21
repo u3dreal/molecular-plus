@@ -97,13 +97,13 @@ cpdef init(importdata):
             psys[i].relink_damprand = importdata[i + 1][6][33]
             psys[i].relink_broken = importdata[i + 1][6][34]
             psys[i].relink_brokenrand = importdata[i + 1][6][35]
-            psys[i].relink_stiff = importdata[i + 1][6][36]
-            psys[i].relink_stiffexp = importdata[i + 1][6][37]
-            psys[i].relink_stiffrand = importdata[i + 1][6][38]
-            psys[i].relink_damp = importdata[i + 1][6][39]
-            psys[i].relink_damprand = importdata[i + 1][6][40]
-            psys[i].relink_broken = importdata[i + 1][6][41]
-            psys[i].relink_brokenrand = importdata[i + 1][6][42]
+            psys[i].relink_estiff = importdata[i + 1][6][36]
+            psys[i].relink_estiffexp = importdata[i + 1][6][37]
+            psys[i].relink_estiffrand = importdata[i + 1][6][38]
+            psys[i].relink_edamp = importdata[i + 1][6][39]
+            psys[i].relink_edamprand = importdata[i + 1][6][40]
+            psys[i].relink_ebroken = importdata[i + 1][6][41]
+            psys[i].relink_ebrokenrand = importdata[i + 1][6][42]
             
             parlist[jj].sys = &psys[i]
             parlist[jj].collided_with = <int *>malloc( 1 * cython.sizeof(int) )
@@ -441,8 +441,9 @@ cdef void collide(Particle *par):# nogil:
                     par2.collided_with[par2.collided_num] = par.id
                     par2.collided_num += 1
                     par2.collided_with = <int *>realloc(par2.collided_with,(par2.collided_num + 1) * cython.sizeof(int) )
-                    
-                    if (par.sys.relink_chance + par2.sys.relink_chance / 2) > 0:
+                    #printdb(399)
+                    if ((par.sys.relink_chance + par2.sys.relink_chance) / 2) > 0:
+                        #printdb(405)
                         create_link(par.id,par.sys.link_max * 2,par2.id)
 
                     #printdb(416)
@@ -722,7 +723,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
     cdef int *neighbours
     cdef int ii
     cdef int neighboursnum
-    cdef rand_max = 32767 
+    cdef float rand_max = 32767 
     cdef Particle *par
     cdef Particle *par2
     cdef float stiffrandom
@@ -754,8 +755,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
         neighboursnum = par.neighboursnum
         #printdb(709)
     else:
-        printdb(711)
-        print(parothers_id)
+        #printdb(711)
         neighbours = <int *>malloc( 1 * cython.sizeof(int))
         neighbours[0] = parothers_id
         neighboursnum = 1
@@ -768,7 +768,6 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
             tension = (par.sys.link_tension + par2.sys.link_tension) / 2
         else:
             par2 = &parlist[neighbours[0]]
-            print(par2.id,par2.sys.link_tension)
             tension = (par.sys.link_tension + par2.sys.link_tension) / 2
         if par.id != par2.id:
             #printdb(723)
@@ -823,16 +822,17 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
                     chancerdom = (par.sys.relink_chancerand + par2.sys.relink_chancerand) / 2 * 2
                     if relinkrandom <= ((par.sys.relink_chance + par2.sys.relink_chance) / 2) * ((((rand() / rand_max) * chancerdom) - (chancerdom / 2)) + 1):
                         tensionrandom = (par.sys.relink_tensionrand + par2.sys.relink_tensionrand) / 2 * 2
-                        tension = 1#((par.sys.relink_tension + par2.sys.relink_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
+                        tension = ((par.sys.relink_tension + par2.sys.relink_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
                         link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                         stiffrandom = (par.sys.relink_stiffrand + par2.sys.relink_stiffrand) / 2 * 2
-                        link.stiffness = 0.5#((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
-                        link.estiffness = 0.5#((par.sys.relink_estiff + par2.sys.relink_estiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
-                        link.exponent = 1#abs(int((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2))####
-                        link.eexponent = 1#abs(int((par.sys.relink_estiffexp + par2.sys.relink_estiffexp) / 2))####
+                        link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.estiffness = ((par.sys.relink_estiff + par2.sys.relink_estiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                        print(par.sys.id,par.sys.relink_estiff,par2.sys.id,par2.sys.relink_estiff)
+                        link.exponent = abs(int((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2))####
+                        link.eexponent = abs(int((par.sys.relink_estiffexp + par2.sys.relink_estiffexp) / 2))####
                         damprandom = ((par.sys.relink_damprand + par2.sys.relink_damprand) / 2) * 2
-                        link.damping = 0.5#((par.sys.relink_damp + par2.sys.relink_damp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
-                        link.edamping = 0.5#((par.sys.relink_edamp + par2.sys.relink_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
+                        link.damping = ((par.sys.relink_damp + par2.sys.relink_damp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
+                        link.edamping = ((par.sys.relink_edamp + par2.sys.relink_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
                         brokrandom = ((par.sys.relink_brokenrand + par2.sys.relink_brokenrand) / 2) * 2
                         link.broken = ((par.sys.relink_broken + par2.sys.relink_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         link.ebroken = ((par.sys.relink_ebroken + par2.sys.relink_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
