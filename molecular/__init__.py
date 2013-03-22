@@ -53,6 +53,7 @@ import imp
 from time import clock
 import cmolcore
 import pstats, cProfile
+import multiprocessing
 
 
 
@@ -131,6 +132,7 @@ def define_props():
         bpy.types.Scene.mol_turbo = bpy.props.BoolProperty(name = "mol_turbo", description = "Active fast Cython script",default = True)
         bpy.types.Scene.mol_bake = bpy.props.BoolProperty(name = "mol_bake", description = "Bake simulation when finish",default = True)
         bpy.types.Scene.mol_render = bpy.props.BoolProperty(name = "mol_render", description = "Start rendering animation when simulation is finish. WARNING: It's freeze blender until render is finish.",default = False)
+        bpy.types.Scene.mol_cpu = bpy.props.IntProperty(name = "mol_cpu", description = "Numbers of cpu's included for process the simulation", default = multiprocessing.cpu_count(),min = 1,max =multiprocessing.cpu_count())
 
 def pack_data(initiate):
     global exportdata
@@ -411,7 +413,10 @@ class MolecularPanel(bpy.types.Panel):
         row.label(text = "")
         row = layout.row()
         row.prop(scn,"mol_substep",text = "substep")
+        row.label(text = "")
+        row = layout.row()
         row.prop(scn,"mol_turbo",text = "Turbo")
+        row.prop(scn,"mol_cpu",text = "CPU")
         row = layout.row()
         row.prop(scn,"mol_bake",text = "Bake all at ending")
         row.prop(scn,"mol_render",text = "Render at ending")
@@ -458,9 +463,9 @@ class MolSimulate(bpy.types.Operator):
             fps = scene.mol_fps
         else:
             fps = scene.render.fps
-        
+        cpu = scene.mol_cpu
         exportdata = []
-        exportdata = [[fps,substep,0,0]]
+        exportdata = [[fps,substep,0,0,cpu]]
         stime = clock()
         pack_data(True)
         #print("sys number",exportdata[0][2])
@@ -471,9 +476,10 @@ class MolSimulate(bpy.types.Operator):
         imp.reload(cmolcore)
         if scene.mol_turbo:
             print("  Fast compiled addon used")
-            cProfile.runctx('initcwrapper(exportdata)',globals(),locals(),"Profile.prof")
-            s = pstats.Stats("Profile.prof")
-            s.strip_dirs().sort_stats("time").print_stats()
+            #cProfile.runctx('initcwrapper(exportdata)',globals(),locals(),"Profile.prof")
+            #s = pstats.Stats("Profile.prof")
+            #s.strip_dirs().sort_stats("time").print_stats()
+            report = cmolcore.init(exportdata)
         else:
             print("  slow python script addon used ( are you pressed Turbo ?)")
             cProfile.runctx('initwrapper(exportdata)',globals(),locals(),"Profile.prof")
