@@ -19,6 +19,7 @@ cdef float fps = 0
 cdef int substep = 0
 cdef int parnum = 0
 cdef int psysnum = 0
+cdef int cpunum
 cdef Particle *parlist
 cdef Particle *parlistcopy
 cdef ParSys *psys
@@ -33,6 +34,7 @@ cpdef init(importdata):
     global kdtree
     global psysnum
     global psys
+    global cpunum
     cdef int i
     cdef int ii
 
@@ -40,10 +42,13 @@ cpdef init(importdata):
     substep = int(importdata[0][1])
     psysnum = importdata[0][2]
     parnum = importdata[0][3]
+    cpunum = importdata[0][4]
+    print "  Number of cpu's used:",cpunum
     psys = <ParSys *>malloc( psysnum * cython.sizeof(ParSys) )
     parlist = <Particle *>malloc( parnum * cython.sizeof(Particle) )
     parlistcopy = <Particle *>malloc( parnum * cython.sizeof(Particle) )
     cdef int jj = 0
+    #printdb(47)
     for i in xrange(psysnum):
         psys[i].id = i
         psys[i].parnum = importdata[i+1][0]
@@ -116,23 +121,31 @@ cpdef init(importdata):
             jj += 1
             
     jj = 0
-
+    #printdb(115)
     KDTree_create_nodes(kdtree,parnum)
-    for i in range(parnum):
-        parlistcopy[i] = parlist[i]
-    KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
-    
+    #printdb(117)
     with nogil:
-        for i in prange(parnum,schedule='dynamic'):
-            KDTree_rnn_query(kdtree,&parlist[i],parlist[i].loc,parlist[i].sys.link_length)
-    
+        for i in prange(parnum,schedule='dynamic',chunksize=1,num_threads=cpunum):
+            parlistcopy[i] = parlist[i]
+    #printdb(119)
+    KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,0,-1,0,1)
+    #printdb(120)
+    with nogil:
+        for i in prange(kdtree.thread_index,schedule='dynamic',chunksize=1,num_threads=cpunum):
+            KDTree_create_tree(kdtree,parlistcopy,kdtree.thread_start[i],kdtree.thread_end[i],kdtree.thread_name[i],kdtree.thread_parent[i],kdtree.thread_depth[i],0)
+    #printdb(121)
+    with nogil:
+        for i in prange(parnum,schedule='dynamic',chunksize=1,num_threads=cpunum):
+            if parlist[i].sys.links_active == 1:
+                KDTree_rnn_query(kdtree,&parlist[i],parlist[i].loc,parlist[i].sys.link_length)
+    #printdb(122)
     for i in xrange(parnum):
         #printdb(123)
         create_link(parlist[i].id,parlist[i].sys.link_max)
         free(parlist[i].neighbours)
         parlist[i].neighboursnum = 0
         #printdb(125)
-    
+    #printdb(126)
     #testkdtree(3)
     
     return parnum
@@ -179,22 +192,31 @@ cpdef simulate(importdata):
     global parnum
     global psysnum
     global psys
+    global cpunum
     
     cdef int i
     cdef int ii
     cdef float zeropoint[3]
     cdef float velmagn = 0
     cdef float velmaxmagn = 0
+    #printdb(170)
     #print("start simulate")
     #stime2 = clock()
     #stime = clock()
     update(importdata)
     #print("update time", clock() - stime,"sec")
     #stime = clock()
-    for i in range(parnum):
-        parlistcopy[i] = parlist[i]
-        
-    KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,"root",0)
+    #printdb(175)
+    with nogil:
+        for i in prange(parnum,schedule='dynamic',chunksize=1,num_threads=cpunum):
+            parlistcopy[i] = parlist[i]
+    #printdb(178)   
+    KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,0,-1,0,1)
+    #printdb(182)
+    with nogil:
+        for i in prange(kdtree.thread_index,schedule='dynamic',chunksize=1,num_threads=cpunum):
+            KDTree_create_tree(kdtree,parlistcopy,kdtree.thread_start[i],kdtree.thread_end[i],kdtree.thread_name[i],kdtree.thread_parent[i],kdtree.thread_depth[i],0)
+    
     #print("create tree time", clock() - stime,"sec")
     #testkdtree(3)
     
@@ -202,7 +224,7 @@ cpdef simulate(importdata):
     #printdb(188)
     #stime = clock()
     with nogil:
-        for i in prange(parnum,schedule='dynamic'):
+        for i in prange(parnum,schedule='dynamic',chunksize=1,num_threads=cpunum):
             KDTree_rnn_query(kdtree,&parlist[i],parlist[i].loc,parlist[i].size * 2)
             
     #printdb(189)
@@ -216,7 +238,8 @@ cpdef simulate(importdata):
         free(parlist[i].neighbours)
         parlist[i].neighboursnum = 0
         #printdb(194)
-    #print("collide/solve link time", clock() - stime,"sec")        
+    #print("collide/solve link time", clock() - stime,"sec")
+    #printdb(195)
     velmagn = 0
     velmaxmagn = 0
     #stime = clock()
@@ -232,6 +255,7 @@ cpdef simulate(importdata):
     parvel = []
     parloctmp = []
     parveltmp = []
+    #printdb(195)
     for i in xrange(psysnum):
         for ii in xrange(psys[i].parnum):
             parloctmp.append(psys[i].particles[ii].loc[0])
@@ -244,7 +268,8 @@ cpdef simulate(importdata):
         parvel.append(parveltmp)
         pyvelmaxmagn = velmaxmagn**0.5
         parloctmp = []
-        parveltmp = []   
+        parveltmp = [] 
+    #printdb(198)
     exportdata = [parloc,parvel,pyvelmaxmagn]
     #print("export time", clock() - stime,"sec")
     #print("all process time", clock() - stime2,"sec")
@@ -577,10 +602,11 @@ cdef void update(data):
             if psys[i].particles[ii].state == 0 and data[i][2][ii] == 0:
                 psys[i].particles[ii].state = data[i][2][ii] + 1
                 #printdb(546)
-                KDTree_rnn_query(kdtree,&psys[i].particles[ii],psys[i].particles[ii].loc,psys[i].particles[ii].sys.link_length)
-                create_link(psys[i].particles[ii].id,psys[i].link_max)
-                free(psys[i].particles[ii].neighbours)
-                psys[i].particles[ii].neighboursnum = 0
+                if psys[i].links_active == 1:
+                    KDTree_rnn_query(kdtree,&psys[i].particles[ii],psys[i].particles[ii].loc,psys[i].particles[ii].sys.link_length)
+                    create_link(psys[i].particles[ii].id,psys[i].link_max)
+                    free(psys[i].particles[ii].neighbours)
+                    psys[i].particles[ii].neighboursnum = 0
                 #printdb(548)
 
             elif psys[i].particles[ii].state == 1 and data[i][2][ii] == 0:
@@ -595,31 +621,47 @@ cdef void update(data):
  
 cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):# nogil:
     cdef int i
-    kdtree.nodes = <Node *>malloc( (parnum + 1) * cython.sizeof(Node) )
+    i = 2
+    #print(parnum)
+    while i < parnum:
+        i = i * 2
+        #print(i)
+    kdtree.numnodes = i
+    kdtree.nodes = <Node *>malloc( (kdtree.numnodes + 1) * cython.sizeof(Node) )
     kdtree.root_node = <Node *>malloc( 1 * cython.sizeof(Node) )
-    for i in xrange(parnum):
+    for i in xrange(kdtree.numnodes):
         kdtree.nodes[i].index = i
+        kdtree.nodes[i].name = -1
+        kdtree.nodes[i].parent = -1
         kdtree.nodes[i].particle = <Particle *>malloc( 1 * cython.sizeof(Particle) )
         kdtree.nodes[i].left_child = <Node *>malloc( 1 * cython.sizeof(Node) )
         kdtree.nodes[i].right_child = <Node *>malloc( 1 * cython.sizeof(Node) )
         kdtree.nodes[i].left_child[0].index = -1
         kdtree.nodes[i].right_child[0].index = -1
-    kdtree.nodes[parnum + 1].index = -1
-    kdtree.nodes[parnum + 1].name = "null"
-    kdtree.nodes[parnum + 1].particle = <Particle *>malloc( 1 * cython.sizeof(Particle) )
-    kdtree.nodes[parnum + 1].left_child = <Node *>malloc( 1 * cython.sizeof(Node) )
-    kdtree.nodes[parnum + 1].right_child = <Node *>malloc( 1 * cython.sizeof(Node) )
-    kdtree.nodes[parnum + 1].left_child[0].index = -1
-    kdtree.nodes[parnum + 1].right_child[0].index = -1
+    kdtree.nodes[kdtree.numnodes + 1].index = -1
+    kdtree.nodes[kdtree.numnodes + 1].name = -1
+    kdtree.nodes[kdtree.numnodes + 1].parent = -1
+    kdtree.nodes[kdtree.numnodes + 1].particle = <Particle *>malloc( 1 * cython.sizeof(Particle) )
+    kdtree.nodes[kdtree.numnodes + 1].left_child = <Node *>malloc( 1 * cython.sizeof(Node) )
+    kdtree.nodes[kdtree.numnodes + 1].right_child = <Node *>malloc( 1 * cython.sizeof(Node) )
+    kdtree.nodes[kdtree.numnodes + 1].left_child[0].index = -1
+    kdtree.nodes[kdtree.numnodes + 1].right_child[0].index = -1
+    kdtree.thread_nodes = <int *>malloc( 16 * cython.sizeof(int) )
+    kdtree.thread_start = <int *>malloc( 16 * cython.sizeof(int) )
+    kdtree.thread_end = <int *>malloc( 16 * cython.sizeof(int) )
+    kdtree.thread_name = <int *>malloc( 16 * cython.sizeof(int) )
+    kdtree.thread_parent = <int *>malloc( 16 * cython.sizeof(int) )
+    kdtree.thread_depth = <int *>malloc( 16 * cython.sizeof(int) )
     return
 
    
-cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int end,char *name,int depth):# nogil:
+cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int end,int name,int parent,int depth,int initiate)nogil:
     global parnum
     cdef int index
     cdef int len = (end - start) + 1
+    #print("len:",len)
     if len <= 0:
-        return kdtree.nodes[parnum + 1]
+        return kdtree.nodes[kdtree.numnodes + 1]
     cdef int axis
     cdef int k = 3
     axis = depth % k
@@ -633,22 +675,37 @@ cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int en
     cdef int median = (start + end) / 2
     #printdb(598)
     if depth == 0:
-            kdtree.index = 0
-            index = kdtree.index
+            kdtree.thread_index = 0
+            index = 0
     else:
-        kdtree.index += 1
-        index = kdtree.index
+        index = (parent * 2) + name
+    if index > kdtree.numnodes:
+        return kdtree.nodes[kdtree.numnodes + 1]
     #printdb(605)
     kdtree.nodes[index].name = name
+    kdtree.nodes[index].parent = parent
     #printdb(607)
     if len >= 1 and depth == 0:
         kdtree.root_node[0] = kdtree.nodes[0]
     #printdb(610)
+    #print("index",index)
+    #print("num nodes",kdtree.numnodes)
     kdtree.nodes[index].particle[0] = kdparlist[median]
     #printdb(612)
-    kdtree.nodes[index].left_child[0] = KDTree_create_tree(kdtree,kdparlist,start,median - 1,"left",depth + 1)
+    if parnum > 63:
+        if depth == 4 and initiate == 1:
+            kdtree.thread_nodes[kdtree.thread_index] = index
+            kdtree.thread_start[kdtree.thread_index] = start
+            kdtree.thread_end[kdtree.thread_index] = end
+            kdtree.thread_name[kdtree.thread_index] = name
+            kdtree.thread_parent[kdtree.thread_index] = parent
+            kdtree.thread_depth[kdtree.thread_index] = depth
+            #print(kdtree.nodes[index].index)
+            kdtree.thread_index += 1
+            return kdtree.nodes[index]
+    kdtree.nodes[index].left_child[0] = KDTree_create_tree(kdtree,kdparlist,start,median - 1,1,index,depth + 1,initiate)
     #printdb(614)
-    kdtree.nodes[index].right_child[0] = KDTree_create_tree(kdtree,kdparlist,median + 1,end,"right",depth + 1)
+    kdtree.nodes[index].right_child[0] = KDTree_create_tree(kdtree,kdparlist,median + 1,end,2,index,depth + 1,initiate)
     #printdb(616)
     return kdtree.nodes[index]
 
@@ -868,16 +925,24 @@ cdef struct Links:
             
             
 cdef struct KDTree:
-    int index
+    int numnodes
     #int num_result
     #int *result
     Node *root_node
     Node *nodes
+    int thread_index
+    int *thread_nodes
+    int *thread_start
+    int *thread_end
+    int *thread_name
+    int *thread_parent
+    int *thread_depth
 
 
 cdef struct Node:
     int index
-    char *name
+    int name
+    int parent
     float loc[3]
     Particle *particle
     Node *left_child
@@ -989,7 +1054,7 @@ cdef int compare_id (const void *u, const void *v):# nogil:
     return 0   
 
   
-cdef int arraysearch(int element,int *array,int len):# nogil:
+cdef int arraysearch(int element,int *array,int len)nogil:
     cdef int i
     #printdb(939)
     for i in xrange(len):
