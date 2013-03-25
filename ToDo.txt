@@ -8,6 +8,7 @@
 [x] Max velocity info to give some keys on how much substeps needed
 [x] Multithread kdtree searching
 [x] Multithread kdtree creation
+[ ] Fix UI bug when object without pSystem are selected.
 [ ] Print: new links at this frames , total links from beginning and links broken
 [ ] Multithread particles collisions and links solving
 [ ] Optimisation in the code ( kdtree search and creation take most of the time when profiling )
