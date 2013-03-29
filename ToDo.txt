@@ -11,7 +11,7 @@
 [x] Link search distance relative to particles size option
 [x] Time scale instead of FPS
 [x] Fix UI bug when object without pSystem are selected.
-[ ] Print: new links at this frames , total links from beginning and links broken
+[x] Print: new links at this frames , total links from beginning and links broken
 [ ] ***Deeper profiling before doing setp below***
 [ ] Optimisation in the code ( kdtree search and creation take most of the time when profiling )
 [ ] clean and comments the code
