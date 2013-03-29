@@ -8,7 +8,7 @@
 [x] Max velocity info to give some keys on how much substeps needed
 [x] Multithread kdtree searching
 [x] Multithread kdtree creation
-[ ] Link search distance relative to particles size option
+[x] Link search distance relative to particles size option
 [x] Time scale instead of FPS
 [x] Fix UI bug when object without pSystem are selected.
 [ ] Print: new links at this frames , total links from beginning and links broken
