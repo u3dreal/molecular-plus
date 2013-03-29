@@ -12,7 +12,7 @@
 [x] Time scale instead of FPS
 [x] Fix UI bug when object without pSystem are selected.
 [x] Print: new links at this frames , total links from beginning and links broken
-[ ] ***Deeper profiling before doing setp below***
+[ ] ***Deeper profiling before doing in the list below***
 [ ] Optimisation in the code ( kdtree search and creation take most of the time when profiling )
 [ ] clean and comments the code
 [ ] Try to see if I can send info of particles by memory adress to gain speed (like Mohamed does for it's mesher addon)
