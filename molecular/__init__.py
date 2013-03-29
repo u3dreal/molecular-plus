@@ -126,8 +126,8 @@ def define_props():
         parset.mol_relink_ebroken = bpy.props.FloatProperty(name = "mol_relink_ebroken", description = "How much link can stretch before they broken. 0.01 = 1% , 0.5 = 50% , 2.0 = 200% ...",min = 0, default = 0.5)
         parset.mol_relink_ebrokenrand = bpy.props.FloatProperty(name = "mol_relink_ebrokenrand", description = "Give a random variation to the stretch limit",min = 0, max = 1, default = 0)
         
-        bpy.types.Scene.mol_fps_active = bpy.props.BoolProperty(name = "mol_fps_active", description = "Give another frame rate then the one set in the scene",default = False)
-        bpy.types.Scene.mol_fps = bpy.props.IntProperty(name = "mol_fps", description = "Random variation on damping", default = 24)
+        bpy.types.Scene.mol_timescale_active = bpy.props.BoolProperty(name = "mol_timescale_active", description = "Activate TimeScaling",default = False)
+        bpy.types.Scene.timescale = bpy.props.FloatProperty(name = "timescale", description = "SpeedUp or Slow down the simulation with this multiplier", default = 1)
         bpy.types.Scene.mol_substep = bpy.props.IntProperty(name = "mol_substep", description = "Substep. Higher equal more stable and accurate but more slower",min = 0, max = 900, default = 4)
         bpy.types.Scene.mol_bake = bpy.props.BoolProperty(name = "mol_bake", description = "Bake simulation when finish",default = True)
         bpy.types.Scene.mol_render = bpy.props.BoolProperty(name = "mol_render", description = "Start rendering animation when simulation is finish. WARNING: It's freeze blender until render is finish.",default = False)
@@ -138,11 +138,16 @@ def pack_data(initiate):
     global minsize
     psyslen = 0
     parnum = 0
+    scene = bpy.context.scene
     for obj in bpy.data.objects:
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
             if psys.settings.mol_active == True:
+                if scene.mol_timescale_active == True:
+                    psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
+                else:
+                    psys.settings.timestep = 1 / scene.render.fps 
                 parlen = len(psys.particles)
                 par_loc = [0,0,0] * parlen
                 par_vel = [0,0,0] * parlen
@@ -406,10 +411,10 @@ class MolecularPanel(bpy.types.Panel):
             row.prop(scn,"frame_start",text = "Start Frame")
             row.prop(scn,"frame_end",text = "End Frame")
             row = layout.row()
-            row.prop(scn,"mol_fps_active",text = "change fps")
+            row.prop(scn,"mol_timescale_active",text = "Activate TimeScaling")
             row = layout.row()
-            row.enabled = scn.mol_fps_active
-            row.prop(scn,"mol_fps",text = "fps")
+            row.enabled = scn.mol_timescale_active
+            row.prop(scn,"timescale",text = "TimeScale")
             row.label(text = "")
             row = layout.row()
             row.prop(scn,"mol_substep",text = "substep")
@@ -459,8 +464,8 @@ class MolSimulate(bpy.types.Operator):
         scene.render.frame_map_new = substep + 1
         scene.frame_end *= substep + 1
         
-        if scene.mol_fps_active == True:
-            fps = scene.mol_fps
+        if scene.mol_timescale_active == True:
+            fps = scene.render.fps / scene.timescale
         else:
             fps = scene.render.fps
         cpu = scene.mol_cpu
@@ -538,8 +543,6 @@ class MolSimulateModal(bpy.types.Operator):
             framesubstep = frame_current/(substep+1)        
             if framesubstep == int(framesubstep):
                 etime = clock()
-                print("      max velocity:",round(importdata[2],4))
-                #print("      substep suggested :",int((importdata[2] / (scene.render.fps)) /  (minsize / 3)))
                 print("    frame " + str(framesubstep + 1) + " take:")
                 print("      Molecular Script: " + str(round(etime - stime,3)) + " sec")
                 stime = clock()
