@@ -76,6 +76,7 @@ def define_props():
         parset.mol_collision_group = bpy.props.EnumProperty(items = item, description = "Choose a collision group you want to collide with")
         
         parset.mol_links_active = bpy.props.BoolProperty(name = "mol_links_active", description = "Activate links between particles of this system",default = False)
+        parset.mol_link_rellength = bpy.props.BoolProperty(name = "mol_link_rellength", description = "Activate search distance relative to particles radius",default = True)
         parset.mol_link_length = bpy.props.FloatProperty(name = "mol_link_length", description = "Searching range to make a link between particles",min = 0, precision = 6, default = 1)
         parset.mol_link_tension = bpy.props.FloatProperty(name = "mol_link_tension", description = "Make link bigger or smaller than it's created (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
         parset.mol_link_tensionrand = bpy.props.FloatProperty(name = "mol_link_tensionrand", description = "Tension random",min = 0,max = 1, precision = 3, default = 0)
@@ -200,7 +201,10 @@ def pack_data(initiate):
                     params[2] = psys.settings.mol_collision_group
                     params[3] = psys.settings.mol_friction
                     params[4] = psys.settings.mol_links_active
-                    params[5] = psys.settings.mol_link_length
+                    if psys.settings.mol_link_rellength == True:
+                        params[5] = psys.settings.particle_size * psys.settings.mol_link_length
+                    else:
+                        params[5] = psys.settings.mol_link_length
                     params[6] = psys.settings.mol_link_max
                     params[7] = psys.settings.mol_link_tension
                     params[8] = psys.settings.mol_link_tensionrand
@@ -315,6 +319,7 @@ class MolecularPanel(bpy.types.Panel):
             subbox.label(text = "Initial Linking (at bird):")
             row = subbox.row()
             row.prop(psys.settings,"mol_link_length",text = "search length")
+            row.prop(psys.settings,"mol_link_rellength",text = "Relative")
             row = subbox.row()
             row.prop(psys.settings,"mol_link_max",text = "Max links")
             row = subbox.row()
@@ -450,8 +455,17 @@ class MolSimulate(bpy.types.Operator):
         global exportdata
         global report
         global minsize
+        global newlink
+        global deadlink
+        global totallink
+        global totaldeadlink 
         
         minsize = 1000000000
+        
+        newlink = 0
+        deadlink = 0
+        totallink = 0
+        totaldeadlink = 0
         
         print("Molecular Sim start--------------------------------------------------")
         stime = clock()
@@ -500,6 +514,10 @@ class MolSimulateModal(bpy.types.Operator):
         global stime
         global importdata
         global minsize
+        global newlink
+        global deadlink
+        global totallink
+        global totaldeadlink 
         
         #stime = clock()
         scene = bpy.context.scene
@@ -543,10 +561,19 @@ class MolSimulateModal(bpy.types.Operator):
             framesubstep = frame_current/(substep+1)        
             if framesubstep == int(framesubstep):
                 etime = clock()
-                print("    frame " + str(framesubstep + 1) + " take:")
+                print("    frame " + str(framesubstep + 1) + ":")
+                print("      links created:",newlink)
+                print("      links broked :",deadlink)
+                print("      total links:",totallink - totaldeadlink ,"/",totallink," (",round((((totallink - totaldeadlink) / totallink) * 100),2),"%)")
                 print("      Molecular Script: " + str(round(etime - stime,3)) + " sec")
+                newlink = 0
+                deadlink = 0
                 stime = clock()
                 stime2 = clock()
+            newlink += importdata[2]
+            deadlink += importdata[3]
+            totallink = importdata[4]
+            totaldeadlink = importdata[5]
             scene.frame_set(frame = frame_current + 1)
             if framesubstep == int(framesubstep):
                 etime2 = clock()
