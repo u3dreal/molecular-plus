@@ -129,7 +129,6 @@ def define_props():
         bpy.types.Scene.mol_fps_active = bpy.props.BoolProperty(name = "mol_fps_active", description = "Give another frame rate then the one set in the scene",default = False)
         bpy.types.Scene.mol_fps = bpy.props.IntProperty(name = "mol_fps", description = "Random variation on damping", default = 24)
         bpy.types.Scene.mol_substep = bpy.props.IntProperty(name = "mol_substep", description = "Substep. Higher equal more stable and accurate but more slower",min = 0, max = 900, default = 4)
-        bpy.types.Scene.mol_turbo = bpy.props.BoolProperty(name = "mol_turbo", description = "Active fast Cython script",default = True)
         bpy.types.Scene.mol_bake = bpy.props.BoolProperty(name = "mol_bake", description = "Bake simulation when finish",default = True)
         bpy.types.Scene.mol_render = bpy.props.BoolProperty(name = "mol_render", description = "Start rendering animation when simulation is finish. WARNING: It's freeze blender until render is finish.",default = False)
         bpy.types.Scene.mol_cpu = bpy.props.IntProperty(name = "mol_cpu", description = "Numbers of cpu's included for process the simulation", default = multiprocessing.cpu_count(),min = 1,max =multiprocessing.cpu_count())
@@ -259,177 +258,178 @@ class MolecularPanel(bpy.types.Panel):
         obj = context.object
         psys = obj.particle_systems.active
         row = layout.row()
-        row.prop(psys.settings,"mol_active", text = "")
+        if psys != None:
+            row.prop(psys.settings,"mol_active", text = "")
 
     def draw(self, context):
         layout = self.layout
         obj = context.object
         psys = obj.particle_systems.active
-        layout.enabled = psys.settings.mol_active
-        
-        row = layout.row()
-        row.label(text = "Density:")
-        box = layout.box()
-        box.prop(psys.settings,"mol_density_active", text = "Calculate particles weight by density")
-        subbox = box.box()
-        subbox.enabled  = psys.settings.mol_density_active
-        row = subbox.row()
-        row.prop(psys.settings,"mol_matter",text = "Preset:")
-        row = subbox.row()
-        if int(psys.settings.mol_matter) == 0:
-            row.enabled = True
-        elif int(psys.settings.mol_matter) >= 1:
-            row.enabled = False
-        row.prop(psys.settings, "mol_density", text = "Kg per CubeMeter:")
-        #subsubbox = subbox.box()
-        #row = subsubbox.row()
-        #row.label(text = "Particle info:")
-        #row = subsubbox.row()
-        #row.label(icon = "INFO",text = "size: " + str(round(psys.settings.particle_size,5)) + " m")
-        #row.label(icon = "INFO",text = "volume: " + str(round(psys.settings.particle_size**3,5)) + " m3")
-        #row = subsubbox.row()
-        pmass = (psys.settings.particle_size**3) * psys.settings.mol_density
-        #row.label(icon = "INFO",text = "mass: " + str(round(pmass,5)) + " kg")
-        row = subbox.row()
-        row.label(icon = "INFO",text = "Total system approx weight: " + str(round(len(psys.particles) * pmass,4)) + " kg") 
-        row = layout.row()
-        row.label(text = "Collision:")
-        box = layout.box()
-        box.prop(psys.settings,"mol_selfcollision_active", text = "Activate Self Collision")
-        box.prop(psys.settings,"mol_othercollision_active", text = "Activate Collision with others")
-        box.prop(psys.settings,"mol_collision_group",text = " Collide only with:")
-        box.prop(psys.settings,"mol_friction",text = " Friction:")
+        if psys != None:
+            layout.enabled = psys.settings.mol_active
+            row = layout.row()
+            row.label(text = "Density:")
+            box = layout.box()
+            box.prop(psys.settings,"mol_density_active", text = "Calculate particles weight by density")
+            subbox = box.box()
+            subbox.enabled  = psys.settings.mol_density_active
+            row = subbox.row()
+            row.prop(psys.settings,"mol_matter",text = "Preset:")
+            row = subbox.row()
+            if int(psys.settings.mol_matter) == 0:
+                row.enabled = True
+            elif int(psys.settings.mol_matter) >= 1:
+                row.enabled = False
+            row.prop(psys.settings, "mol_density", text = "Kg per CubeMeter:")
+            #subsubbox = subbox.box()
+            #row = subsubbox.row()
+            #row.label(text = "Particle info:")
+            #row = subsubbox.row()
+            #row.label(icon = "INFO",text = "size: " + str(round(psys.settings.particle_size,5)) + " m")
+            #row.label(icon = "INFO",text = "volume: " + str(round(psys.settings.particle_size**3,5)) + " m3")
+            #row = subsubbox.row()
+            pmass = (psys.settings.particle_size**3) * psys.settings.mol_density
+            #row.label(icon = "INFO",text = "mass: " + str(round(pmass,5)) + " kg")
+            row = subbox.row()
+            row.label(icon = "INFO",text = "Total system approx weight: " + str(round(len(psys.particles) * pmass,4)) + " kg") 
+            row = layout.row()
+            row.label(text = "Collision:")
+            box = layout.box()
+            box.prop(psys.settings,"mol_selfcollision_active", text = "Activate Self Collision")
+            box.prop(psys.settings,"mol_othercollision_active", text = "Activate Collision with others")
+            box.prop(psys.settings,"mol_collision_group",text = " Collide only with:")
+            box.prop(psys.settings,"mol_friction",text = " Friction:")
 
-        row = layout.row()
-        row.label(text = "Links:")
-        box = layout.box()
-        box.prop(psys.settings,"mol_links_active", text = "Activate Particles linking")
-        
-        subbox = box.box()
-        subbox.enabled  = psys.settings.mol_links_active
-        subbox.label(text = "Initial Linking (at bird):")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_link_length",text = "search length")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_link_max",text = "Max links")
-        row = subbox.row()
-        layout.separator()
-        row = subbox.row()
-        row.prop(psys.settings,"mol_link_tension",text = "Tension")
-        row.prop(psys.settings,"mol_link_tensionrand",text = "Rand Tension")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_link_stiff",text = "Stiff")
-        row.prop(psys.settings,"mol_link_stiffrand",text = "Rand Stiff")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_link_stiffexp",text = "Exponent")
-        row.label(text = "")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_link_damp",text = "Damping")
-        row.prop(psys.settings,"mol_link_damprand",text = "Random Damping")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_link_broken",text = "broken")
-        row.prop(psys.settings,"mol_link_brokenrand",text = "Random Broken")
-        row = subbox.row()
-        layout.separator()
-        row = subbox.row()
-        row.prop(psys.settings,"mol_link_samevalue", text = "Same values for compression/expansion")
-        row = subbox.row()
-        row.enabled  = not psys.settings.mol_link_samevalue
-        row.prop(psys.settings,"mol_link_estiff",text = "E Stiff")
-        row.prop(psys.settings,"mol_link_estiffrand",text = "Rand E Stiff")
-        row = subbox.row()
-        row.enabled  = not psys.settings.mol_link_samevalue
-        row.prop(psys.settings,"mol_link_estiffexp",text = "E Exponent")
-        row.label(text = "")
-        row = subbox.row()
-        row.enabled  = not psys.settings.mol_link_samevalue
-        row.prop(psys.settings,"mol_link_edamp",text = "E Damping")
-        row.prop(psys.settings,"mol_link_edamprand",text = "E Random Damping")
-        row = subbox.row()
-        row.enabled  = not psys.settings.mol_link_samevalue
-        row.prop(psys.settings,"mol_link_ebroken",text = "E broken")
-        row.prop(psys.settings,"mol_link_ebrokenrand",text = "E Random Broken")
+            row = layout.row()
+            row.label(text = "Links:")
+            box = layout.box()
+            box.prop(psys.settings,"mol_links_active", text = "Activate Particles linking")
+            
+            subbox = box.box()
+            subbox.enabled  = psys.settings.mol_links_active
+            subbox.label(text = "Initial Linking (at bird):")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_link_length",text = "search length")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_link_max",text = "Max links")
+            row = subbox.row()
+            layout.separator()
+            row = subbox.row()
+            row.prop(psys.settings,"mol_link_tension",text = "Tension")
+            row.prop(psys.settings,"mol_link_tensionrand",text = "Rand Tension")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_link_stiff",text = "Stiff")
+            row.prop(psys.settings,"mol_link_stiffrand",text = "Rand Stiff")
+            #row = subbox.row()
+            #row.prop(psys.settings,"mol_link_stiffexp",text = "Exponent")
+            #row.label(text = "")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_link_damp",text = "Damping")
+            row.prop(psys.settings,"mol_link_damprand",text = "Random Damping")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_link_broken",text = "broken")
+            row.prop(psys.settings,"mol_link_brokenrand",text = "Random Broken")
+            row = subbox.row()
+            layout.separator()
+            row = subbox.row()
+            row.prop(psys.settings,"mol_link_samevalue", text = "Same values for compression/expansion")
+            row = subbox.row()
+            row.enabled  = not psys.settings.mol_link_samevalue
+            row.prop(psys.settings,"mol_link_estiff",text = "E Stiff")
+            row.prop(psys.settings,"mol_link_estiffrand",text = "Rand E Stiff")
+            #row = subbox.row()
+            #row.enabled  = not psys.settings.mol_link_samevalue
+            #row.prop(psys.settings,"mol_link_estiffexp",text = "E Exponent")
+            #row.label(text = "")
+            row = subbox.row()
+            row.enabled  = not psys.settings.mol_link_samevalue
+            row.prop(psys.settings,"mol_link_edamp",text = "E Damping")
+            row.prop(psys.settings,"mol_link_edamprand",text = "E Random Damping")
+            row = subbox.row()
+            row.enabled  = not psys.settings.mol_link_samevalue
+            row.prop(psys.settings,"mol_link_ebroken",text = "E broken")
+            row.prop(psys.settings,"mol_link_ebrokenrand",text = "E Random Broken")
 
-        
-        subbox = box.box()
-        subbox.active = psys.settings.mol_links_active
-        subbox.label(text = "New Linking (at collision):")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_group",text = "Only links with:")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_chance",text = "% linking")
-        row.prop(psys.settings,"mol_relink_chancerand",text = "Random % linking")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_max",text = "Max links")
-        row = subbox.row()
-        layout.separator()
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_tension",text = "Tension")
-        row.prop(psys.settings,"mol_relink_tensionrand",text = "Rand Tension")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_stiff",text = "Stiffness")
-        row.prop(psys.settings,"mol_relink_stiffrand",text = "Random Stiffness")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_stiffexp",text = "Exp")
-        row.label(text = "")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_damp",text = "Damping")
-        row.prop(psys.settings,"mol_relink_damprand",text = "Random Damping")
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_broken",text = "broken")
-        row.prop(psys.settings,"mol_relink_brokenrand",text = "Random broken")
-        row = subbox.row()
-        layout.separator()
-        row = subbox.row()
-        row.prop(psys.settings,"mol_relink_samevalue", text = "Same values for compression/expansion")
-        row = subbox.row()
-        row.enabled  = not psys.settings.mol_relink_samevalue
-        row.prop(psys.settings,"mol_relink_estiff",text = "Stiffness")
-        row.prop(psys.settings,"mol_relink_estiffrand",text = "Random Stiffness")
-        row = subbox.row()
-        row.enabled  = not psys.settings.mol_relink_samevalue
-        row.prop(psys.settings,"mol_relink_estiffexp",text = "Exp")
-        row.label(text = "")
-        row = subbox.row()
-        row.enabled  = not psys.settings.mol_relink_samevalue
-        row.prop(psys.settings,"mol_relink_edamp",text = "Damping")
-        row.prop(psys.settings,"mol_relink_edamprand",text = "Random Damping")
-        row = subbox.row()
-        row.enabled  = not psys.settings.mol_relink_samevalue
-        row.prop(psys.settings,"mol_relink_ebroken",text = "broken")
-        row.prop(psys.settings,"mol_relink_ebrokenrand",text = "Random broken")
-        
-        row = layout.row()
-        scn = bpy.context.scene
-        row.label(text = "Simulate")
-        row = layout.row()
-        row.prop(scn,"frame_start",text = "Start Frame")
-        row.prop(scn,"frame_end",text = "End Frame")
-        row = layout.row()
-        row.prop(scn,"mol_fps_active",text = "change fps")
-        row = layout.row()
-        row.enabled = scn.mol_fps_active
-        row.prop(scn,"mol_fps",text = "fps")
-        row.label(text = "")
-        row = layout.row()
-        row.prop(scn,"mol_substep",text = "substep")
-        row.label(text = "")
-        row = layout.row()
-        row.prop(scn,"mol_turbo",text = "Turbo")
-        row.prop(scn,"mol_cpu",text = "CPU")
-        row = layout.row()
-        row.prop(scn,"mol_bake",text = "Bake all at ending")
-        row.prop(scn,"mol_render",text = "Render at ending")
-        row = layout.row()
-        row.operator("object.mol_simulate",text = "Start Molecular Simulation")
-        box = layout.box()
-        row = box.row()
-        box.enabled = False
-        row.label(text = "Thanks to all donators ! If you want donate")
-        row = box.row()
-        row.label(text = "to help me creating more stuffs like that")
-        row = box.row()
-        row.label(text = "just visit: www.pyroevil.com")
+            
+            subbox = box.box()
+            subbox.active = psys.settings.mol_links_active
+            subbox.label(text = "New Linking (at collision):")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_relink_group",text = "Only links with:")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_relink_chance",text = "% linking")
+            row.prop(psys.settings,"mol_relink_chancerand",text = "Random % linking")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_relink_max",text = "Max links")
+            row = subbox.row()
+            layout.separator()
+            row = subbox.row()
+            row.prop(psys.settings,"mol_relink_tension",text = "Tension")
+            row.prop(psys.settings,"mol_relink_tensionrand",text = "Rand Tension")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_relink_stiff",text = "Stiffness")
+            row.prop(psys.settings,"mol_relink_stiffrand",text = "Random Stiffness")
+            #row = subbox.row()
+            #row.prop(psys.settings,"mol_relink_stiffexp",text = "Exp")
+            #row.label(text = "")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_relink_damp",text = "Damping")
+            row.prop(psys.settings,"mol_relink_damprand",text = "Random Damping")
+            row = subbox.row()
+            row.prop(psys.settings,"mol_relink_broken",text = "broken")
+            row.prop(psys.settings,"mol_relink_brokenrand",text = "Random broken")
+            row = subbox.row()
+            layout.separator()
+            row = subbox.row()
+            row.prop(psys.settings,"mol_relink_samevalue", text = "Same values for compression/expansion")
+            row = subbox.row()
+            row.enabled  = not psys.settings.mol_relink_samevalue
+            row.prop(psys.settings,"mol_relink_estiff",text = "Stiffness")
+            row.prop(psys.settings,"mol_relink_estiffrand",text = "Random Stiffness")
+            #row = subbox.row()
+            #row.enabled  = not psys.settings.mol_relink_samevalue
+            #row.prop(psys.settings,"mol_relink_estiffexp",text = "Exp")
+            #row.label(text = "")
+            row = subbox.row()
+            row.enabled  = not psys.settings.mol_relink_samevalue
+            row.prop(psys.settings,"mol_relink_edamp",text = "Damping")
+            row.prop(psys.settings,"mol_relink_edamprand",text = "Random Damping")
+            row = subbox.row()
+            row.enabled  = not psys.settings.mol_relink_samevalue
+            row.prop(psys.settings,"mol_relink_ebroken",text = "broken")
+            row.prop(psys.settings,"mol_relink_ebrokenrand",text = "Random broken")
+            
+            row = layout.row()
+            scn = bpy.context.scene
+            row.label(text = "Simulate")
+            row = layout.row()
+            row.prop(scn,"frame_start",text = "Start Frame")
+            row.prop(scn,"frame_end",text = "End Frame")
+            row = layout.row()
+            row.prop(scn,"mol_fps_active",text = "change fps")
+            row = layout.row()
+            row.enabled = scn.mol_fps_active
+            row.prop(scn,"mol_fps",text = "fps")
+            row.label(text = "")
+            row = layout.row()
+            row.prop(scn,"mol_substep",text = "substep")
+            row.label(text = "")
+            row = layout.row()
+            row.label(text = "CPU used:")
+            row.prop(scn,"mol_cpu",text = "CPU")
+            row = layout.row()
+            row.prop(scn,"mol_bake",text = "Bake all at ending")
+            row.prop(scn,"mol_render",text = "Render at ending")
+            row = layout.row()
+            row.operator("object.mol_simulate",text = "Start Molecular Simulation")
+            box = layout.box()
+            row = box.row()
+            box.enabled = False
+            row.label(text = "Thanks to all donators ! If you want donate")
+            row = box.row()
+            row.label(text = "to help me creating more stuffs like that")
+            row = box.row()
+            row.label(text = "just visit: www.pyroevil.com")
 
 
 
@@ -474,37 +474,13 @@ class MolSimulate(bpy.types.Operator):
         stime = clock()
         imp.reload(molcore)
         imp.reload(cmolcore)
-        if scene.mol_turbo:
-            print("  Fast compiled addon used")
-            #cProfile.runctx('initcwrapper(exportdata)',globals(),locals(),"Profile.prof")
-            #s = pstats.Stats("Profile.prof")
-            #s.strip_dirs().sort_stats("time").print_stats()
-            report = cmolcore.init(exportdata)
-        else:
-            print("  slow python script addon used ( are you pressed Turbo ?)")
-            cProfile.runctx('initwrapper(exportdata)',globals(),locals(),"Profile.prof")
-            s = pstats.Stats("Profile.prof")
-            s.strip_dirs().sort_stats("time").print_stats()
+        report = cmolcore.init(exportdata)
         etime = clock()
         print("  " + "Export time take " + str(round(etime - stime,3)) + "sec")
         print("  total numbers of particles: " + str(report))
         print("  start processing:")
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
-# temporary for profiling---
-def initwrapper(exportdata):
-    global report
-    report = molcore.init(exportdata)
-def initcwrapper(exportdata):
-    global report
-    report = cmolcore.init(exportdata)
-def simwrapper(exportdata):
-    global importdata
-    importdata = molcore.simulate(exportdata)
-def simcwrapper(exportdata):
-    global importdata
-    importdata = cmolcore.simulate(exportdata)
-# ---temporary for profiling
 
 class MolSimulateModal(bpy.types.Operator):
     """Operator which runs its self from a timer"""
@@ -548,18 +524,7 @@ class MolSimulateModal(bpy.types.Operator):
             #stimex = clock()
             pack_data(False)
             #print("packdata time",clock() - stimex,"sec")
-            if scene.mol_turbo:
-                stimex = clock()
-                #cProfile.runctx('simcwrapper(exportdata)',globals(),locals(),"Profile.prof")
-                #s = pstats.Stats("Profile.prof")
-                #s.strip_dirs().sort_stats("time").print_stats()
-                importdata = cmolcore.simulate(exportdata)
-                #print("molcore out time",clock() - stimex,"sec")
-            else:
-                #cProfile.runctx('simwrapper(exportdata)',globals(),locals(),"Profile.prof")
-                #s = pstats.Stats("Profile.prof")
-                #s.strip_dirs().sort_stats("time").print_stats()
-                importdata = molcore.simulate(exportdata)
+            importdata = cmolcore.simulate(exportdata)
             i = 0
             #stimex = clock()
             for obj in bpy.data.objects:
