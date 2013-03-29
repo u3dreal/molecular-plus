@@ -21,6 +21,10 @@ cdef float deltatime = 0
 cdef int parnum = 0
 cdef int psysnum = 0
 cdef int cpunum
+cdef int newlinks = 0
+cdef int totallinks = 0
+cdef int totaldeadlinks = 0
+cdef int deadlinks = 0
 cdef Particle *parlist
 cdef Particle *parlistcopy
 cdef ParSys *psys
@@ -37,8 +41,17 @@ cpdef init(importdata):
     global psysnum
     global psys
     global cpunum
+    global newlinks
+    global totallinks
+    global totaldeadlinks
+    global deadlinks
     cdef int i
     cdef int ii
+    
+    newlinks = 0
+    totallinks = 0
+    totaldeadlinks = 0
+    deadlinks = 0
 
     fps = float(importdata[0][0])
     substep = int(importdata[0][1])
@@ -150,7 +163,8 @@ cpdef init(importdata):
         #printdb(125)
     #printdb(126)
     #testkdtree(3)
-    
+    totallinks += newlinks
+    print "  New links created: ",newlinks
     return parnum
     
     
@@ -197,12 +211,16 @@ cpdef simulate(importdata):
     global psys
     global cpunum
     global deltatime
+    global newlinks
+    global totallinks
+    global totaldeadlinks
+    global deadlinks
     
     cdef int i
     cdef int ii
     cdef float zeropoint[3]
-    cdef float velmagn = 0
-    cdef float velmaxmagn = 0
+    newlinks = 0
+    deadlinks = 0
     #printdb(170)
     #print("start simulate")
     #stime2 = clock()
@@ -249,15 +267,6 @@ cpdef simulate(importdata):
     
     #print("collide/solve link time", clock() - stime,"sec")
     #printdb(195)
-    velmagn = 0
-    velmaxmagn = 0
-    #stime = clock()
-    for i in xrange(parnum):
-        if parlist[i].state <= 1:
-            velmagn = square_dist(zeropoint,parlist[i].vel , 3)
-            if velmagn >= velmaxmagn:
-                velmaxmagn = velmagn
-    #print("found max velocity time", clock() - stime,"sec")
     #stime = clock()
     exportdata = []
     parloc = []
@@ -275,11 +284,16 @@ cpdef simulate(importdata):
             parveltmp.append(psys[i].particles[ii].vel[2])
         parloc.append(parloctmp)  
         parvel.append(parveltmp)
-        pyvelmaxmagn = velmaxmagn**0.5
         parloctmp = []
         parveltmp = [] 
     #printdb(198)
-    exportdata = [parloc,parvel,pyvelmaxmagn]
+    
+    #print "  New links at this frame: ",newlinks
+    #print "  Broken links this frame: ",deadlinks
+    totallinks += newlinks
+    totaldeadlinks += deadlinks
+    #print "  left: ",totallinks - totaldeadlinks," on ",totallinks  
+    exportdata = [parloc,parvel,newlinks,deadlinks,totallinks,totaldeadlinks]
     #print("export time", clock() - stime,"sec")
     #print("all process time", clock() - stime2,"sec")
     return exportdata
@@ -316,6 +330,7 @@ cpdef memfree():
 cdef void collide(Particle *par):# nogil:
     global kdtree
     global deltatime
+    global deadlinks
     cdef int *neighbours
     cdef Particle *par2
     cdef float stiff
@@ -493,6 +508,7 @@ cdef void solve_link(Particle *par):# nogil:
     global parlist
     global fps
     global substep
+    global deadlinks
     cdef int i
     cdef float stiff
     cdef float damping
@@ -583,6 +599,7 @@ cdef void solve_link(Particle *par):# nogil:
                 if Length > (par.links[i].lenght  * (1 + par.links[i].ebroken)) or Length < (par.links[i].lenght  * (1 - par.links[i].broken)):
                     par.links[i].start = -1
                     par.links_activnum -= 1
+                    deadlinks += 1
                     parsearch = arraysearch(par2.id,par.link_with,par.link_withnum)
                     if parsearch != -1:
                         par.link_with[parsearch] = -1
@@ -791,6 +808,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
     global kdtree
     global parlist
     global parnum
+    global newlinks
     #printdb(680)
     cdef Links *link = <Links *>malloc( 1 * cython.sizeof(Links))
     #printdb(682)
@@ -894,6 +912,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
                     par2.link_withnum += 1
                     #printdb(763)
                     par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 2) * cython.sizeof(int) )
+                    newlinks += 1
                     #free(link)
                     #printdb(766)
                     
@@ -914,7 +933,6 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
                         srand(12)
                         link.estiffness = ((par.sys.relink_estiff + par2.sys.relink_estiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
                         srand(13)
-                        print(par.sys.id,par.sys.relink_estiff,par2.sys.id,par2.sys.relink_estiff)
                         link.exponent = abs(int((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2))####
                         link.eexponent = abs(int((par.sys.relink_estiffexp + par2.sys.relink_estiffexp) / 2))####
                         damprandom = ((par.sys.relink_damprand + par2.sys.relink_damprand) / 2) * 2
@@ -935,6 +953,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
                         par2.link_with[par2.link_withnum] = par.id
                         par2.link_withnum += 1
                         par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 1) * cython.sizeof(int) )
+                        newlinks += 1
                         #free(link)
     #free(neighbours)
     #free(link)
