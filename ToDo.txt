@@ -9,7 +9,7 @@
 [x] Multithread kdtree searching
 [x] Multithread kdtree creation
 [ ] Link search distance relative to particles size option
-[ ] Time scale instead of FPS
+[x] Time scale instead of FPS
 [x] Fix UI bug when object without pSystem are selected.
 [ ] Print: new links at this frames , total links from beginning and links broken
 [ ] ***Deeper profiling before doing setp below***
