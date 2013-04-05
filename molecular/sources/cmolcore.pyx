@@ -20,7 +20,7 @@ cdef int substep = 0
 cdef float deltatime = 0
 cdef int parnum = 0
 cdef int psysnum = 0
-cdef int cpunum
+cdef int cpunum = 0
 cdef int newlinks = 0
 cdef int totallinks = 0
 cdef int totaldeadlinks = 0
@@ -245,6 +245,9 @@ cpdef simulate(importdata):
     
     #cdef int *test
     #printdb(188)
+    #print(parlist[1].loc[0],parlist[234].loc[0],parlist[836].loc[0])
+    #print(parlist[1].loc[1],parlist[234].loc[1],parlist[836].loc[1])
+    #print(parlist[1].loc[2],parlist[234].loc[2],parlist[836].loc[2])
     #stime = clock()
     with nogil:
         for i in prange(parnum,schedule='dynamic',chunksize=10,num_threads=cpunum):
@@ -307,20 +310,54 @@ cpdef memfree():
     global parlistcopy
     global fps
     global substep
-    
+    cdef int i
+    #printdb(200)
     fps = 0
     substep = 0
-    #for i in xrange(psysnum):
-        #free(psys[i].particles)
-    
+    deltatime = 0
+    parnum = 0
+    psysnum = 0
+    cpunum = 0
+    newlinks = 0
+    totallinks = 0
+    totaldeadlinks = 0
+    deadlinks = 0
+    #printdb(205)
+    for i in xrange(parnum):
+        if parnum > 1:
+            if parlist[i].neighboursnum > 1:
+                free(parlist[i].neighbours)
+                parlist[i].neighboursnum = 0
+            if parlist[i].collided_num > 1:
+                free(parlist[i].collided_with)
+                parlist[i].collided_num = 0
+            if parlist[i].links_num > 1:
+                free(parlist[i].links)
+                parlist[i].links_num = 0
+                parlist[i].links_activnum = 0
+            if parlist[i].link_withnum > 1:
+                free(parlist[i].link_with)
+                parlist[i].link_withnum = 0
+    #printdb(208) 
+    for i in xrange(psysnum):
+        if psysnum > 1:
+            free(psys[i].particles)
+    #printdb(210)
     if psysnum > 1:
         free(psys)
+    #printdb(215)
     if parnum > 1:
         free(parlistcopy)
         free(parlist)
+    #printdb(220)
     parnum = 0
     psysnum = 0
-    #free(kdtree.result)
+    #free(kdtree.thread_nodes)
+    #free(kdtree.thread_start)
+    #free(kdtree.thread_end)
+    #free(kdtree.thread_name)
+    #free(kdtree.thread_parent)
+    #free(kdtree.thread_depth)
     #free(kdtree.nodes)
     #free(kdtree.root_node)
     #free(kdtree)
