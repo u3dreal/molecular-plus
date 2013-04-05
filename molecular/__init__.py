@@ -145,18 +145,10 @@ def pack_data(initiate):
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
             if psys.settings.mol_active == True:
-                if scene.mol_timescale_active == True:
-                    psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
-                else:
-                    psys.settings.timestep = 1 / scene.render.fps 
                 parlen = len(psys.particles)
                 par_loc = [0,0,0] * parlen
                 par_vel = [0,0,0] * parlen
                 par_size = [0] * parlen
-                par_mass = []
-                if psys.settings.mol_density_active:
-                    for par in psys.particles:
-                        par_mass.append(psys.settings.mol_density * (4/3*pi*((par.size/2)**3)))
                 par_alive = []
                 for par in psys.particles:
                     parnum += 1
@@ -171,8 +163,19 @@ def pack_data(initiate):
                 psys.particles.foreach_get('velocity',par_vel)
                 
                 if initiate:
+                    par_mass = []
+                    
+                    if psys.settings.mol_density_active:
+                        for par in psys.particles:
+                            par_mass.append(psys.settings.mol_density * (4/3*pi*((par.size/2)**3)))
+                    """
+                    if scene.mol_timescale_active == True:
+                        psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
+                    else:
+                        psys.settings.timestep = 1 / scene.render.fps 
+                    """
+                    #psys.settings.count = psys.settings.count
                     psyslen += 1
-                    psys.settings.count = psys.settings.count
                     psys.particles.foreach_get('size',par_size)
                     if minsize > min(par_size):
                         minsize = min(par_size)
@@ -246,9 +249,11 @@ def pack_data(initiate):
             if initiate:
                 exportdata[0][2] = psyslen
                 exportdata[0][3] = parnum
+                #print(par_loc)
                 exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
                 pass
             else:
+                #print(par_loc)
                 exportdata.append((par_loc,par_vel,par_alive))     
                 pass  
     
@@ -563,8 +568,9 @@ class MolSimulateModal(bpy.types.Operator):
                 etime = clock()
                 print("    frame " + str(framesubstep + 1) + ":")
                 print("      links created:",newlink)
-                print("      links broked :",deadlink)
-                print("      total links:",totallink - totaldeadlink ,"/",totallink," (",round((((totallink - totaldeadlink) / totallink) * 100),2),"%)")
+                if totallink != 0:
+                    print("      links broked :",deadlink)
+                    print("      total links:",totallink - totaldeadlink ,"/",totallink," (",round((((totallink - totaldeadlink) / totallink) * 100),2),"%)")
                 print("      Molecular Script: " + str(round(etime - stime,3)) + " sec")
                 newlink = 0
                 deadlink = 0
