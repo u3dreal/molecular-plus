@@ -50,7 +50,7 @@ import bpy
 from random import random
 from math import pi
 import imp
-from time import clock
+from time import clock,sleep
 import cmolcore
 import pstats, cProfile
 import multiprocessing
@@ -62,6 +62,7 @@ def define_props():
     #if "mol_active" not in bpy.context.object.particle_systems['ParticleSystem'].settings:
         parset = bpy.types.ParticleSettings
         parset.mol_active = bpy.props.BoolProperty(name = "mol_active", description = "Activate molecular script for this particles system",default = False)
+        parset.mol_refresh = bpy.props.BoolProperty(name = "mol_refresh", description = "Simple property used to refresh data in the process",default = True)
         parset.mol_density_active = bpy.props.BoolProperty(name="mol_density_active", description="Control particle weight by density",default = False)
         item = [("-1","custom","put your parameter below"),("1555","sand","1555kg per meter cu"),("1000","water","1000kg per meter cu"),("7800","iron","7800kg per meter cu")]
         parset.mol_matter = bpy.props.EnumProperty(items = item, description = "Choose a matter preset for density")
@@ -175,6 +176,7 @@ def pack_data(initiate):
                         psys.settings.timestep = 1 / scene.render.fps 
                     """
                     #psys.settings.count = psys.settings.count
+                    psys.point_cache.frame_step = psys.point_cache.frame_step
                     psyslen += 1
                     psys.particles.foreach_get('size',par_size)
                     if minsize > min(par_size):
@@ -595,6 +597,7 @@ class MolSimulateModal(bpy.types.Operator):
     def cancel(self, context):
         context.window_manager.event_timer_remove(self._timer)
         return {'CANCELLED'}   
+
 
 def register():
     define_props()
