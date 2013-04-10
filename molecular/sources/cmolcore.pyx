@@ -390,7 +390,8 @@ cdef void collide(Particle *par):# nogil:
     cdef float xpar_vel[3]
     cdef float yi_vel[3]
     cdef float xi_vel[3]
-    cdef float friction
+    cdef float friction1
+    cdef float friction2
     cdef int i
     cdef int check = 0
     cdef float Ua    
@@ -400,6 +401,8 @@ cdef void collide(Particle *par):# nogil:
     cdef float Mb
     cdef float Va
     cdef float Vb
+    cdef float force1
+    cdef float force2
     
     if  par.state >= 2:
         return
@@ -454,12 +457,16 @@ cdef void collide(Particle *par):# nogil:
                     ratio1 = (par2.mass/(par.mass + par2.mass))
                     ratio2 = (par.mass/(par.mass + par2.mass))
                     
-                    #par.vel[0] -= (lenghtx * factor * ratio1) * stiff
-                    #par.vel[1] -= (lenghty * factor * ratio1) * stiff
-                    #par.vel[2] -= (lenghtz * factor * ratio1) * stiff
-                    #par2.vel[0] += (lenghtx * factor * ratio2) * stiff
-                    #par2.vel[1] += (lenghty * factor * ratio2) * stiff
-                    #par2.vel[2] += (lenghtz * factor * ratio2) * stiff
+
+                    force1 = factor * ratio1 * stiff
+                    force2 = factor * ratio2 * stiff
+                    par.vel[0] -= lenghtx * force1
+                    par.vel[1] -= lenghty * force1
+                    par.vel[2] -= lenghtz * force1
+                    par2.vel[0] += lenghtx * force2
+                    par2.vel[1] += lenghty * force2
+                    par2.vel[2] += lenghtz * force2
+                    
                     
                     #printdb(336)
 
@@ -488,10 +495,10 @@ cdef void collide(Particle *par):# nogil:
                     xi_vel[1] = par2.vel[1] - yi_vel[1]
                     xi_vel[2] = par2.vel[2] - yi_vel[2]
                     
-                    
+                    """
                     Ua = factor1     
                     Ub = -factor2 
-                    Cr = 0.0
+                    Cr = 1.0
                     Ma = par.mass
                     Mb = par2.mass     
                     Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
@@ -499,42 +506,37 @@ cdef void collide(Particle *par):# nogil:
                     
                     #mula = 1
                     #mulb = 1
-                    
+                    #Va = Va * (1 - Cr)
+                    #Vb = Vb * (1 - Cr)
                     ypar_vel[0] = col_normal1[0] * Va
                     ypar_vel[1] = col_normal1[1] * Va
                     ypar_vel[2] = col_normal1[2] * Va
                     yi_vel[0] = col_normal1[0] * Vb
                     yi_vel[1] = col_normal1[1] * Vb
                     yi_vel[2] = col_normal1[2] * Vb
-                    
-
-                    #printdb(381)
-                    friction = 1 - ((par.sys.friction + par2.sys.friction ) / 2)
-                    xpar_vel[0] *= friction
-                    xpar_vel[1] *= friction
-                    xpar_vel[2] *= friction
-                    xi_vel[0] *= friction
-                    xi_vel[1] *= friction
-                    xi_vel[2] *= friction
-                    
-                    par.vel[0] = ypar_vel[0] + xpar_vel[0]
-                    par.vel[1] = ypar_vel[1] + xpar_vel[1]
-                    par.vel[2] = ypar_vel[2] + xpar_vel[2]
-                    par2.vel[0] = yi_vel[0] + xi_vel[0]
-                    par2.vel[1] = yi_vel[1] + xi_vel[1]
-                    par2.vel[2] = yi_vel[2] + xi_vel[2]
-                    #printdb(396)
-                    
-                    par.vel[0] -= (lenghtx * factor * ratio1) * stiff
-                    par.vel[1] -= (lenghty * factor * ratio1) * stiff
-                    par.vel[2] -= (lenghtz * factor * ratio1) * stiff
-                    par2.vel[0] += (lenghtx * factor * ratio2) * stiff
-                    par2.vel[1] += (lenghty * factor * ratio2) * stiff
-                    par2.vel[2] += (lenghtz * factor * ratio2) * stiff
-                    
-                    
                     """
 
+                    #printdb(381)
+                    friction1 = 1 - ((par.sys.friction + par2.sys.friction ) * ratio1)
+                    friction2 = 1 - ((par.sys.friction + par2.sys.friction ) * ratio2)
+                    #xpar_vel[0] *= friction
+                    #xpar_vel[1] *= friction
+                    #xpar_vel[2] *= friction
+                    #xi_vel[0] *= friction
+                    #xi_vel[1] *= friction
+                    #xi_vel[2] *= friction
+                    
+                    par.vel[0] = ypar_vel[0] + ((xpar_vel[0] * friction1) + ( xi_vel[0] * ( 1 - friction1)))
+                    par.vel[1] = ypar_vel[1] + ((xpar_vel[1] * friction1) + ( xi_vel[1] * ( 1 - friction1)))
+                    par.vel[2] = ypar_vel[2] + ((xpar_vel[2] * friction1) + ( xi_vel[2] * ( 1 - friction1)))
+                    par2.vel[0] = yi_vel[0] + ((xi_vel[0] * friction2) + ( xpar_vel[0] * ( 1 - friction2)))
+                    par2.vel[1] = yi_vel[1] + ((xi_vel[1] * friction2) + ( xpar_vel[1] * ( 1 - friction2)))
+                    par2.vel[2] = yi_vel[2] + ((xi_vel[2] * friction2) + ( xpar_vel[2] * ( 1 - friction2)))
+                    #printdb(396)
+                    
+         
+                    
+                    """
                     if abs(Va) < abs(((factor * ratio1) * stiff)):
                         par.vel[0] -= ((lenghtx * factor * ratio1) * stiff)
                         par.vel[1] -= ((lenghty * factor * ratio1) * stiff)
@@ -1170,7 +1172,11 @@ cdef int arraysearch(int element,int *array,int len)nogil:
             return i
     #printdb(943)
     return -1
-    
+cdef float fabs(float value)nogil:
+    if value >= 0:
+        return value
+    if value < 0:
+        return value * -1
  
 cdef float sq_number(float val):# nogil:
     cdef float nearsq = 8
