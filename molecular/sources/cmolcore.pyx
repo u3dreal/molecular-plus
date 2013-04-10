@@ -158,7 +158,8 @@ cpdef init(importdata):
     for i in xrange(parnum):
         #printdb(123)
         create_link(parlist[i].id,parlist[i].sys.link_max)
-        free(parlist[i].neighbours)
+        if parlist[i].neighboursnum > 1:
+            free(parlist[i].neighbours)
         parlist[i].neighboursnum = 0
         #printdb(125)
     #printdb(126)
@@ -392,6 +393,14 @@ cdef void collide(Particle *par):# nogil:
     cdef float friction
     cdef int i
     cdef int check = 0
+    cdef float Ua    
+    cdef float Ub
+    cdef float Cr
+    cdef float Ma
+    cdef float Mb
+    cdef float Va
+    cdef float Vb
+    
     if  par.state >= 2:
         return
     if par.sys.selfcollision_active == False and par.sys.othercollision_active == False:
@@ -445,12 +454,12 @@ cdef void collide(Particle *par):# nogil:
                     ratio1 = (par2.mass/(par.mass + par2.mass))
                     ratio2 = (par.mass/(par.mass + par2.mass))
                     
-                    par.vel[0] -= (lenghtx * factor * ratio1) * stiff
-                    par.vel[1] -= (lenghty * factor * ratio1) * stiff
-                    par.vel[2] -= (lenghtz * factor * ratio1) * stiff
-                    par2.vel[0] += (lenghtx * factor * ratio2) * stiff
-                    par2.vel[1] += (lenghty * factor * ratio2) * stiff
-                    par2.vel[2] += (lenghtz * factor * ratio2) * stiff
+                    #par.vel[0] -= (lenghtx * factor * ratio1) * stiff
+                    #par.vel[1] -= (lenghty * factor * ratio1) * stiff
+                    #par.vel[2] -= (lenghtz * factor * ratio1) * stiff
+                    #par2.vel[0] += (lenghtx * factor * ratio2) * stiff
+                    #par2.vel[1] += (lenghty * factor * ratio2) * stiff
+                    #par2.vel[2] += (lenghtz * factor * ratio2) * stiff
                     
                     #printdb(336)
 
@@ -462,6 +471,7 @@ cdef void collide(Particle *par):# nogil:
                     col_normal2[2] = col_normal1[2] * -1
                      
                     factor1 = dot_product(par.vel,col_normal1)      
+                    
                     ypar_vel[0] = factor1 * col_normal1[0]
                     ypar_vel[1] = factor1 * col_normal1[1]
                     ypar_vel[2] = factor1 * col_normal1[2]
@@ -469,6 +479,7 @@ cdef void collide(Particle *par):# nogil:
                     xpar_vel[1] = par.vel[1] - ypar_vel[1]
                     xpar_vel[2] = par.vel[2] - ypar_vel[2]
                     #printdb(352)
+                    
                     factor2 = dot_product(par2.vel,col_normal2)
                     yi_vel[0] = factor2 * col_normal2[0]
                     yi_vel[1] = factor2 * col_normal2[1]
@@ -478,25 +489,25 @@ cdef void collide(Particle *par):# nogil:
                     xi_vel[2] = par2.vel[2] - yi_vel[2]
                     
                     
-                    """
                     Ua = factor1     
                     Ub = -factor2 
-                    Cr = 1
+                    Cr = 0.0
                     Ma = par.mass
                     Mb = par2.mass     
                     Va = (Cr*Mb*(Ub-Ua)+Ma*Ua+Mb*Ub)/(Ma+Mb)
                     Vb = (Cr*Ma*(Ua-Ub)+Ma*Ua+Mb*Ub)/(Ma+Mb)
                     
-                    mula = 1
-                    mulb = 1
-                    ypar_vel[0] = col_normal1[0] * Va * mula
-                    ypar_vel[1] = col_normal1[1] * Va * mula
-                    ypar_vel[2] = col_normal1[2] * Va * mula
-                    yi_vel[0] = col_normal1[0] * Vb * mulb
-                    yi_vel[1] = col_normal1[1] * Vb * mulb
-                    yi_vel[2] = col_normal1[2] * Vb * mulb
+                    #mula = 1
+                    #mulb = 1
+                    
+                    ypar_vel[0] = col_normal1[0] * Va
+                    ypar_vel[1] = col_normal1[1] * Va
+                    ypar_vel[2] = col_normal1[2] * Va
+                    yi_vel[0] = col_normal1[0] * Vb
+                    yi_vel[1] = col_normal1[1] * Vb
+                    yi_vel[2] = col_normal1[2] * Vb
+                    
 
-                    """
                     #printdb(381)
                     friction = 1 - ((par.sys.friction + par2.sys.friction ) / 2)
                     xpar_vel[0] *= friction
@@ -513,6 +524,15 @@ cdef void collide(Particle *par):# nogil:
                     par2.vel[1] = yi_vel[1] + xi_vel[1]
                     par2.vel[2] = yi_vel[2] + xi_vel[2]
                     #printdb(396)
+                    
+                    par.vel[0] -= (lenghtx * factor * ratio1) * stiff
+                    par.vel[1] -= (lenghty * factor * ratio1) * stiff
+                    par.vel[2] -= (lenghtz * factor * ratio1) * stiff
+                    par2.vel[0] += (lenghtx * factor * ratio2) * stiff
+                    par2.vel[1] += (lenghty * factor * ratio2) * stiff
+                    par2.vel[2] += (lenghtz * factor * ratio2) * stiff
+                    
+                    
                     """
 
                     if abs(Va) < abs(((factor * ratio1) * stiff)):
@@ -529,7 +549,7 @@ cdef void collide(Particle *par):# nogil:
                     par2.collided_num += 1
                     par2.collided_with = <int *>realloc(par2.collided_with,(par2.collided_num + 1) * cython.sizeof(int) )
                     if ((par.sys.relink_chance + par2.sys.relink_chance) / 2) > 0:
-                        ##printdb(405)
+                        #printdb(405)
                         create_link(par.id,par.sys.link_max * 2,par2.id)
 
                     #printdb(416)
@@ -901,7 +921,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
         if par.id != par2.id:
             #printdb(723)
             #arraysearch(par2.id,par.link_with,par.link_withnum)
-            ##printdb(725)
+            #printdb(725)
             if arraysearch(par.id,par2.link_with,par2.link_withnum) == -1 and par2.state <= 1 and par.state <= 1:
             #if par not in par2.link_with and par2.state <= 1 and par.state <= 1:
                 #printdb(728)
