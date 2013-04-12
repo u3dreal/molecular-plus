@@ -50,7 +50,7 @@ import bpy
 from random import random
 from math import pi
 import imp
-from time import clock,sleep
+from time import clock,sleep,strftime,gmtime
 import cmolcore
 import pstats, cProfile
 import multiprocessing
@@ -574,6 +574,9 @@ class MolSimulateModal(bpy.types.Operator):
                     print("      links broked :",deadlink)
                     print("      total links:",totallink - totaldeadlink ,"/",totallink," (",round((((totallink - totaldeadlink) / totallink) * 100),2),"%)")
                 print("      Molecular Script: " + str(round(etime - stime,3)) + " sec")
+                remain = (((etime - stime) * (old_endframe - framesubstep - 1)))
+                #print("frame left:",(old_endframe - framesubstep - 1))
+                print("      Remaining estimated:",strftime('%H hours %M mins %S secs', gmtime(remain)))
                 newlink = 0
                 deadlink = 0
                 stime = clock()
