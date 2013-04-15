@@ -47,12 +47,11 @@ cpdef init(importdata):
     global deadlinks
     cdef int i
     cdef int ii
-    
+
     newlinks = 0
     totallinks = 0
     totaldeadlinks = 0
     deadlinks = 0
-
     fps = float(importdata[0][0])
     substep = int(importdata[0][1])
     deltatime = (fps * (substep +1))
@@ -91,14 +90,14 @@ cpdef init(importdata):
             psys[i].link_max = importdata[i + 1][6][6]
             psys[i].link_tension = importdata[i + 1][6][7]
             psys[i].link_tensionrand = importdata[i + 1][6][8]
-            psys[i].link_stiff = importdata[i + 1][6][9]
+            psys[i].link_stiff = importdata[i + 1][6][9] * 0.5
             psys[i].link_stiffrand = importdata[i + 1][6][10]
             psys[i].link_stiffexp = importdata[i + 1][6][11]
             psys[i].link_damp = importdata[i + 1][6][12]
             psys[i].link_damprand = importdata[i + 1][6][13]
             psys[i].link_broken = importdata[i + 1][6][14]
             psys[i].link_brokenrand = importdata[i + 1][6][15]
-            psys[i].link_estiff = importdata[i + 1][6][16]
+            psys[i].link_estiff = importdata[i + 1][6][16] * 0.5
             psys[i].link_estiffrand = importdata[i + 1][6][17]
             psys[i].link_estiffexp = importdata[i + 1][6][18]
             psys[i].link_edamp = importdata[i + 1][6][19]
@@ -111,14 +110,14 @@ cpdef init(importdata):
             psys[i].relink_max = importdata[i + 1][6][26]
             psys[i].relink_tension = importdata[i + 1][6][27]
             psys[i].relink_tensionrand = importdata[i + 1][6][28]
-            psys[i].relink_stiff = importdata[i + 1][6][29]
+            psys[i].relink_stiff = importdata[i + 1][6][29] * 0.5
             psys[i].relink_stiffexp = importdata[i + 1][6][30]
             psys[i].relink_stiffrand = importdata[i + 1][6][31]
             psys[i].relink_damp = importdata[i + 1][6][32]
             psys[i].relink_damprand = importdata[i + 1][6][33]
             psys[i].relink_broken = importdata[i + 1][6][34]
             psys[i].relink_brokenrand = importdata[i + 1][6][35]
-            psys[i].relink_estiff = importdata[i + 1][6][36]
+            psys[i].relink_estiff = importdata[i + 1][6][36] * 0.5
             psys[i].relink_estiffexp = importdata[i + 1][6][37]
             psys[i].relink_estiffrand = importdata[i + 1][6][38]
             psys[i].relink_edamp = importdata[i + 1][6][39]
@@ -565,8 +564,7 @@ cdef void collide(Particle *par):# nogil:
 
 cdef void solve_link(Particle *par):# nogil:
     global parlist
-    global fps
-    global substep
+    global deltatime
     global deadlinks
     cdef int i
     cdef float stiff
@@ -603,7 +601,6 @@ cdef void solve_link(Particle *par):# nogil:
         return
     for i in xrange(par.links_num):
         if par.links[i].start != -1:
-            timestep = 1/(fps * (substep +1))
             par1 = &parlist[par.links[i].start]
             par2 = &parlist[par.links[i].end]
             Loc1[0] = par1.loc[0]
@@ -624,11 +621,11 @@ cdef void solve_link(Particle *par):# nogil:
             Length = (LengthX**2 + LengthY**2 + LengthZ**2)**(0.5)
             if par.links[i].lenght != Length and Length != 0:
                 if par.links[i].lenght > Length:
-                    stiff = par.links[i].stiffness * (fps * (substep +1))
+                    stiff = par.links[i].stiffness * deltatime
                     damping = par.links[i].damping
                     exp = par.links[i].exponent
                 if par.links[i].lenght < Length:
-                    stiff = par.links[i].estiffness * (fps * (substep +1))
+                    stiff = par.links[i].estiffness * deltatime
                     damping = par.links[i].edamping
                     exp = par.links[i].eexponent
                 Vx = V2[0] - V1[0]
