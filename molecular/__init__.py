@@ -78,6 +78,7 @@ def define_props():
         
         parset.mol_links_active = bpy.props.BoolProperty(name = "mol_links_active", description = "Activate links between particles of this system",default = False)
         parset.mol_link_rellength = bpy.props.BoolProperty(name = "mol_link_rellength", description = "Activate search distance relative to particles radius",default = True)
+        parset.mol_link_friction = bpy.props.FloatProperty(name = "mol_link_friction", description = "Friction in links , a kind of viscosity. Slow down tangent velocity. 0 = no friction , 1.0 = full of friction",min = 0,max = 1, default = 0.005)
         parset.mol_link_length = bpy.props.FloatProperty(name = "mol_link_length", description = "Searching range to make a link between particles",min = 0, precision = 6, default = 1)
         parset.mol_link_tension = bpy.props.FloatProperty(name = "mol_link_tension", description = "Make link bigger or smaller than it's created (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 3, default = 1)
         parset.mol_link_tensionrand = bpy.props.FloatProperty(name = "mol_link_tensionrand", description = "Tension random",min = 0,max = 1, precision = 3, default = 0)
@@ -200,7 +201,7 @@ def pack_data(initiate):
                         psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
                         psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
                     
-                    params = [0] * 43
+                    params = [0] * 44
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
                     params[2] = psys.settings.mol_collision_group
@@ -246,7 +247,8 @@ def pack_data(initiate):
                     params[39] = psys.settings.mol_relink_edamp
                     params[40] = psys.settings.mol_relink_edamprand
                     params[41] = psys.settings.mol_relink_ebroken
-                    params[42] = psys.settings.mol_relink_ebrokenrand                   
+                    params[42] = psys.settings.mol_relink_ebrokenrand
+                    params[43] = psys.settings.mol_link_friction                   
     
             if initiate:
                 exportdata[0][2] = psyslen
@@ -330,6 +332,7 @@ class MolecularPanel(bpy.types.Panel):
             row = subbox.row()
             row.prop(psys.settings,"mol_link_max",text = "Max links")
             row = subbox.row()
+            row.prop(psys.settings,"mol_link_friction",text = "Link friction")
             layout.separator()
             row = subbox.row()
             row.prop(psys.settings,"mol_link_tension",text = "Tension")
