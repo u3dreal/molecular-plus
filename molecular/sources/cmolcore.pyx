@@ -124,6 +124,7 @@ cpdef init(importdata):
             psys[i].relink_edamprand = importdata[i + 1][6][40]
             psys[i].relink_ebroken = importdata[i + 1][6][41]
             psys[i].relink_ebrokenrand = importdata[i + 1][6][42]
+            psys[i].link_friction = importdata[i + 1][6][43]
             
             parlist[jj].sys = &psys[i]
             parlist[jj].collided_with = <int *>malloc( 1 * cython.sizeof(int) )
@@ -487,6 +488,7 @@ cdef void collide(Particle *par):# nogil:
                     #printdb(352)
                     
                     factor2 = dot_product(par2.vel,col_normal2)
+                    
                     yi_vel[0] = factor2 * col_normal2[0]
                     yi_vel[1] = factor2 * col_normal2[1]
                     yi_vel[2] = factor2 * col_normal2[2]
@@ -596,6 +598,14 @@ cdef void solve_link(Particle *par):# nogil:
     cdef float ratio2
     cdef int parsearch
     cdef int par2search
+    cdef float normal1[3]
+    cdef float normal2[3]
+    cdef float factor1
+    cdef float factor2
+    cdef float ypar1_vel[3]
+    cdef float xpar1_vel[3]
+    cdef float ypar2_vel[3]
+    cdef float xpar2_vel[3]
     #broken_links = []
     if  par.state >= 2:
         return
@@ -651,6 +661,46 @@ cdef void solve_link(Particle *par):# nogil:
                 par2.vel[0] += Force2[0] * ratio2
                 par2.vel[1] += Force2[1] * ratio2
                 par2.vel[2] += Force2[2] * ratio2
+                
+                normal1[0] = LengthX / Length
+                normal1[1] = LengthY / Length
+                normal1[2] = LengthZ / Length
+                normal2[0] = normal1[0] * -1
+                normal2[1] = normal1[1] * -1
+                normal2[2] = normal1[2] * -1
+                 
+                factor1 = dot_product(par1.vel,normal1)      
+                
+                ypar1_vel[0] = factor1 * normal1[0]
+                ypar1_vel[1] = factor1 * normal1[1]
+                ypar1_vel[2] = factor1 * normal1[2]
+                xpar1_vel[0] = par1.vel[0] - ypar1_vel[0]
+                xpar1_vel[1] = par1.vel[1] - ypar1_vel[1]
+                xpar1_vel[2] = par1.vel[2] - ypar1_vel[2]
+                #printdb(352)
+                
+                factor2 = dot_product(par2.vel,normal2)
+                
+                ypar2_vel[0] = factor2 * normal2[0]
+                ypar2_vel[1] = factor2 * normal2[1]
+                ypar2_vel[2] = factor2 * normal2[2]
+                xpar2_vel[0] = par2.vel[0] - ypar2_vel[0]
+                xpar2_vel[1] = par2.vel[1] - ypar2_vel[1]
+                xpar2_vel[2] = par2.vel[2] - ypar2_vel[2]
+
+
+                #printdb(381)
+                friction1 = 1 - ((par.links[i].friction) * ratio1)
+                friction2 = 1 - ((par.links[i].friction) * ratio2)
+
+                
+                par1.vel[0] = ypar1_vel[0] + ((xpar1_vel[0] * friction1) + ( xpar2_vel[0] * ( 1 - friction1)))
+                par1.vel[1] = ypar1_vel[1] + ((xpar1_vel[1] * friction1) + ( xpar2_vel[1] * ( 1 - friction1)))
+                par1.vel[2] = ypar1_vel[2] + ((xpar1_vel[2] * friction1) + ( xpar2_vel[2] * ( 1 - friction1)))
+                par2.vel[0] = ypar2_vel[0] + ((xpar2_vel[0] * friction2) + ( xpar1_vel[0] * ( 1 - friction2)))
+                par2.vel[1] = ypar2_vel[1] + ((xpar2_vel[1] * friction2) + ( xpar1_vel[1] * ( 1 - friction2)))
+                par2.vel[2] = ypar2_vel[2] + ((xpar2_vel[2] * friction2) + ( xpar1_vel[2] * ( 1 - friction2)))
+                #printdb(396)
                 
                 if Length > (par.links[i].lenght  * (1 + par.links[i].ebroken)) or Length < (par.links[i].lenght  * (1 - par.links[i].broken)):
                     par.links[i].start = -1
@@ -928,7 +978,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
                 link.start = par.id
                 link.end = par2.id
                 #printdb(732)
-                
+                link.friction = (par.sys.link_friction + par2.sys.link_friction) / 2
                 if parothers_id == -1:
                     tensionrandom = (par.sys.link_tensionrand + par2.sys.link_tensionrand) / 2 * 2
                     srand(1)
@@ -1028,6 +1078,7 @@ cdef struct Links:
     int eexponent
     float edamping
     float ebroken
+    float friction
             
             
             
@@ -1103,6 +1154,7 @@ cdef struct ParSys:
     float relink_edamprand
     float relink_ebroken
     float relink_ebrokenrand
+    float link_friction
 
     
 cdef struct Particle:
