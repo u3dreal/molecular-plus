@@ -31,18 +31,15 @@ bl_info = {
 
 if "bpy" in locals():
     import imp
-    imp.reload(molcore)
     imp.reload(cmolcore)
 else:
     try:
         import bpy
         import sys
         sys.path.append(bpy.path.abspath('//'))
-        import molcore
         import cmolcore
     except:
-        from molecular import molcore
-        #from molecular import cmolcore
+        from molecular import cmolcore
         pass
 
 
@@ -170,6 +167,9 @@ def pack_data(initiate):
                     if psys.settings.mol_density_active:
                         for par in psys.particles:
                             par_mass.append(psys.settings.mol_density * (4/3*pi*((par.size/2)**3)))
+                    else:
+                        for par in psys.particles:
+                            par_mass.append(psys.settings.mass)
                     """
                     if scene.mol_timescale_active == True:
                         psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
@@ -501,7 +501,6 @@ class MolSimulate(bpy.types.Operator):
         etime = clock()
         print("  " + "PackData take " + str(round(etime - stime,3)) + "sec")
         stime = clock()
-        imp.reload(molcore)
         imp.reload(cmolcore)
         report = cmolcore.init(exportdata)
         etime = clock()
