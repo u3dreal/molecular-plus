@@ -47,7 +47,6 @@ cpdef init(importdata):
     global deadlinks
     cdef int i
     cdef int ii
-
     newlinks = 0
     totallinks = 0
     totaldeadlinks = 0
@@ -602,6 +601,8 @@ cdef void solve_link(Particle *par):# nogil:
     cdef float normal2[3]
     cdef float factor1
     cdef float factor2
+    cdef float friction1
+    cdef float friction2
     cdef float ypar1_vel[3]
     cdef float xpar1_vel[3]
     cdef float ypar2_vel[3]
@@ -922,6 +923,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
     cdef int ii
     cdef int neighboursnum
     cdef float rand_max = 32767 
+    cdef float relinkrandom
     cdef Particle *par
     cdef Particle *par2
     cdef float stiffrandom
