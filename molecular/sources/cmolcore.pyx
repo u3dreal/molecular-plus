@@ -133,6 +133,7 @@ cpdef init(importdata):
             parlist[jj].links_activnum = 0
             parlist[jj].link_with = <int *>malloc( 1 * cython.sizeof(int) )
             parlist[jj].link_withnum = 0
+            parlist[jj].neighboursnum = 0
             jj += 1
             
     jj = 0
@@ -158,8 +159,9 @@ cpdef init(importdata):
         #printdb(123)
         create_link(parlist[i].id,parlist[i].sys.link_max)
         if parlist[i].neighboursnum > 1:
+            #printdb(124)
             free(parlist[i].neighbours)
-        parlist[i].neighboursnum = 0
+            parlist[i].neighboursnum = 0
         #printdb(125)
     #printdb(126)
     #testkdtree(3)
@@ -263,8 +265,10 @@ cpdef simulate(importdata):
         collide(&parlist[i])
         #printdb(192)
         solve_link(&parlist[i])
-        free(parlist[i].neighbours)
-        parlist[i].neighboursnum = 0
+        if parlist[i].neighboursnum > 1:
+            #printdb(192)
+            free(parlist[i].neighbours)
+            parlist[i].neighboursnum = 0
         #printdb(194)
             
     
@@ -276,7 +280,7 @@ cpdef simulate(importdata):
     parvel = []
     parloctmp = []
     parveltmp = []
-    #printdb(195)
+    #printdb(196)
     for i in xrange(psysnum):
         for ii in xrange(psys[i].parnum):
             parloctmp.append(psys[i].particles[ii].loc[0])
