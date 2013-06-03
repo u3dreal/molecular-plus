@@ -16,7 +16,7 @@
 [ ] Support randomly sized particles.
 [ ] Fix memory crash issues.
 [ ] Add collision "damping".
-[ ] Make broken links with particles penetrating don't blow.
+[ ] Make broken links with particles penetrating don't explode.
 
 [ ] ***Deeper profiling before doing in the list below***
 [ ] Try to see if I can send info of particles by memory adress to gain speed (like Mohamed does for it's mesher addon)
