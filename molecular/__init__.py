@@ -28,31 +28,16 @@ bl_info = {
     "tracker_url": "http://pyroevil.com/?cat=7" ,
     "category": "Object"}
     
-
-if "bpy" in locals():
-    import imp
-    imp.reload(cmolcore)
-else:
-    try:
-        import bpy
-        import sys
-        sys.path.append(bpy.path.abspath('//'))
-        import cmolcore
-    except:
-        from molecular import cmolcore
-        pass
-
-
 import bpy
+from molecular import cmolcore
 from random import random
 from math import pi
 import imp
 from time import clock,sleep,strftime,gmtime
-import cmolcore
 import pstats, cProfile
 import multiprocessing
 
-
+mol_simrun = False
 
 def define_props():
     
@@ -127,14 +112,15 @@ def define_props():
     
     bpy.types.Scene.mol_timescale_active = bpy.props.BoolProperty(name = "mol_timescale_active", description = "Activate TimeScaling",default = False)
     bpy.types.Scene.timescale = bpy.props.FloatProperty(name = "timescale", description = "SpeedUp or Slow down the simulation with this multiplier", default = 1)
-    bpy.types.Scene.mol_substep = bpy.props.IntProperty(name = "mol_substep", description = "Substep. Higher equal more stable and accurate but more slower",min = 0, max = 900, default = 4)
+    bpy.types.Scene.mol_substep = bpy.props.IntProperty(name = "mol_substep", description = "mol_substep. Higher equal more stable and accurate but more slower",min = 0, max = 900, default = 4)
     bpy.types.Scene.mol_bake = bpy.props.BoolProperty(name = "mol_bake", description = "Bake simulation when finish",default = True)
     bpy.types.Scene.mol_render = bpy.props.BoolProperty(name = "mol_render", description = "Start rendering animation when simulation is finish. WARNING: It's freeze blender until render is finish.",default = False)
     bpy.types.Scene.mol_cpu = bpy.props.IntProperty(name = "mol_cpu", description = "Numbers of cpu's included for process the simulation", default = multiprocessing.cpu_count(),min = 1,max =multiprocessing.cpu_count())
 
 def pack_data(initiate):
-    global exportdata
-    global minsize
+    global mol_exportdata
+    global mol_minsize
+    global mol_simrun
     psyslen = 0
     parnum = 0
     scene = bpy.context.scene
@@ -179,8 +165,8 @@ def pack_data(initiate):
                     psys.point_cache.frame_step = psys.point_cache.frame_step
                     psyslen += 1
                     psys.particles.foreach_get('size',par_size)
-                    if minsize > min(par_size):
-                        minsize = min(par_size)
+                    if mol_minsize > min(par_size):
+                        mol_minsize = min(par_size)
                     
                     if psys.settings.mol_link_samevalue:
                         psys.settings.mol_link_estiff = psys.settings.mol_link_stiff
@@ -250,14 +236,14 @@ def pack_data(initiate):
                     params[43] = psys.settings.mol_link_friction                   
     
             if initiate:
-                exportdata[0][2] = psyslen
-                exportdata[0][3] = parnum
+                mol_exportdata[0][2] = psyslen
+                mol_exportdata[0][3] = parnum
                 #print(par_loc)
-                exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
+                mol_exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
                 pass
             else:
                 #print(par_loc)
-                exportdata.append((par_loc,par_vel,par_alive))     
+                mol_exportdata.append((par_loc,par_vel,par_alive))     
                 pass  
     
 
@@ -279,6 +265,9 @@ class MolecularPanel(bpy.types.Panel):
             row.prop(psys.settings,"mol_active", text = "")
 
     def draw(self, context):
+        global mol_simrun
+        global mol_timeremain
+        
         layout = self.layout
         obj = context.object
         psys = obj.particle_systems.active
@@ -431,7 +420,7 @@ class MolecularPanel(bpy.types.Panel):
             #row.prop(scn,"timescale",text = "TimeScale")
             #row.label(text = "")
             row = layout.row()
-            row.prop(scn,"mol_substep",text = "substep")
+            row.prop(scn,"mol_substep",text = "mol_substep")
             row.label(text = "")
             row = layout.row()
             row.label(text = "CPU used:")
@@ -440,7 +429,24 @@ class MolecularPanel(bpy.types.Panel):
             row.prop(scn,"mol_bake",text = "Bake all at ending")
             row.prop(scn,"mol_render",text = "Render at ending")
             row = layout.row()
-            row.operator("object.mol_simulate",text = "Start Molecular Simulation")
+            if mol_simrun == False and psys.point_cache.is_baked == False:
+                row.enabled = True
+                row.operator("object.mol_simulate",text = "Start Molecular Simulation")
+                row = layout.row()
+                row.enabled = False
+                row.operator("ptcache.free_bake_all", text="Free All Bakes")
+            if psys.point_cache.is_baked == True and mol_simrun == False:
+                row.enabled = False
+                row.operator("object.mol_simulate",text = "Simulation baked")
+                row = layout.row()
+                row.enabled = True
+                row.operator("ptcache.free_bake_all", text="Free All Bakes")
+            if mol_simrun == True:
+                row.enabled = False
+                row.operator("object.mol_simulate",text = "Process: " + mol_timeremain + " left")
+                row = layout.row()
+                row.enabled = False
+                row.operator("ptcache.free_bake_all", text="Free All Bakes")
             box = layout.box()
             row = box.row()
             box.enabled = False
@@ -459,52 +465,56 @@ class MolSimulate(bpy.types.Operator):
 
 
     def execute(self, context):
-        global substep
-        global old_endframe
-        global exportdata
-        global report
-        global minsize
-        global newlink
-        global deadlink
-        global totallink
-        global totaldeadlink 
+        global mol_substep
+        global mol_old_endframe
+        global mol_exportdata
+        global mol_report
+        global mol_minsize
+        global mol_newlink
+        global mol_deadlink
+        global mol_totallink
+        global mol_totaldeadlink
+        global mol_simrun
+        global mol_timeremain
         
-        minsize = 1000000000
+        mol_simrun = True
+        mol_timeremain = "...Simulating..."
         
-        newlink = 0
-        deadlink = 0
-        totallink = 0
-        totaldeadlink = 0
+        mol_minsize = 1000000000
+        
+        mol_newlink = 0
+        mol_deadlink = 0
+        mol_totallink = 0
+        mol_totaldeadlink = 0
         
         print("Molecular Sim start--------------------------------------------------")
-        stime = clock()
+        mol_stime = clock()
         scene = bpy.context.scene
         object = bpy.context.object
         scene.frame_set(frame = scene.frame_start)
-        old_endframe = scene.frame_end
-        substep = scene.mol_substep
+        mol_old_endframe = scene.frame_end
+        mol_substep = scene.mol_substep
         scene.render.frame_map_old = 1
-        scene.render.frame_map_new = substep + 1
-        scene.frame_end *= substep + 1
+        scene.render.frame_map_new = mol_substep + 1
+        scene.frame_end *= mol_substep + 1
         
         if scene.mol_timescale_active == True:
             fps = scene.render.fps / scene.timescale
         else:
             fps = scene.render.fps
         cpu = scene.mol_cpu
-        exportdata = []
-        exportdata = [[fps,substep,0,0,cpu]]
-        stime = clock()
+        mol_exportdata = []
+        mol_exportdata = [[fps,mol_substep,0,0,cpu]]
+        mol_stime = clock()
         pack_data(True)
-        #print("sys number",exportdata[0][2])
+        #print("sys number",mol_exportdata[0][2])
         etime = clock()
-        print("  " + "PackData take " + str(round(etime - stime,3)) + "sec")
-        stime = clock()
-        imp.reload(cmolcore)
-        report = cmolcore.init(exportdata)
+        print("  " + "PackData take " + str(round(etime - mol_stime,3)) + "sec")
+        mol_stime = clock()
+        mol_report = cmolcore.init(mol_exportdata)
         etime = clock()
-        print("  " + "Export time take " + str(round(etime - stime,3)) + "sec")
-        print("  total numbers of particles: " + str(report))
+        print("  " + "Export time take " + str(round(etime - mol_stime,3)) + "sec")
+        print("  total numbers of particles: " + str(mol_report))
         print("  start processing:")
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
@@ -516,18 +526,20 @@ class MolSimulateModal(bpy.types.Operator):
     _timer = None
 
     def modal(self, context, event):
-        global substep
-        global old_endframe
-        global exportdata
-        global stime
-        global importdata
-        global minsize
-        global newlink
-        global deadlink
-        global totallink
-        global totaldeadlink 
+        global mol_substep
+        global mol_old_endframe
+        global mol_exportdata
+        global mol_stime
+        global mol_importdata
+        global mol_minsize
+        global mol_newlink
+        global mol_deadlink
+        global mol_totallink
+        global mol_totaldeadlink
+        global mol_timeremain
+        global mol_simrun
         
-        #stime = clock()
+        #mol_stime = clock()
         scene = bpy.context.scene
         frame_end = scene.frame_end
         frame_current = scene.frame_current
@@ -540,52 +552,53 @@ class MolSimulateModal(bpy.types.Operator):
                             fake_context["point_cache"] = psys.point_cache
                             bpy.ops.ptcache.bake_from_cache(fake_context)
             scene.render.frame_map_new = 1
-            scene.frame_end = old_endframe
+            scene.frame_end = mol_old_endframe
             if frame_current == frame_end and scene.mol_render == True:
                 bpy.ops.render.render(animation=True)
             scene.frame_set(frame = scene.frame_start)
             cmolcore.memfree()
+            mol_simrun = False
             print("--------------------------------------------------Molecular Sim end")
             return self.cancel(context)
 
         if event.type == 'TIMER':
             if frame_current == scene.frame_start:            
-                stime = clock()
-            exportdata = []
+                mol_stime = clock()
+            mol_exportdata = []
             #stimex = clock()
             pack_data(False)
             #print("packdata time",clock() - stimex,"sec")
-            importdata = cmolcore.simulate(exportdata)
+            mol_importdata = cmolcore.simulate(mol_exportdata)
             i = 0
             #stimex = clock()
             for obj in bpy.data.objects:
                 for psys in obj.particle_systems:
                     if psys.settings.mol_active == True:
-                        #print(len(importdata[i][1]))
+                        #print(len(mol_importdata[i][1]))
                         #print(len(psys.particles))
-                        psys.particles.foreach_set('velocity',importdata[1][i])
+                        psys.particles.foreach_set('velocity',mol_importdata[1][i])
                     i += 1
             #print("inject new velocity time",clock() - stimex,"sec")
-            framesubstep = frame_current/(substep+1)        
+            framesubstep = frame_current/(mol_substep+1)        
             if framesubstep == int(framesubstep):
                 etime = clock()
                 print("    frame " + str(framesubstep + 1) + ":")
-                print("      links created:",newlink)
-                if totallink != 0:
-                    print("      links broked :",deadlink)
-                    print("      total links:",totallink - totaldeadlink ,"/",totallink," (",round((((totallink - totaldeadlink) / totallink) * 100),2),"%)")
-                print("      Molecular Script: " + str(round(etime - stime,3)) + " sec")
-                remain = (((etime - stime) * (old_endframe - framesubstep - 1)))
-                #print("frame left:",(old_endframe - framesubstep - 1))
-                print("      Remaining estimated:",strftime('%H hours %M mins %S secs', gmtime(remain)))
-                newlink = 0
-                deadlink = 0
-                stime = clock()
+                print("      links created:",mol_newlink)
+                if mol_totallink != 0:
+                    print("      links broked :",mol_deadlink)
+                    print("      total links:",mol_totallink - mol_totaldeadlink ,"/",mol_totallink," (",round((((mol_totallink - mol_totaldeadlink) / mol_totallink) * 100),2),"%)")
+                print("      Molecular Script: " + str(round(etime - mol_stime,3)) + " sec")
+                remain = (((etime - mol_stime) * (mol_old_endframe - framesubstep - 1)))
+                mol_timeremain = strftime('%H hours %M mins %S secs', gmtime(remain))
+                print("      Remaining estimated:",mol_timeremain)
+                mol_newlink = 0
+                mol_deadlink = 0
+                mol_stime = clock()
                 stime2 = clock()
-            newlink += importdata[2]
-            deadlink += importdata[3]
-            totallink = importdata[4]
-            totaldeadlink = importdata[5]
+            mol_newlink += mol_importdata[2]
+            mol_deadlink += mol_importdata[3]
+            mol_totallink = mol_importdata[4]
+            mol_totaldeadlink = mol_importdata[5]
             scene.frame_set(frame = frame_current + 1)
             if framesubstep == int(framesubstep):
                 etime2 = clock()
