@@ -2,7 +2,7 @@
 #cython: boundscheck=False
 #cython: cdivision=True
 
-#NOTE: order of slow fonction to be optimize/multithreaded: kdtreesearching , kdtreecreating , linksolving 
+# NOTE: order of slow fonction to be optimize/multithreaded: kdtreesearching , kdtreecreating , linksolving 
 
 cimport cython
 from time import clock
