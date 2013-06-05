@@ -13,7 +13,7 @@
 [x] Fix UI bug when object without pSystem are selected.
 [x] Print: new links at this frames , total links from beginning and links broken
 [x] Fix bug when mass by density is not check
-[ ] Fix more than 24hours estimating time issue
+[x] Fix more than 24hours estimating time issue
 [ ] Support randomly sized particles.
 [ ] Fix memory crash issues.
 [ ] Add collision "damping".
