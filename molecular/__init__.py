@@ -29,7 +29,14 @@ bl_info = {
     "category": "Object"}
     
 import bpy
-from molecular import cmolcore
+try:
+    from molecular import cmolcore
+except:
+    try:
+        from molecular import import_test
+    except:
+        print("import_test not working")
+    print("cmolcore not working")
 from random import random
 from math import pi
 import imp
@@ -589,7 +596,8 @@ class MolSimulateModal(bpy.types.Operator):
                     print("      total links:",mol_totallink - mol_totaldeadlink ,"/",mol_totallink," (",round((((mol_totallink - mol_totaldeadlink) / mol_totallink) * 100),2),"%)")
                 print("      Molecular Script: " + str(round(etime - mol_stime,3)) + " sec")
                 remain = (((etime - mol_stime) * (mol_old_endframe - framesubstep - 1)))
-                mol_timeremain = strftime('%H hours %M mins %S secs', gmtime(remain))
+                days = int(strftime('%d',gmtime(remain))) - 1
+                mol_timeremain = strftime(str(days) + ' days %H hours %M mins %S secs', gmtime(remain))
                 print("      Remaining estimated:",mol_timeremain)
                 mol_newlink = 0
                 mol_deadlink = 0
