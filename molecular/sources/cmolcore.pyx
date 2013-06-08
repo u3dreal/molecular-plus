@@ -28,7 +28,7 @@ cdef int deadlinks = 0
 cdef Particle *parlist = NULL
 cdef Particle *parlistcopy = NULL
 cdef ParSys *psys = NULL
-cdef KDTree *kdtree = <KDTree *>malloc( 1 * cython.sizeof(KDTree) )
+cdef KDTree *kdtree = NULL
 print("cmolcore imported with sucess!")
 
 cpdef init(importdata):
@@ -141,6 +141,8 @@ cpdef init(importdata):
             
     jj = 0
     #printdb(115)
+    kdtree = <KDTree *>malloc( 1 * cython.sizeof(KDTree) )
+    #printdb(115)
     KDTree_create_nodes(kdtree,parnum)
     #printdb(117)
     with nogil:
@@ -220,7 +222,7 @@ cpdef simulate(importdata):
     
     cdef int i= 0
     cdef int ii = 0
-    cdef float *zeropoint = [0,0,0]
+    #cdef float *zeropoint = [0,0,0]
     newlinks = 0
     deadlinks = 0
     #printdb(170)
@@ -319,8 +321,6 @@ cpdef memfree():
     fps = 0
     substep = 0
     deltatime = 0
-    parnum = 0
-    psysnum = 0
     cpunum = 0
     newlinks = 0
     totallinks = 0
@@ -328,43 +328,74 @@ cpdef memfree():
     deadlinks = 0
     #printdb(205)
     for i in xrange(parnum):
-        if parnum > 1:
-            if parlist[i].neighboursnum > 1:
+        if parnum >= 1:
+            #free(parlist[i].sys)
+            #parlist[i].sys = NULL
+            if parlist[i].neighboursnum >= 1:
                 free(parlist[i].neighbours)
+                parlist[i].neighbours = NULL
                 parlist[i].neighboursnum = 0
-            if parlist[i].collided_num > 1:
+            if parlist[i].collided_num >= 1:
                 free(parlist[i].collided_with)
+                parlist[i].collided_with = NULL
                 parlist[i].collided_num = 0
-            if parlist[i].links_num > 1:
+            if parlist[i].links_num >= 1:
                 free(parlist[i].links)
+                parlist[i].links = NULL
                 parlist[i].links_num = 0
                 parlist[i].links_activnum = 0
-            if parlist[i].link_withnum > 1:
+            if parlist[i].link_withnum >= 1:
                 free(parlist[i].link_with)
+                parlist[i].link_with = NULL
                 parlist[i].link_withnum = 0
+            if parlist[i].neighboursnum >= 1:
+                free(parlist[i].neighbours)
+                parlist[i].neighbours = NULL
+                parlist[i].neighboursnum = 0
     #printdb(208) 
     for i in xrange(psysnum):
-        if psysnum > 1:
+        if psysnum >= 1:
             free(psys[i].particles)
+            psys[i].particles = NULL
     #printdb(210)
-    if psysnum > 1:
+    if psysnum >= 1:
         free(psys)
+        psys = NULL
     #printdb(215)
-    if parnum > 1:
+    if parnum >= 1:
         free(parlistcopy)
+        parlistcopy = NULL
         free(parlist)
+        parlist = NULL
     #printdb(220)
     parnum = 0
     psysnum = 0
-    #free(kdtree.thread_nodes)
-    #free(kdtree.thread_start)
-    #free(kdtree.thread_end)
-    #free(kdtree.thread_name)
-    #free(kdtree.thread_parent)
-    #free(kdtree.thread_depth)
-    #free(kdtree.nodes)
-    #free(kdtree.root_node)
-    #free(kdtree)
+    if kdtree.numnodes >= 1:
+        for i in xrange(kdtree.numnodes):
+            free(kdtree.nodes[i].particle)
+            kdtree.nodes[i].particle = NULL
+            free(kdtree.nodes[i].left_child)
+            kdtree.nodes[i].left_child = NULL
+            free(kdtree.nodes[i].right_child)
+            kdtree.nodes[i].right_child = NULL
+        free(kdtree.thread_nodes)
+        kdtree.thread_nodes = NULL
+        free(kdtree.thread_start)
+        kdtree.thread_start = NULL
+        free(kdtree.thread_end)
+        kdtree.thread_end = NULL
+        free(kdtree.thread_name)
+        kdtree.thread_name = NULL
+        free(kdtree.thread_parent)
+        kdtree.thread_parent = NULL
+        free(kdtree.thread_depth)
+        kdtree.thread_depth = NULL
+        free(kdtree.nodes)
+        kdtree.nodes = NULL
+        free(kdtree.root_node)
+        kdtree.root_node = NULL
+    free(kdtree)
+    kdtree = NULL
     
     
 #@cython.cdivision(True)
@@ -939,7 +970,8 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
     cdef float tension = 0
     cdef float tensionrandom = 0
     cdef float chancerdom = 0
-    cdef Particle *fakepar = <Particle *>malloc( 1 * cython.sizeof(Particle))
+    cdef Particle *fakepar = NULL
+    fakepar = <Particle *>malloc( 1 * cython.sizeof(Particle))
     par = &parlist[par_id]
     #printdb(693)
     if  par.state >= 2:
@@ -948,10 +980,6 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
         return
     if par.sys.links_active == 0:
         #printdb(699)
-        #free(link)
-        #free(par)
-        #free(par2)
-        #free(neighbours)
         return
     #printdb(705)
     if parothers_id == -1:
@@ -1071,6 +1099,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
                         newlinks += 1
                         #free(link)
     #free(neighbours)
+    #free(fakepar)
     #free(link)
     #free(par)
     #free(par2)
