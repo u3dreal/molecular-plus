@@ -29,6 +29,7 @@ cdef Particle *parlist = NULL
 cdef Particle *parlistcopy = NULL
 cdef ParSys *psys = NULL
 cdef KDTree *kdtree = <KDTree *>malloc( 1 * cython.sizeof(KDTree) )
+print("cmolcore imported with sucess!")
 
 cpdef init(importdata):
     global fps
@@ -59,7 +60,9 @@ cpdef init(importdata):
     cpunum = importdata[0][4]
     print "  Number of cpu's used:",cpunum
     psys = <ParSys *>malloc( psysnum * cython.sizeof(ParSys) )
+    #printdb(40)
     parlist = <Particle *>malloc( parnum * cython.sizeof(Particle) )
+    #printdb(parnum)
     parlistcopy = <Particle *>malloc( parnum * cython.sizeof(Particle) )
     cdef int jj = 0
     #printdb(47)
@@ -761,14 +764,15 @@ cdef void update(data):
 
     #printdb(558)
  
-cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):# nogil:
+cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):    #nogil:
     cdef int i = 0
     i = 2
-    #print(parnum)
+    #print("create nodes parnum:",parnum)
     while i < parnum:
         i = i * 2
-        #print(i)
+        #print("i:",i)
     kdtree.numnodes = i
+    #print("numnodes:",kdtree.numnodes)
     kdtree.nodes = <Node *>malloc( (kdtree.numnodes + 1) * cython.sizeof(Node) )
     kdtree.root_node = <Node *>malloc( 1 * cython.sizeof(Node) )
     for i in xrange(kdtree.numnodes):
@@ -780,14 +784,14 @@ cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):# nogil:
         kdtree.nodes[i].right_child = <Node *>malloc( 1 * cython.sizeof(Node) )
         kdtree.nodes[i].left_child[0].index = -1
         kdtree.nodes[i].right_child[0].index = -1
-    kdtree.nodes[kdtree.numnodes + 1].index = -1
-    kdtree.nodes[kdtree.numnodes + 1].name = -1
-    kdtree.nodes[kdtree.numnodes + 1].parent = -1
-    kdtree.nodes[kdtree.numnodes + 1].particle = <Particle *>malloc( 1 * cython.sizeof(Particle) )
-    kdtree.nodes[kdtree.numnodes + 1].left_child = <Node *>malloc( 1 * cython.sizeof(Node) )
-    kdtree.nodes[kdtree.numnodes + 1].right_child = <Node *>malloc( 1 * cython.sizeof(Node) )
-    kdtree.nodes[kdtree.numnodes + 1].left_child[0].index = -1
-    kdtree.nodes[kdtree.numnodes + 1].right_child[0].index = -1
+    kdtree.nodes[kdtree.numnodes].index = -1
+    kdtree.nodes[kdtree.numnodes].name = -1
+    kdtree.nodes[kdtree.numnodes].parent = -1
+    kdtree.nodes[kdtree.numnodes].particle = <Particle *>malloc( 1 * cython.sizeof(Particle) )
+    kdtree.nodes[kdtree.numnodes].left_child = <Node *>malloc( 1 * cython.sizeof(Node) )
+    kdtree.nodes[kdtree.numnodes].right_child = <Node *>malloc( 1 * cython.sizeof(Node) )
+    kdtree.nodes[kdtree.numnodes].left_child[0].index = -1
+    kdtree.nodes[kdtree.numnodes].right_child[0].index = -1
     kdtree.thread_nodes = <int *>malloc( 128 * cython.sizeof(int) )
     kdtree.thread_start = <int *>malloc( 128 * cython.sizeof(int) )
     kdtree.thread_end = <int *>malloc( 128 * cython.sizeof(int) )
@@ -803,7 +807,8 @@ cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int en
     cdef int len = (end - start) + 1
     #print("len:",len)
     if len <= 0:
-        return kdtree.nodes[kdtree.numnodes + 1]
+        #print("num nodes len 0",kdtree.numnodes)
+        return kdtree.nodes[kdtree.numnodes]
     cdef int axis
     cdef int k = 3
     axis = depth % k
@@ -822,7 +827,7 @@ cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int en
     else:
         index = (parent * 2) + name
     if index > kdtree.numnodes:
-        return kdtree.nodes[kdtree.numnodes + 1]
+        return kdtree.nodes[kdtree.numnodes]
     #printdb(605)
     kdtree.nodes[index].name = name
     kdtree.nodes[index].parent = parent
@@ -832,6 +837,7 @@ cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int en
     #printdb(610)
     #print("index",index)
     #print("num nodes",kdtree.numnodes)
+    #print("median",median)
     kdtree.nodes[index].particle[0] = kdparlist[median]
     #printdb(612)
     if parnum > 127:
