@@ -15,7 +15,7 @@
 [x] Fix bug when mass by density is not check
 [x] Fix more than 24hours estimating time issue
 [ ] Support links length on randomly sized particles.
-[ ] Fix memory crash issues.
+[x] Fix memory crash issues.
 [ ] Add collision "damping".
 [ ] Make broken links with particles penetrating don't explode.
 
