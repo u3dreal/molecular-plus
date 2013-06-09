@@ -16,7 +16,7 @@
 [x] Fix more than 24hours estimating time issue
 [ ] Support links length on randomly sized particles.
 [x] Fix memory crash issues.
-[ ] Add collision "damping".
+[x] Add collision "damping".
 [ ] Make broken links with particles penetrating don't explode.
 
 [ ] ***Deeper profiling before doing in the list below***
