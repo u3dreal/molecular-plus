@@ -87,46 +87,47 @@ cpdef init(importdata):
             psys[i].othercollision_active = importdata[i + 1][6][1]
             psys[i].collision_group = int(importdata[i + 1][6][2])
             psys[i].friction = importdata[i + 1][6][3]
-            psys[i].links_active = importdata[i + 1][6][4]
-            psys[i].link_length = importdata[i + 1][6][5]
-            psys[i].link_max = importdata[i + 1][6][6]
-            psys[i].link_tension = importdata[i + 1][6][7]
-            psys[i].link_tensionrand = importdata[i + 1][6][8]
-            psys[i].link_stiff = importdata[i + 1][6][9] * 0.5
-            psys[i].link_stiffrand = importdata[i + 1][6][10]
-            psys[i].link_stiffexp = importdata[i + 1][6][11]
-            psys[i].link_damp = importdata[i + 1][6][12]
-            psys[i].link_damprand = importdata[i + 1][6][13]
-            psys[i].link_broken = importdata[i + 1][6][14]
-            psys[i].link_brokenrand = importdata[i + 1][6][15]
-            psys[i].link_estiff = importdata[i + 1][6][16] * 0.5
-            psys[i].link_estiffrand = importdata[i + 1][6][17]
-            psys[i].link_estiffexp = importdata[i + 1][6][18]
-            psys[i].link_edamp = importdata[i + 1][6][19]
-            psys[i].link_edamprand = importdata[i + 1][6][20]
-            psys[i].link_ebroken = importdata[i + 1][6][21]
-            psys[i].link_ebrokenrand = importdata[i + 1][6][22]
-            psys[i].relink_group = int(importdata[i + 1][6][23])
-            psys[i].relink_chance = importdata[i + 1][6][24]
-            psys[i].relink_chancerand = importdata[i + 1][6][25]
-            psys[i].relink_max = importdata[i + 1][6][26]
-            psys[i].relink_tension = importdata[i + 1][6][27]
-            psys[i].relink_tensionrand = importdata[i + 1][6][28]
-            psys[i].relink_stiff = importdata[i + 1][6][29] * 0.5
-            psys[i].relink_stiffexp = importdata[i + 1][6][30]
-            psys[i].relink_stiffrand = importdata[i + 1][6][31]
-            psys[i].relink_damp = importdata[i + 1][6][32]
-            psys[i].relink_damprand = importdata[i + 1][6][33]
-            psys[i].relink_broken = importdata[i + 1][6][34]
-            psys[i].relink_brokenrand = importdata[i + 1][6][35]
-            psys[i].relink_estiff = importdata[i + 1][6][36] * 0.5
-            psys[i].relink_estiffexp = importdata[i + 1][6][37]
-            psys[i].relink_estiffrand = importdata[i + 1][6][38]
-            psys[i].relink_edamp = importdata[i + 1][6][39]
-            psys[i].relink_edamprand = importdata[i + 1][6][40]
-            psys[i].relink_ebroken = importdata[i + 1][6][41]
-            psys[i].relink_ebrokenrand = importdata[i + 1][6][42]
-            psys[i].link_friction = importdata[i + 1][6][43]
+            psys[i].collision_damp = importdata[i + 1][6][4]
+            psys[i].links_active = importdata[i + 1][6][5]
+            psys[i].link_length = importdata[i + 1][6][6]
+            psys[i].link_max = importdata[i + 1][6][7]
+            psys[i].link_tension = importdata[i + 1][6][8]
+            psys[i].link_tensionrand = importdata[i + 1][6][9]
+            psys[i].link_stiff = importdata[i + 1][6][10] * 0.5
+            psys[i].link_stiffrand = importdata[i + 1][6][11]
+            psys[i].link_stiffexp = importdata[i + 1][6][12]
+            psys[i].link_damp = importdata[i + 1][6][13]
+            psys[i].link_damprand = importdata[i + 1][6][14]
+            psys[i].link_broken = importdata[i + 1][6][15]
+            psys[i].link_brokenrand = importdata[i + 1][6][16]
+            psys[i].link_estiff = importdata[i + 1][6][17] * 0.5
+            psys[i].link_estiffrand = importdata[i + 1][6][18]
+            psys[i].link_estiffexp = importdata[i + 1][6][19]
+            psys[i].link_edamp = importdata[i + 1][6][20]
+            psys[i].link_edamprand = importdata[i + 1][6][21]
+            psys[i].link_ebroken = importdata[i + 1][6][22]
+            psys[i].link_ebrokenrand = importdata[i + 1][6][23]
+            psys[i].relink_group = int(importdata[i + 1][6][24])
+            psys[i].relink_chance = importdata[i + 1][6][25]
+            psys[i].relink_chancerand = importdata[i + 1][6][26]
+            psys[i].relink_max = importdata[i + 1][6][27]
+            psys[i].relink_tension = importdata[i + 1][6][28]
+            psys[i].relink_tensionrand = importdata[i + 1][6][29]
+            psys[i].relink_stiff = importdata[i + 1][6][30] * 0.5
+            psys[i].relink_stiffexp = importdata[i + 1][6][31]
+            psys[i].relink_stiffrand = importdata[i + 1][6][32]
+            psys[i].relink_damp = importdata[i + 1][6][33]
+            psys[i].relink_damprand = importdata[i + 1][6][34]
+            psys[i].relink_broken = importdata[i + 1][6][35]
+            psys[i].relink_brokenrand = importdata[i + 1][6][36]
+            psys[i].relink_estiff = importdata[i + 1][6][37] * 0.5
+            psys[i].relink_estiffexp = importdata[i + 1][6][38]
+            psys[i].relink_estiffrand = importdata[i + 1][6][39]
+            psys[i].relink_edamp = importdata[i + 1][6][40]
+            psys[i].relink_edamprand = importdata[i + 1][6][41]
+            psys[i].relink_ebroken = importdata[i + 1][6][42]
+            psys[i].relink_ebrokenrand = importdata[i + 1][6][43]
+            psys[i].link_friction = importdata[i + 1][6][44]
             
             parlist[jj].sys = &psys[i]
             parlist[jj].collided_with = <int *>malloc( 1 * cython.sizeof(int) )
@@ -426,6 +427,8 @@ cdef void collide(Particle *par):# nogil:
     cdef float *xi_vel = [0,0,0]
     cdef float friction1 = 0
     cdef float friction2 = 0
+    cdef float damping1 = 0
+    cdef float damping2 = 0
     cdef int i = 0
     cdef int check = 0
     cdef float Ua = 0 
@@ -552,8 +555,10 @@ cdef void collide(Particle *par):# nogil:
                     """
 
                     #printdb(381)
-                    friction1 = 1 - ((par.sys.friction + par2.sys.friction ) * ratio1)
-                    friction2 = 1 - ((par.sys.friction + par2.sys.friction ) * ratio2)
+                    friction1 = 1 - (((par.sys.friction + par2.sys.friction) / 2) * ratio1)
+                    friction2 = 1 - (((par.sys.friction + par2.sys.friction) / 2) * ratio2)
+                    damping1 = 1 - (((par.sys.collision_damp + par2.sys.collision_damp) / 2) * ratio1)
+                    damping2 = 1 - (((par.sys.collision_damp + par2.sys.collision_damp) / 2) * ratio2)
                     #xpar_vel[0] *= friction
                     #xpar_vel[1] *= friction
                     #xpar_vel[2] *= friction
@@ -561,12 +566,12 @@ cdef void collide(Particle *par):# nogil:
                     #xi_vel[1] *= friction
                     #xi_vel[2] *= friction
                     
-                    par.vel[0] = ypar_vel[0] + ((xpar_vel[0] * friction1) + ( xi_vel[0] * ( 1 - friction1)))
-                    par.vel[1] = ypar_vel[1] + ((xpar_vel[1] * friction1) + ( xi_vel[1] * ( 1 - friction1)))
-                    par.vel[2] = ypar_vel[2] + ((xpar_vel[2] * friction1) + ( xi_vel[2] * ( 1 - friction1)))
-                    par2.vel[0] = yi_vel[0] + ((xi_vel[0] * friction2) + ( xpar_vel[0] * ( 1 - friction2)))
-                    par2.vel[1] = yi_vel[1] + ((xi_vel[1] * friction2) + ( xpar_vel[1] * ( 1 - friction2)))
-                    par2.vel[2] = yi_vel[2] + ((xi_vel[2] * friction2) + ( xpar_vel[2] * ( 1 - friction2)))
+                    par.vel[0] = ((ypar_vel[0] * damping1) + (yi_vel[0] * (1 - damping1))) + ((xpar_vel[0] * friction1) + ( xi_vel[0] * ( 1 - friction1)))
+                    par.vel[1] = ((ypar_vel[1] * damping1) + (yi_vel[1] * (1 - damping1))) + ((xpar_vel[1] * friction1) + ( xi_vel[1] * ( 1 - friction1)))
+                    par.vel[2] = ((ypar_vel[2] * damping1) + (yi_vel[2] * (1 - damping1))) + ((xpar_vel[2] * friction1) + ( xi_vel[2] * ( 1 - friction1)))
+                    par2.vel[0] = ((yi_vel[0] * damping2) + (ypar_vel[0] * (1 - damping2))) + ((xi_vel[0] * friction2) + ( xpar_vel[0] * ( 1 - friction2)))
+                    par2.vel[1] = ((yi_vel[1] * damping2) + (ypar_vel[1] * (1 - damping2))) + ((xi_vel[1] * friction2) + ( xpar_vel[1] * ( 1 - friction2)))
+                    par2.vel[2] = ((yi_vel[2] * damping2) + (ypar_vel[2] * (1 - damping2))) + ((xi_vel[2] * friction2) + ( xpar_vel[2] * ( 1 - friction2)))
                     #printdb(396)
                     
          
@@ -1153,6 +1158,7 @@ cdef struct ParSys:
     int othercollision_active
     int collision_group
     float friction
+    float collision_damp
     int links_active
     float link_length
     int link_max
