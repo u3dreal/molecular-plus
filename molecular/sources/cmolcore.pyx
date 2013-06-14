@@ -48,6 +48,7 @@ cpdef init(importdata):
     global deadlinks
     cdef int i = 0
     cdef int ii = 0
+    cdef int profiling = 0
     newlinks = 0
     totallinks = 0
     totaldeadlinks = 0
@@ -223,21 +224,32 @@ cpdef simulate(importdata):
     
     cdef int i= 0
     cdef int ii = 0
+    cdef int profiling = 1
+    
     #cdef float *zeropoint = [0,0,0]
     newlinks = 0
     deadlinks = 0
     #printdb(170)
-    #print("start simulate")
-    #stime2 = clock()
-    #stime = clock()
+    if profiling == 1:
+        print("-->start simulate")
+        stime2 = clock()
+        stime = clock()
+        
     update(importdata)
-    #print("update time", clock() - stime,"sec")
-    #stime = clock()
+    
+    if profiling == 1:
+        print("-->update time", clock() - stime,"sec")
+        stime = clock()
     #printdb(175)
     
     with nogil:
         for i in prange(parnum,schedule='dynamic',chunksize=10,num_threads=cpunum):
             parlistcopy[i] = parlist[i]
+            
+    if profiling == 1:
+        print("-->copy data time", clock() - stime,"sec")
+        stime = clock()
+        
     #printdb(178)   
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,0,-1,0,1)
     #printdb(182)
@@ -245,22 +257,25 @@ cpdef simulate(importdata):
         for i in prange(kdtree.thread_index,schedule='dynamic',chunksize=10,num_threads=cpunum):
             KDTree_create_tree(kdtree,parlistcopy,kdtree.thread_start[i],kdtree.thread_end[i],kdtree.thread_name[i],kdtree.thread_parent[i],kdtree.thread_depth[i],0)
     
-    #print("create tree time", clock() - stime,"sec")
-    #testkdtree(3)
-    
+    if profiling == 1:
+        print("-->create tree time", clock() - stime,"sec")
+        stime = clock()
+        
+    #testkdtree(3)   
     #cdef int *test
     #printdb(188)
     #print(parlist[1].loc[0],parlist[234].loc[0],parlist[836].loc[0])
     #print(parlist[1].loc[1],parlist[234].loc[1],parlist[836].loc[1])
     #print(parlist[1].loc[2],parlist[234].loc[2],parlist[836].loc[2])
-    #stime = clock()
+    
     with nogil:
         for i in prange(parnum,schedule='dynamic',chunksize=10,num_threads=cpunum):
             KDTree_rnn_query(kdtree,&parlist[i],parlist[i].loc,parlist[i].size * 2)
             
     #printdb(189)
-    #print("neighbours time", clock() - stime,"sec")
-    #stime = clock()
+    if profiling == 1:
+        print("-->neighbours time", clock() - stime,"sec")
+        stime = clock()
 
 
     for i in xrange(parnum):
@@ -274,10 +289,10 @@ cpdef simulate(importdata):
             parlist[i].neighboursnum = 0
         #printdb(194)
             
-    
-    #print("collide/solve link time", clock() - stime,"sec")
-    #printdb(195)
-    #stime = clock()
+    if profiling == 1:
+        print("-->collide/solve link time", clock() - stime,"sec")
+        stime = clock()
+        
     exportdata = []
     parloc = []
     parvel = []
@@ -304,8 +319,9 @@ cpdef simulate(importdata):
     totaldeadlinks += deadlinks
     #print "  left: ",totallinks - totaldeadlinks," on ",totallinks  
     exportdata = [parloc,parvel,newlinks,deadlinks,totallinks,totaldeadlinks]
-    #print("export time", clock() - stime,"sec")
-    #print("all process time", clock() - stime2,"sec")
+    if profiling == 1:
+        print("-->export time", clock() - stime,"sec")
+        print("-->all process time", clock() - stime2,"sec")
     return exportdata
 
 cpdef memfree():
@@ -353,12 +369,14 @@ cpdef memfree():
                 free(parlist[i].neighbours)
                 parlist[i].neighbours = NULL
                 parlist[i].neighboursnum = 0
-    #printdb(208) 
+    #printdb(208)
+    
     for i in xrange(psysnum):
         if psysnum >= 1:
-            free(psys[i].particles)
+            #free(psys[i].particles)
             psys[i].particles = NULL
     #printdb(210)
+    
     if psysnum >= 1:
         free(psys)
         psys = NULL
@@ -397,6 +415,7 @@ cpdef memfree():
         kdtree.root_node = NULL
     free(kdtree)
     kdtree = NULL
+
     
     
 #@cython.cdivision(True)
