@@ -9,6 +9,8 @@ from time import clock
 from cython.parallel import parallel,prange
 from libc.stdlib cimport malloc , realloc, free , rand , srand, abs
 
+cdef extern from *:
+    int INT_MAX
 
 cdef extern from "stdlib.h":
     ctypedef void const_void "const void"
@@ -26,10 +28,10 @@ cdef int totallinks = 0
 cdef int totaldeadlinks = 0
 cdef int deadlinks = 0
 cdef Particle *parlist = NULL
-cdef Particle *parlistcopy = NULL
+cdef SParticle *parlistcopy = NULL
 cdef ParSys *psys = NULL
 cdef KDTree *kdtree = NULL
-print("cmolcore imported with sucess!")
+print("cmolcore imported with sucess! v0.04")
 
 cpdef init(importdata):
     global fps
@@ -64,7 +66,7 @@ cpdef init(importdata):
     #printdb(40)
     parlist = <Particle *>malloc( parnum * cython.sizeof(Particle) )
     #printdb(parnum)
-    parlistcopy = <Particle *>malloc( parnum * cython.sizeof(Particle) )
+    parlistcopy = <SParticle *>malloc( parnum * cython.sizeof(SParticle) )
     cdef int jj = 0
     #printdb(47)
     for i in xrange(psysnum):
@@ -138,6 +140,8 @@ cpdef init(importdata):
             parlist[jj].links_activnum = 0
             parlist[jj].link_with = <int *>malloc( 1 * cython.sizeof(int) )
             parlist[jj].link_withnum = 0
+            parlist[jj].neighboursmax = 10
+            parlist[jj].neighbours = <int *>malloc( parlist[jj].neighboursmax * cython.sizeof(int) )
             parlist[jj].neighboursnum = 0
             jj += 1
             
@@ -149,7 +153,11 @@ cpdef init(importdata):
     #printdb(117)
     with nogil:
         for i in prange(parnum,schedule='dynamic',chunksize=10,num_threads=cpunum):
-            parlistcopy[i] = parlist[i]
+            parlistcopy[i].id = parlist[i].id
+            parlistcopy[i].loc[0] = parlist[i].loc[0]
+            parlistcopy[i].loc[1] = parlist[i].loc[1]
+            parlistcopy[i].loc[2] = parlist[i].loc[2]
+            
     #printdb(119)
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,0,-1,0,1)
     #printdb(120)
@@ -167,7 +175,7 @@ cpdef init(importdata):
         create_link(parlist[i].id,parlist[i].sys.link_max)
         if parlist[i].neighboursnum > 1:
             #printdb(124)
-            free(parlist[i].neighbours)
+            #free(parlist[i].neighbours)
             parlist[i].neighboursnum = 0
         #printdb(125)
     #printdb(126)
@@ -224,7 +232,7 @@ cpdef simulate(importdata):
     
     cdef int i= 0
     cdef int ii = 0
-    cdef int profiling = 1
+    cdef int profiling = 0
     
     #cdef float *zeropoint = [0,0,0]
     newlinks = 0
@@ -244,7 +252,10 @@ cpdef simulate(importdata):
     
     with nogil:
         for i in prange(parnum,schedule='dynamic',chunksize=10,num_threads=cpunum):
-            parlistcopy[i] = parlist[i]
+            parlistcopy[i].id = parlist[i].id
+            parlistcopy[i].loc[0] = parlist[i].loc[0]
+            parlistcopy[i].loc[1] = parlist[i].loc[1]
+            parlistcopy[i].loc[2] = parlist[i].loc[2]
             
     if profiling == 1:
         print("-->copy data time", clock() - stime,"sec")
@@ -277,18 +288,17 @@ cpdef simulate(importdata):
         print("-->neighbours time", clock() - stime,"sec")
         stime = clock()
 
-
-    for i in xrange(parnum):
-        #printdb(190)
-        collide(&parlist[i])
-        #printdb(192)
-        solve_link(&parlist[i])
-        if parlist[i].neighboursnum > 1:
+    with nogil:
+        for i in xrange(parnum):
+            #printdb(190)
+            collide(&parlist[i])
             #printdb(192)
-            free(parlist[i].neighbours)
-            parlist[i].neighboursnum = 0
-        #printdb(194)
-            
+            solve_link(&parlist[i])
+            if parlist[i].neighboursnum > 1:
+                #printdb(192)
+                #free(parlist[i].neighbours)
+                parlist[i].neighboursnum = 0
+            #printdb(194)           
     if profiling == 1:
         print("-->collide/solve link time", clock() - stime,"sec")
         stime = clock()
@@ -419,7 +429,7 @@ cpdef memfree():
     
     
 #@cython.cdivision(True)
-cdef void collide(Particle *par):# nogil:
+cdef void collide(Particle *par)nogil:
     global kdtree
     global deltatime
     global deadlinks
@@ -433,6 +443,7 @@ cdef void collide(Particle *par):# nogil:
     cdef float lenghtz = 0
     cdef float sqlenght = 0
     cdef float lenght = 0
+    cdef float invlenght = 0
     cdef float factor = 0
     cdef float ratio1 = 0
     cdef float ratio2 = 0
@@ -459,6 +470,7 @@ cdef void collide(Particle *par):# nogil:
     cdef float Vb = 0
     cdef float force1 = 0
     cdef float force2 = 0
+    cdef float mathtmp = 0
     
     if  par.state >= 2:
         return
@@ -509,13 +521,14 @@ cdef void collide(Particle *par):# nogil:
                 #printdb(322)
                 if sqlenght != 0 and sqlenght < sqtarget:
                     lenght = sqlenght**0.5
-                    factor = (lenght - target) / lenght
+                    invlenght = 1 / lenght
+                    factor = (lenght - target) * invlenght
                     ratio1 = (par2.mass/(par.mass + par2.mass))
-                    ratio2 = (par.mass/(par.mass + par2.mass))
+                    ratio2 = 1 - ratio1
                     
-
-                    force1 = factor * ratio1 * stiff
-                    force2 = factor * ratio2 * stiff
+                    mathtmp = factor * stiff
+                    force1 = ratio1 * mathtmp
+                    force2 = ratio2 * mathtmp
                     par.vel[0] -= lenghtx * force1
                     par.vel[1] -= lenghty * force1
                     par.vel[2] -= lenghtz * force1
@@ -526,9 +539,9 @@ cdef void collide(Particle *par):# nogil:
                     
                     #printdb(336)
 
-                    col_normal1[0] = (par2.loc[0] - par.loc[0]) / lenght
-                    col_normal1[1] = (par2.loc[1] - par.loc[1]) / lenght
-                    col_normal1[2] = (par2.loc[2] - par.loc[2]) / lenght
+                    col_normal1[0] = (par2.loc[0] - par.loc[0]) * invlenght
+                    col_normal1[1] = (par2.loc[1] - par.loc[1]) * invlenght
+                    col_normal1[2] = (par2.loc[2] - par.loc[2]) * invlenght
                     col_normal2[0] = col_normal1[0] * -1
                     col_normal2[1] = col_normal1[1] * -1
                     col_normal2[2] = col_normal1[2] * -1
@@ -574,10 +587,10 @@ cdef void collide(Particle *par):# nogil:
                     """
 
                     #printdb(381)
-                    friction1 = 1 - (((par.sys.friction + par2.sys.friction) / 2) * ratio1)
-                    friction2 = 1 - (((par.sys.friction + par2.sys.friction) / 2) * ratio2)
-                    damping1 = 1 - (((par.sys.collision_damp + par2.sys.collision_damp) / 2) * ratio1)
-                    damping2 = 1 - (((par.sys.collision_damp + par2.sys.collision_damp) / 2) * ratio2)
+                    friction1 = 1 - (((par.sys.friction + par2.sys.friction) * 0.5) * ratio1)
+                    friction2 = 1 - (((par.sys.friction + par2.sys.friction) * 0.5) * ratio2)
+                    damping1 = 1 - (((par.sys.collision_damp + par2.sys.collision_damp) * 0.5) * ratio1)
+                    damping2 = 1 - (((par.sys.collision_damp + par2.sys.collision_damp) * 0.5) * ratio2)
                     #xpar_vel[0] *= friction
                     #xpar_vel[1] *= friction
                     #xpar_vel[2] *= friction
@@ -622,7 +635,7 @@ cdef void collide(Particle *par):# nogil:
     #printdb(422)
 
 
-cdef void solve_link(Particle *par):# nogil:
+cdef void solve_link(Particle *par)nogil:
     global parlist
     global deltatime
     global deadlinks
@@ -805,7 +818,7 @@ cdef void update(data):
                 if psys[i].links_active == 1:
                     KDTree_rnn_query(kdtree,&psys[i].particles[ii],psys[i].particles[ii].loc,psys[i].particles[ii].sys.link_length)
                     create_link(psys[i].particles[ii].id,psys[i].link_max)
-                    free(psys[i].particles[ii].neighbours)
+                    #free(psys[i].particles[ii].neighbours)
                     psys[i].particles[ii].neighboursnum = 0
                 #printdb(548)
 
@@ -819,7 +832,7 @@ cdef void update(data):
 
     #printdb(558)
  
-cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):    #nogil:
+cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):#nogil:
     cdef int i = 0
     i = 2
     #print("create nodes parnum:",parnum)
@@ -834,7 +847,7 @@ cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):    #nogil:
         kdtree.nodes[i].index = i
         kdtree.nodes[i].name = -1
         kdtree.nodes[i].parent = -1
-        kdtree.nodes[i].particle = <Particle *>malloc( 1 * cython.sizeof(Particle) )
+        kdtree.nodes[i].particle = <SParticle *>malloc( 1 * cython.sizeof(SParticle) )
         kdtree.nodes[i].left_child = <Node *>malloc( 1 * cython.sizeof(Node) )
         kdtree.nodes[i].right_child = <Node *>malloc( 1 * cython.sizeof(Node) )
         kdtree.nodes[i].left_child[0].index = -1
@@ -842,7 +855,7 @@ cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):    #nogil:
     kdtree.nodes[kdtree.numnodes].index = -1
     kdtree.nodes[kdtree.numnodes].name = -1
     kdtree.nodes[kdtree.numnodes].parent = -1
-    kdtree.nodes[kdtree.numnodes].particle = <Particle *>malloc( 1 * cython.sizeof(Particle) )
+    kdtree.nodes[kdtree.numnodes].particle = <SParticle *>malloc( 1 * cython.sizeof(SParticle) )
     kdtree.nodes[kdtree.numnodes].left_child = <Node *>malloc( 1 * cython.sizeof(Node) )
     kdtree.nodes[kdtree.numnodes].right_child = <Node *>malloc( 1 * cython.sizeof(Node) )
     kdtree.nodes[kdtree.numnodes].left_child[0].index = -1
@@ -853,10 +866,13 @@ cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):    #nogil:
     kdtree.thread_name = <int *>malloc( 128 * cython.sizeof(int) )
     kdtree.thread_parent = <int *>malloc( 128 * cython.sizeof(int) )
     kdtree.thread_depth = <int *>malloc( 128 * cython.sizeof(int) )
+    #kdtree.axis = <int *>malloc( 64 * cython.sizeof(int) )
+    for i in xrange(64):
+        kdtree.axis[i] = i % 3
     return
 
    
-cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int end,int name,int parent,int depth,int initiate)nogil:
+cdef Node KDTree_create_tree(KDTree *kdtree,SParticle *kdparlist,int start,int end,int name,int parent,int depth,int initiate)nogil:
     global parnum
     cdef int index = 0
     cdef int len = (end - start) + 1
@@ -866,14 +882,15 @@ cdef Node KDTree_create_tree(KDTree *kdtree,Particle *kdparlist,int start,int en
         return kdtree.nodes[kdtree.numnodes]
     cdef int axis
     cdef int k = 3
-    axis = depth % k
+    axis =  kdtree.axis[depth] 
+    #depth % k
     #printdb(590)
     if axis == 0:
-        qsort(kdparlist + start,len,sizeof(Particle),compare_x)
+        qsort(kdparlist + start,len,sizeof(SParticle),compare_x)
     elif axis == 1:
-        qsort(kdparlist + start,len,sizeof(Particle),compare_y)
+        qsort(kdparlist + start,len,sizeof(SParticle),compare_y)
     elif axis == 2:
-        qsort(kdparlist + start,len,sizeof(Particle),compare_z)
+        qsort(kdparlist + start,len,sizeof(SParticle),compare_z)
     cdef int median = (start + end) / 2
     #printdb(598)
     if depth == 0:
@@ -922,7 +939,6 @@ cdef int KDTree_rnn_query(KDTree *kdtree,Particle *par,float point[3],float dist
     #printdb(639)
     #free(par.neighbours)
     #printdb(641)
-    par.neighbours = <int *>malloc( 1 * cython.sizeof(int) )
     #printdb(643)
     par.neighbours[0] = -1
     #printdb(645)
@@ -938,23 +954,26 @@ cdef int KDTree_rnn_query(KDTree *kdtree,Particle *par,float point[3],float dist
 #@cython.cdivision(True)
 cdef void KDTree_rnn_search(KDTree *kdtree,Particle *par,Node node,float point[3],float dist,float sqdist,int k,int depth)nogil:
     cdef int axis = 0
-    cdef float realdist = 0
+    cdef float realsqdist = 0
     #printdb(642)
     if node.index == -1:
         return
         
-    cdef Particle tparticle = node.particle[0]
+    cdef SParticle tparticle = node.particle[0]
     
-    axis = depth % k
+    axis = kdtree.axis[depth] 
+    #depth % k
     #printdb(649)
-    if ((point[axis] - tparticle.loc[axis]) * (point[axis] - tparticle.loc[axis])) <= sqdist:
-        realdist = square_dist(point,tparticle.loc,3)
+    if (fabs(point[axis] - tparticle.loc[axis])) <= dist:
+        realsqdist = square_dist(point,tparticle.loc,3)
         #printdb(652)
-        if realdist <= sqdist:
+        if realsqdist <= sqdist:
             #printdb(654)
             par.neighbours[par.neighboursnum] = node.particle[0].id
             par.neighboursnum += 1
-            par.neighbours = <int *>realloc(par.neighbours,(par.neighboursnum + 1) * cython.sizeof(int) )
+            if (par.neighboursnum) >= par.neighboursmax:
+                par.neighboursmax = par.neighboursmax * 2
+                par.neighbours = <int *>realloc(par.neighbours,(par.neighboursmax) * cython.sizeof(int) )
             #printdb(658)
 
         #printdb(660)
@@ -972,7 +991,7 @@ cdef void KDTree_rnn_search(KDTree *kdtree,Particle *par,Node node,float point[3
     #printdb(672)
   
   
-cdef void create_link(int par_id, int max_link, int parothers_id = -1):# nogil:
+cdef void create_link(int par_id, int max_link, int parothers_id = -1)nogil:
     #printdb(676)
     global kdtree
     global parlist
@@ -1150,6 +1169,7 @@ cdef struct KDTree:
     #int *result
     Node *root_node
     Node *nodes
+    int axis[64]
     int thread_index
     int *thread_nodes
     int *thread_start
@@ -1164,7 +1184,7 @@ cdef struct Node:
     int name
     int parent
     float loc[3] 
-    Particle *particle
+    SParticle *particle
     Node *left_child
     Node *right_child
     
@@ -1219,6 +1239,9 @@ cdef struct ParSys:
     float relink_ebrokenrand
     float link_friction
 
+cdef struct SParticle:
+    int id
+    float loc[3]
     
 cdef struct Particle:
     int id
@@ -1238,6 +1261,7 @@ cdef struct Particle:
     int link_withnum
     int *neighbours
     int neighboursnum
+    int neighboursmax
 
 
 
@@ -1248,7 +1272,6 @@ cdef int compare_x (const void *u, const void *v):# nogil:
     if w > 0:
         return 1
     return 0
-
     
 cdef int compare_y (const void *u, const void *v):# nogil:
     cdef float w = ((<Particle*>u)).loc[1] - ((<Particle*>v)).loc[1]
@@ -1284,11 +1307,12 @@ cdef int arraysearch(int element,int *array,int len)nogil:
             return i
     #printdb(943)
     return -1
+    
 cdef float fabs(float value)nogil:
     if value >= 0:
         return value
     if value < 0:
-        return value * -1
+        return -value
  
 cdef float sq_number(float val):# nogil:
     cdef float nearsq = 8
