@@ -83,7 +83,6 @@ cpdef init(importdata):
             parlist[jj].vel[1] = importdata[i + 1][2][(ii * 3) + 1]
             parlist[jj].vel[2] = importdata[i + 1][2][(ii * 3) + 2]
             parlist[jj].size = importdata[i + 1][3][ii]
-            parlist[jj].sqsize = sq_number(importdata[i + 1][3][ii])
             parlist[jj].mass = importdata[i + 1][4][ii]
             parlist[jj].state = importdata[i + 1][5][ii]
             psys[i].selfcollision_active = importdata[i + 1][6][0]
@@ -232,7 +231,21 @@ cpdef simulate(importdata):
     
     cdef int i= 0
     cdef int ii = 0
-    cdef int profiling = 0
+    cdef int profiling = 1
+    cdef float minX = INT_MAX
+    cdef float minY = INT_MAX
+    cdef float minZ = INT_MAX
+    cdef float maxX = -INT_MAX
+    cdef float maxY = -INT_MAX
+    cdef float maxZ = -INT_MAX
+    cdef int Axis = 0
+    cdef float offsetAxis = 0
+    cdef float maxAxis = 0
+    
+    cdef int **p = <int **>malloc( 2 * cython.sizeof(int) )
+    p[0] = <int *>malloc( 10 * cython.sizeof(int) )
+    p[1] = <int *>malloc( 10 * cython.sizeof(int) )
+    
     
     #cdef float *zeropoint = [0,0,0]
     newlinks = 0
@@ -250,12 +263,43 @@ cpdef simulate(importdata):
         stime = clock()
     #printdb(175)
     
-    with nogil:
-        for i in prange(parnum,schedule='dynamic',chunksize=10,num_threads=cpunum):
-            parlistcopy[i].id = parlist[i].id
-            parlistcopy[i].loc[0] = parlist[i].loc[0]
-            parlistcopy[i].loc[1] = parlist[i].loc[1]
-            parlistcopy[i].loc[2] = parlist[i].loc[2]
+    for i in xrange(parnum):
+        parlistcopy[i].id = parlist[i].id
+        parlistcopy[i].loc[0] = parlist[i].loc[0]
+        if parlist[i].loc[0] < minX:
+            minX = parlist[i].loc[0]
+        if parlist[i].loc[0] > maxX:
+            maxX = parlist[i].loc[0]
+        parlistcopy[i].loc[1] = parlist[i].loc[1]
+        if parlist[i].loc[1] < minY:
+            minY = parlist[i].loc[1]
+        if parlist[i].loc[1] > maxY:
+            maxY = parlist[i].loc[1]
+        parlistcopy[i].loc[2] = parlist[i].loc[2]
+        if parlist[i].loc[2] < minZ:
+            minZ = parlist[i].loc[2]
+        if parlist[i].loc[2] > maxZ:
+            maxZ = parlist[i].loc[2]
+    
+    if (maxX - minX) > (maxY - minY) and (maxX - minX) > (maxZ - minZ):
+        Axis = 0
+        offsetAxis = 0 - minX
+        maxAxis = maxX + offsetAxis
+    
+    if (maxY - minY) > (maxX - minX) and (maxY - minY) > (maxZ - minZ):
+        Axis = 1
+        offsetAxis = 0 - minY
+        maxAxis = maxY + offsetAxis
+        
+    if (maxZ - minZ) > (maxY - minY) and (maxZ - minZ) > (maxX - minX):
+        Axis = 2
+        offsetAxis = 0 - minZ
+        maxAxis = maxZ + offsetAxis
+        
+    for i in xrange(parnum):
+        p[<int>((parlist[i].loc[Axis] + offsetAxis) % 2)][<int>(parlist[i].loc[Axis] + offsetAxis)] = parlist[i].id
+        
+    print("Axis:",Axis)    
             
     if profiling == 1:
         print("-->copy data time", clock() - stime,"sec")
@@ -1248,7 +1292,6 @@ cdef struct Particle:
     float loc[3]
     float vel[3]
     float size
-    float sqsize
     float mass
     float state
     ParSys *sys
