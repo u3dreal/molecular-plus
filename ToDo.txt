@@ -21,7 +21,7 @@
 
 [ ] ***Deeper profiling before doing in the list below***
 [ ] Try to see if I can send info of particles by memory adress to gain speed (like Mohamed does for it's mesher addon)
-[ ] Optimisation in the code ( kdtree search and creation take most of the time when profiling )
+[wip] Optimisation in the code ( kdtree search and creation take most of the time when profiling )
 [ ] clean and comments the code
-[ ] Multithread particles collisions and links solving
+[wip] Multithread particles collisions and links solving
 [ ] Make link exponent work more propertly
