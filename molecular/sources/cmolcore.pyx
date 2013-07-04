@@ -238,19 +238,18 @@ cpdef simulate(importdata):
     cdef float maxX = -INT_MAX
     cdef float maxY = -INT_MAX
     cdef float maxZ = -INT_MAX
-    cdef int Axis = 0
-    cdef float offsetAxis = 0
-    cdef float maxAxis = 0
-    
-    cdef int **p = <int **>malloc( 2 * cython.sizeof(int) )
-    p[0] = <int *>malloc( 10 * cython.sizeof(int) )
-    p[1] = <int *>malloc( 10 * cython.sizeof(int) )
-    
-    
+    cdef Pool *parPool = <Pool *>malloc( 1 * cython.sizeof(Pool) )
+    parPool.parity = <Parity *>malloc( 2 * cython.sizeof(Parity) )
+    #parPool.parity[0].heap = <Heap *>malloc( 10 * cython.sizeof(Heap) )
+    #parPool.parity[1].heap = <Heap *>malloc( 10 * cython.sizeof(Heap) )
+    parPool[0].axis = -1
+    parPool[0].offset = 0
+    parPool[0].max = 0
+  
     #cdef float *zeropoint = [0,0,0]
     newlinks = 0
     deadlinks = 0
-    #printdb(170)
+    printdb(170)
     if profiling == 1:
         print("-->start simulate")
         stime2 = clock()
@@ -262,7 +261,7 @@ cpdef simulate(importdata):
         print("-->update time", clock() - stime,"sec")
         stime = clock()
     #printdb(175)
-    
+
     for i in xrange(parnum):
         parlistcopy[i].id = parlist[i].id
         parlistcopy[i].loc[0] = parlist[i].loc[0]
@@ -281,26 +280,46 @@ cpdef simulate(importdata):
         if parlist[i].loc[2] > maxZ:
             maxZ = parlist[i].loc[2]
     
-    if (maxX - minX) > (maxY - minY) and (maxX - minX) > (maxZ - minZ):
-        Axis = 0
-        offsetAxis = 0 - minX
-        maxAxis = maxX + offsetAxis
+    if (maxX - minX) >= (maxY - minY) and (maxX - minX) >= (maxZ - minZ):
+        parPool[0].axis = 0
+        parPool[0].offset = 0 - minX
+        parPool[0].max = maxX + parPool[0].offset
     
     if (maxY - minY) > (maxX - minX) and (maxY - minY) > (maxZ - minZ):
-        Axis = 1
-        offsetAxis = 0 - minY
-        maxAxis = maxY + offsetAxis
+        parPool[0].axis = 1
+        parPool[0].offset = 0 - minY
+        parPool[0].max = maxY + parPool[0].offset
         
     if (maxZ - minZ) > (maxY - minY) and (maxZ - minZ) > (maxX - minX):
-        Axis = 2
-        offsetAxis = 0 - minZ
-        maxAxis = maxZ + offsetAxis
-        
+        parPool[0].axis = 2
+        parPool[0].offset = 0 - minZ
+        parPool[0].max = maxZ + parPool[0].offset
+    
+    cdef int pair
+    cdef int heaps
+    print(297)
+    print("max:",<int>(parPool[0].max + 1))
+    for i in xrange(2):
+        #print("i:",i)
+        parPool[0].parity[i].heap = <Heap *>malloc( (<int>(parPool[0].max + 1) ) * cython.sizeof(Heap) )
+        for ii in range(<int>parPool[0].max):
+            parPool[0].parity[i].heap[ii].parnum = 0
+            parPool[0].parity[i].heap[ii].par = <int *>malloc( 1 * cython.sizeof(int) )
+    print(303)       
     for i in xrange(parnum):
-        p[<int>((parlist[i].loc[Axis] + offsetAxis) % 2)][<int>(parlist[i].loc[Axis] + offsetAxis)] = parlist[i].id
+        #print(305) 
+        pair = <int>((parlist[i].loc[parPool[0].axis] + parPool[0].offset) % 2)
+        heaps = <int>(parlist[i].loc[parPool[0].axis] + parPool[0].offset)
+        #print("pair",pair)
+        #print("heaps",heaps)
+        #parPool[0].parity[pair].heap[heaps].par = <int *>realloc(parPool[0].parity[pair].heap[heaps].par,(parPool[0].parity[pair].heap[heaps].parnum + 1) * cython.sizeof(int) )
+        #parPool[0].parity[pair].heap[heaps].parnum += 1
+        #parPool[0].parity[pair].heap[heaps].par[(parPool[0].parity[pair].heap[heaps].parnum - 1)] = parlist[i].id
         
-    print("Axis:",Axis)    
-            
+    print("Axis:",parPool[0].axis)
+    print("Offset:",parPool[0].offset)
+    print("Max:",parPool[0].max)    
+           
     if profiling == 1:
         print("-->copy data time", clock() - stime,"sec")
         stime = clock()
@@ -1306,6 +1325,18 @@ cdef struct Particle:
     int neighboursnum
     int neighboursmax
 
+cdef struct Pool:
+    int axis
+    float offset
+    float max
+    Parity *parity
+    
+cdef struct Parity:
+    Heap *heap
+    
+cdef struct Heap:
+    int *par
+    int parnum
 
 
 cdef int compare_x (const void *u, const void *v):# nogil:
