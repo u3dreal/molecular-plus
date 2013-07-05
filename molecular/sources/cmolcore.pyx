@@ -231,25 +231,25 @@ cpdef simulate(importdata):
     
     cdef int i= 0
     cdef int ii = 0
-    cdef int profiling = 1
+    cdef int profiling = 0
+
     cdef float minX = INT_MAX
     cdef float minY = INT_MAX
     cdef float minZ = INT_MAX
     cdef float maxX = -INT_MAX
     cdef float maxY = -INT_MAX
     cdef float maxZ = -INT_MAX
+    cdef float maxSize = -INT_MAX
     cdef Pool *parPool = <Pool *>malloc( 1 * cython.sizeof(Pool) )
     parPool.parity = <Parity *>malloc( 2 * cython.sizeof(Parity) )
-    #parPool.parity[0].heap = <Heap *>malloc( 10 * cython.sizeof(Heap) )
-    #parPool.parity[1].heap = <Heap *>malloc( 10 * cython.sizeof(Heap) )
     parPool[0].axis = -1
     parPool[0].offset = 0
     parPool[0].max = 0
-  
+
     #cdef float *zeropoint = [0,0,0]
     newlinks = 0
     deadlinks = 0
-    printdb(170)
+    #printdb(170)
     if profiling == 1:
         print("-->start simulate")
         stime2 = clock()
@@ -279,6 +279,10 @@ cpdef simulate(importdata):
             minZ = parlist[i].loc[2]
         if parlist[i].loc[2] > maxZ:
             maxZ = parlist[i].loc[2]
+        if parlist[i].sys.link_length > maxSize:
+            maxSize = parlist[i].sys.link_length
+        if parlist[i].size > maxSize:
+            maxSize = parlist[i].size
     
     if (maxX - minX) >= (maxY - minY) and (maxX - minX) >= (maxZ - minZ):
         parPool[0].axis = 0
@@ -297,29 +301,35 @@ cpdef simulate(importdata):
     
     cdef int pair
     cdef int heaps
-    print(297)
-    print("max:",<int>(parPool[0].max + 1))
-    for i in xrange(2):
+    cdef float scale = (1 / maxSize) * 1.05
+    #printdb(297)
+    for pair in xrange(2):
         #print("i:",i)
-        parPool[0].parity[i].heap = <Heap *>malloc( (<int>(parPool[0].max + 1) ) * cython.sizeof(Heap) )
-        for ii in range(<int>parPool[0].max):
-            parPool[0].parity[i].heap[ii].parnum = 0
-            parPool[0].parity[i].heap[ii].par = <int *>malloc( 1 * cython.sizeof(int) )
-    print(303)       
+        parPool[0].parity[pair].heap = <Heap *>malloc((<int>(parPool[0].max * scale) + 1) * cython.sizeof(Heap) )
+        for heaps in range(<int>(parPool[0].max * scale) + 1):
+            #print("1- pair:",pair,"heaps:",heaps,"particles:",0)
+            parPool[0].parity[pair].heap[heaps].parnum = 0
+            parPool[0].parity[pair].heap[heaps].maxalloc = 50
+            parPool[0].parity[pair].heap[heaps].par = <int *>malloc( parPool[0].parity[pair].heap[heaps].maxalloc * cython.sizeof(int) )
+    #printdb(303)       
     for i in xrange(parnum):
-        #print(305) 
-        pair = <int>((parlist[i].loc[parPool[0].axis] + parPool[0].offset) % 2)
-        heaps = <int>(parlist[i].loc[parPool[0].axis] + parPool[0].offset)
-        #print("pair",pair)
-        #print("heaps",heaps)
-        #parPool[0].parity[pair].heap[heaps].par = <int *>realloc(parPool[0].parity[pair].heap[heaps].par,(parPool[0].parity[pair].heap[heaps].parnum + 1) * cython.sizeof(int) )
-        #parPool[0].parity[pair].heap[heaps].parnum += 1
-        #parPool[0].parity[pair].heap[heaps].par[(parPool[0].parity[pair].heap[heaps].parnum - 1)] = parlist[i].id
+        #printdb(305) 
+        pair = <int>(((parlist[i].loc[parPool[0].axis] + parPool[0].offset) * scale) % 2)
+        heaps = <int>((parlist[i].loc[parPool[0].axis] + parPool[0].offset) * scale)
+        #print("2- pair:",pair,"heaps:",heaps,"particles:",parlist[i].id)
+        parPool[0].parity[pair].heap[heaps].parnum += 1
+        if parPool[0].parity[pair].heap[heaps].parnum > parPool[0].parity[pair].heap[heaps].maxalloc:
+            parPool[0].parity[pair].heap[heaps].maxalloc = <int>(parPool[0].parity[pair].heap[heaps].maxalloc * 1.25)
+            parPool[0].parity[pair].heap[heaps].par = <int *>realloc( parPool[0].parity[pair].heap[heaps].par,( parPool[0].parity[pair].heap[heaps].maxalloc + 2 ) * cython.sizeof(int) )
+        parPool[0].parity[pair].heap[heaps].par[(parPool[0].parity[pair].heap[heaps].parnum - 1)] = parlist[i].id
+
+    #print("Axis:",parPool[0].axis)
+    #print("Offset:",parPool[0].offset)
+    #print("Max:",parPool[0].max)
+    #print("Scale:",scale)
+    #print("Number of heaps:",<int>(parPool[0].max * scale))
         
-    print("Axis:",parPool[0].axis)
-    print("Offset:",parPool[0].offset)
-    print("Max:",parPool[0].max)    
-           
+        
     if profiling == 1:
         print("-->copy data time", clock() - stime,"sec")
         stime = clock()
@@ -334,13 +344,6 @@ cpdef simulate(importdata):
     if profiling == 1:
         print("-->create tree time", clock() - stime,"sec")
         stime = clock()
-        
-    #testkdtree(3)   
-    #cdef int *test
-    #printdb(188)
-    #print(parlist[1].loc[0],parlist[234].loc[0],parlist[836].loc[0])
-    #print(parlist[1].loc[1],parlist[234].loc[1],parlist[836].loc[1])
-    #print(parlist[1].loc[2],parlist[234].loc[2],parlist[836].loc[2])
     
     with nogil:
         for i in prange(parnum,schedule='dynamic',chunksize=10,num_threads=cpunum):
@@ -351,17 +354,19 @@ cpdef simulate(importdata):
         print("-->neighbours time", clock() - stime,"sec")
         stime = clock()
 
+        
     with nogil:
-        for i in xrange(parnum):
-            #printdb(190)
-            collide(&parlist[i])
-            #printdb(192)
-            solve_link(&parlist[i])
-            if parlist[i].neighboursnum > 1:
-                #printdb(192)
-                #free(parlist[i].neighbours)
-                parlist[i].neighboursnum = 0
-            #printdb(194)           
+
+        for pair in xrange(2):
+            for heaps in prange(<int>(parPool[0].max * scale) + 1,schedule='dynamic',chunksize=10,num_threads=cpunum):
+                for i in xrange(parPool[0].parity[pair].heap[heaps].parnum):
+                    collide(&parlist[parPool[0].parity[pair].heap[heaps].par[i]])
+                    solve_link(&parlist[parPool[0].parity[pair].heap[heaps].par[i]])
+                    if parlist[parPool[0].parity[pair].heap[heaps].par[i]].neighboursnum > 1:
+                        #printdb(192)
+                        #free(parlist[i].neighbours)
+                        parlist[parPool[0].parity[pair].heap[heaps].par[i]].neighboursnum = 0
+       
     if profiling == 1:
         print("-->collide/solve link time", clock() - stime,"sec")
         stime = clock()
@@ -392,6 +397,15 @@ cpdef simulate(importdata):
     totaldeadlinks += deadlinks
     #print "  left: ",totallinks - totaldeadlinks," on ",totallinks  
     exportdata = [parloc,parvel,newlinks,deadlinks,totallinks,totaldeadlinks]
+
+    for pair in xrange(2):
+        for heaps in range(<int>(parPool[0].max * scale) + 1):
+            parPool[0].parity[pair].heap[heaps].parnum = 0
+            free(parPool[0].parity[pair].heap[heaps].par)
+        free(parPool[0].parity[pair].heap)
+    free(parPool[0].parity)
+    free(parPool)
+
     if profiling == 1:
         print("-->export time", clock() - stime,"sec")
         print("-->all process time", clock() - stime2,"sec")
@@ -1337,6 +1351,7 @@ cdef struct Parity:
 cdef struct Heap:
     int *par
     int parnum
+    int maxalloc
 
 
 cdef int compare_x (const void *u, const void *v):# nogil:
