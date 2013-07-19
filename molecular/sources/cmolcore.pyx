@@ -6,7 +6,7 @@
 
 cimport cython
 from time import clock
-from cython.parallel import parallel,prange
+from cython.parallel import parallel , prange , threadid
 from libc.stdlib cimport malloc , realloc, free , rand , srand, abs
 
 cdef extern from *:
@@ -26,7 +26,7 @@ cdef int cpunum = 0
 cdef int newlinks = 0
 cdef int totallinks = 0
 cdef int totaldeadlinks = 0
-cdef int deadlinks = 0
+cdef int *deadlinks = NULL
 cdef Particle *parlist = NULL
 cdef SParticle *parlistcopy = NULL
 cdef ParSys *psys = NULL
@@ -54,13 +54,13 @@ cpdef init(importdata):
     newlinks = 0
     totallinks = 0
     totaldeadlinks = 0
-    deadlinks = 0
     fps = float(importdata[0][0])
     substep = int(importdata[0][1])
     deltatime = (fps * (substep +1))
     psysnum = importdata[0][2]
     parnum = importdata[0][3]
     cpunum = importdata[0][4]
+    deadlinks = <int *>malloc( cpunum * cython.sizeof(int) )
     print "  Number of cpu's used:",cpunum
     psys = <ParSys *>malloc( psysnum * cython.sizeof(ParSys) )
     #printdb(40)
@@ -248,7 +248,8 @@ cpdef simulate(importdata):
 
     #cdef float *zeropoint = [0,0,0]
     newlinks = 0
-    deadlinks = 0
+    for i in xrange(cpunum):
+        deadlinks[i] = 0
     #printdb(170)
     if profiling == 1:
         print("-->start simulate")
@@ -261,7 +262,6 @@ cpdef simulate(importdata):
         print("-->update time", clock() - stime,"sec")
         stime = clock()
     #printdb(175)
-
     for i in xrange(parnum):
         parlistcopy[i].id = parlist[i].id
         parlistcopy[i].loc[0] = parlist[i].loc[0]
@@ -281,9 +281,9 @@ cpdef simulate(importdata):
             maxZ = parlist[i].loc[2]
         if parlist[i].sys.link_length > maxSize:
             maxSize = parlist[i].sys.link_length
-        if parlist[i].size > maxSize:
-            maxSize = parlist[i].size
-    
+        if (parlist[i].size * 2) > maxSize:
+            maxSize = (parlist[i].size * 2)
+    #'''
     if (maxX - minX) >= (maxY - minY) and (maxX - minX) >= (maxZ - minZ):
         parPool[0].axis = 0
         parPool[0].offset = 0 - minX
@@ -301,7 +301,7 @@ cpdef simulate(importdata):
     
     cdef int pair
     cdef int heaps
-    cdef float scale = (1 / maxSize) * 1.05
+    cdef float scale = 1 / ( maxSize * 1.25 )
     #printdb(297)
     for pair in xrange(2):
         #print("i:",i)
@@ -322,13 +322,8 @@ cpdef simulate(importdata):
             parPool[0].parity[pair].heap[heaps].maxalloc = <int>(parPool[0].parity[pair].heap[heaps].maxalloc * 1.25)
             parPool[0].parity[pair].heap[heaps].par = <int *>realloc( parPool[0].parity[pair].heap[heaps].par,( parPool[0].parity[pair].heap[heaps].maxalloc + 2 ) * cython.sizeof(int) )
         parPool[0].parity[pair].heap[heaps].par[(parPool[0].parity[pair].heap[heaps].parnum - 1)] = parlist[i].id
-
-    #print("Axis:",parPool[0].axis)
-    #print("Offset:",parPool[0].offset)
-    #print("Max:",parPool[0].max)
-    #print("Scale:",scale)
-    #print("Number of heaps:",<int>(parPool[0].max * scale))
-        
+    #'''
+    
         
     if profiling == 1:
         print("-->copy data time", clock() - stime,"sec")
@@ -354,11 +349,11 @@ cpdef simulate(importdata):
         print("-->neighbours time", clock() - stime,"sec")
         stime = clock()
 
-        
+    #'''  
     with nogil:
 
         for pair in xrange(2):
-            for heaps in prange(<int>(parPool[0].max * scale) + 1,schedule='dynamic',chunksize=10,num_threads=cpunum):
+            for heaps in prange(<int>(parPool[0].max * scale) + 1,schedule='dynamic',chunksize=1,num_threads=cpunum):
                 for i in xrange(parPool[0].parity[pair].heap[heaps].parnum):
                     collide(&parlist[parPool[0].parity[pair].heap[heaps].par[i]])
                     solve_link(&parlist[parPool[0].parity[pair].heap[heaps].par[i]])
@@ -366,7 +361,20 @@ cpdef simulate(importdata):
                         #printdb(192)
                         #free(parlist[i].neighbours)
                         parlist[parPool[0].parity[pair].heap[heaps].par[i]].neighboursnum = 0
-       
+    '''   
+    with nogil:
+        for i in xrange(parnum):
+            #printdb(190)
+            collide(&parlist[i])
+            #printdb(192)
+            solve_link(&parlist[i])
+            if parlist[i].neighboursnum > 1:
+                #printdb(192)
+                #free(parlist[i].neighbours)
+                parlist[i].neighboursnum = 0
+            #printdb(194)           
+    '''
+    
     if profiling == 1:
         print("-->collide/solve link time", clock() - stime,"sec")
         stime = clock()
@@ -394,10 +402,13 @@ cpdef simulate(importdata):
     #print "  New links at this frame: ",newlinks
     #print "  Broken links this frame: ",deadlinks
     totallinks += newlinks
-    totaldeadlinks += deadlinks
+    pydeadlinks = 0
+    for i in xrange(cpunum):
+        pydeadlinks += deadlinks[i]
+    totaldeadlinks += pydeadlinks
     #print "  left: ",totallinks - totaldeadlinks," on ",totallinks  
-    exportdata = [parloc,parvel,newlinks,deadlinks,totallinks,totaldeadlinks]
-
+    exportdata = [parloc,parvel,newlinks,pydeadlinks,totallinks,totaldeadlinks]
+    #'''
     for pair in xrange(2):
         for heaps in range(<int>(parPool[0].max * scale) + 1):
             parPool[0].parity[pair].heap[heaps].parnum = 0
@@ -405,7 +416,7 @@ cpdef simulate(importdata):
         free(parPool[0].parity[pair].heap)
     free(parPool[0].parity)
     free(parPool)
-
+    #'''
     if profiling == 1:
         print("-->export time", clock() - stime,"sec")
         print("-->all process time", clock() - stime2,"sec")
@@ -420,6 +431,7 @@ cpdef memfree():
     global parlistcopy
     global fps
     global substep
+    global deadlinks
     cdef int i = 0
     #printdb(200)
     fps = 0
@@ -429,7 +441,8 @@ cpdef memfree():
     newlinks = 0
     totallinks = 0
     totaldeadlinks = 0
-    deadlinks = 0
+    free(deadlinks)
+    deadlinks = NULL
     #printdb(205)
     for i in xrange(parnum):
         if parnum >= 1:
@@ -642,7 +655,7 @@ cdef void collide(Particle *par)nogil:
                     xi_vel[1] = par2.vel[1] - yi_vel[1]
                     xi_vel[2] = par2.vel[2] - yi_vel[2]
                     
-                    """
+                    '''
                     Ua = factor1     
                     Ub = -factor2 
                     Cr = 1.0
@@ -661,7 +674,7 @@ cdef void collide(Particle *par)nogil:
                     yi_vel[0] = col_normal1[0] * Vb
                     yi_vel[1] = col_normal1[1] * Vb
                     yi_vel[2] = col_normal1[2] * Vb
-                    """
+                    '''
 
                     #printdb(381)
                     friction1 = 1 - (((par.sys.friction + par2.sys.friction) * 0.5) * ratio1)
@@ -683,19 +696,7 @@ cdef void collide(Particle *par)nogil:
                     par2.vel[2] = ((yi_vel[2] * damping2) + (ypar_vel[2] * (1 - damping2))) + ((xi_vel[2] * friction2) + ( xpar_vel[2] * ( 1 - friction2)))
                     #printdb(396)
                     
-         
-                    
-                    """
-                    if abs(Va) < abs(((factor * ratio1) * stiff)):
-                        par.vel[0] -= ((lenghtx * factor * ratio1) * stiff)
-                        par.vel[1] -= ((lenghty * factor * ratio1) * stiff)
-                        par.vel[2] -= ((lenghtz * factor * ratio1) * stiff)
-                    if abs(Vb) < abs(((factor * ratio2) * stiff)):
-                        par2.vel[0] += ((lenghtx * factor * ratio2) * stiff)
-                        par2.vel[1] += ((lenghty * factor * ratio2) * stiff)
-                        par2.vel[2] += ((lenghtz * factor * ratio2) * stiff)
-                    """
-                    
+
                     par2.collided_with[par2.collided_num] = par.id
                     par2.collided_num += 1
                     par2.collided_with = <int *>realloc(par2.collided_with,(par2.collided_num + 1) * cython.sizeof(int) )
@@ -855,7 +856,7 @@ cdef void solve_link(Particle *par)nogil:
                 if Length > (par.links[i].lenght  * (1 + par.links[i].ebroken)) or Length < (par.links[i].lenght  * (1 - par.links[i].broken)):
                     par.links[i].start = -1
                     par.links_activnum -= 1
-                    deadlinks += 1
+                    deadlinks[threadid()] += 1
                     parsearch = arraysearch(par2.id,par.link_with,par.link_withnum)
                     if parsearch != -1:
                         par.link_with[parsearch] = -1
@@ -1246,7 +1247,7 @@ cdef struct KDTree:
     #int *result
     Node *root_node
     Node *nodes
-    int axis[64]
+    char axis[64]
     int thread_index
     int *thread_nodes
     int *thread_start
@@ -1258,7 +1259,7 @@ cdef struct KDTree:
 
 cdef struct Node:
     int index
-    int name
+    char name
     int parent
     float loc[3] 
     SParticle *particle
@@ -1326,7 +1327,7 @@ cdef struct Particle:
     float vel[3]
     float size
     float mass
-    float state
+    char state
     ParSys *sys
     int *collided_with
     int collided_num
@@ -1340,7 +1341,7 @@ cdef struct Particle:
     int neighboursmax
 
 cdef struct Pool:
-    int axis
+    char axis
     float offset
     float max
     Parity *parity
