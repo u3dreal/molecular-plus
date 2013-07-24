@@ -963,12 +963,15 @@ cdef Node KDTree_create_tree(KDTree *kdtree,SParticle *kdparlist,int start,int e
     axis =  kdtree.axis[depth] 
     #depth % k
     #printdb(590)
+    quick_sort(kdparlist + start,len,axis)
+    '''
     if axis == 0:
         qsort(kdparlist + start,len,sizeof(SParticle),compare_x)
     elif axis == 1:
         qsort(kdparlist + start,len,sizeof(SParticle),compare_y)
     elif axis == 2:
         qsort(kdparlist + start,len,sizeof(SParticle),compare_z)
+    '''
     cdef int median = (start + end) / 2
     #printdb(598)
     if depth == 0:
@@ -1355,16 +1358,16 @@ cdef struct Heap:
     int maxalloc
 
 
-cdef int compare_x (const void *u, const void *v):# nogil:
-    cdef float w = ((<Particle*>u)).loc[0] - ((<Particle*>v)).loc[0]
+cdef int compare_x (const void *u, const void *v)nogil:
+    cdef float w = (<SParticle*>u).loc[0] - (<SParticle*>v).loc[0]
     if w < 0:
         return -1
     if w > 0:
         return 1
     return 0
     
-cdef int compare_y (const void *u, const void *v):# nogil:
-    cdef float w = ((<Particle*>u)).loc[1] - ((<Particle*>v)).loc[1]
+cdef int compare_y (const void *u, const void *v)nogil:
+    cdef float w = (<SParticle*>u).loc[1] - (<SParticle*>v).loc[1]
     if w < 0:
         return -1
     if w > 0:
@@ -1372,16 +1375,16 @@ cdef int compare_y (const void *u, const void *v):# nogil:
     return 0
  
  
-cdef int compare_z (const void *u, const void *v):# nogil:
-    cdef float w = ((<Particle*>u)).loc[2] - ((<Particle*>v)).loc[2]
+cdef int compare_z (const void *u, const void *v)nogil:
+    cdef float w = (<SParticle*>u).loc[2] - (<SParticle*>v).loc[2]
     if w < 0:
         return -1
     if w > 0:
         return 1
     return 0
     
-cdef int compare_id (const void *u, const void *v):# nogil:
-    cdef float w = ((<Particle*>u)).id - ((<Particle*>v)).id
+cdef int compare_id (const void *u, const void *v)nogil:
+    cdef float w = (<SParticle*>u).id - (<SParticle*>v).id
     if w < 0:
         return -1
     if w > 0:
@@ -1425,3 +1428,31 @@ cdef float dot_product(float u[3],float v[3])nogil:
     cdef float dot = 0
     dot = (u[0] * v[0]) + (u[1] * v[1]) + (u[2] * v[2])
     return dot
+
+
+cdef void quick_sort (SParticle *a, int n, int axis)nogil:
+    if (n < 2):
+        return
+    cdef SParticle t
+    cdef float p = a[n / 2].loc[axis]
+    cdef SParticle *l = a
+    cdef SParticle *r = a + n - 1
+    while l <= r:
+        if l[0].loc[axis] < p:
+            l += 1
+            continue
+        
+        if r[0].loc[axis] > p:
+            r -= 1
+            continue #// we need to check the condition (l <= r) every time we change the value of l or r
+        
+        t = l[0]
+        l[0] = r[0]
+        #l[0], r[0] = r[0], l[0]  # suggested by stephan to remove temp variable t but slower
+        l += 1
+        r[0] = t
+        r -= 1
+    
+    quick_sort(a, r - a + 1,axis)
+    quick_sort(l, a + n - l,axis)
+
