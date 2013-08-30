@@ -279,8 +279,11 @@ cpdef simulate(importdata):
             minZ = parlist[i].loc[2]
         if parlist[i].loc[2] > maxZ:
             maxZ = parlist[i].loc[2]
-        if parlist[i].sys.link_length > maxSize:
-            maxSize = parlist[i].sys.link_length
+        if parlist[i].sys.links_active == 1:
+            if parlist[i].links_num > 0:
+                for ii in xrange(parlist[i].links_num):
+                    if parlist[i].links[ii].lenght > maxSize:
+                        maxSize = parlist[i].links[ii].lenght
         if (parlist[i].size * 2) > maxSize:
             maxSize = (parlist[i].size * 2)
     #'''
@@ -297,12 +300,49 @@ cpdef simulate(importdata):
     if (maxZ - minZ) > (maxY - minY) and (maxZ - minZ) > (maxX - minX):
         parPool[0].axis = 2
         parPool[0].offset = 0 - minZ
-        parPool[0].max = maxZ + parPool[0].offset
+        parPool[0].max = maxZ + parPool[0].offset       
     
+    if (parPool[0].max / ( cpunum * cpunum )) > maxSize:
+        maxSize = (parPool[0].max / ( cpunum * cpunum ))
+    
+    '''
+    cdef float Xsize = maxX - minX
+    cdef float Ysize = maxY - minY
+    cdef float Zsize = maxZ - minZ
+    cdef float newXsize = Xsize
+    cdef float newYsize = Ysize
+    cdef float newZsize = Zsize
+    #print(Xsize,Ysize,Zsize)
+    pyaxis = []
+    for i in xrange(64):
+        if Xsize >= Ysize and Xsize >= Zsize:
+            kdtree.axis[i] = 0
+            newXsize = Xsize / 2
+        if Ysize > Xsize and Ysize > Zsize:
+            kdtree.axis[i] = 1
+            newYsize = Ysize / 2
+        if Zsize > Xsize and Zsize > Ysize:
+            kdtree.axis[i] = 2
+            newZsize = Zsize / 2
+            
+        Xsize = newXsize
+        Ysize = newYsize
+        Zsize = newZsize
+        pyaxis.append(kdtree.axis[i])
+    #print(pyaxis)
+    '''   
+    
+        
     cdef int pair
     cdef int heaps
     cdef float scale = 1 / ( maxSize * 1.25 )
     #printdb(297)
+    #print('Maxsize',maxSize)
+    #print('Max divide by square of CPU numbers:',(parPool[0].max / ( cpunum * cpunum )))
+    #print('Axe:',parPool[0].axis)
+    #print('Offset:',parPool[0].offset)
+    #print('Max:',parPool[0].max)
+    #print('Scale:',scale)
     for pair in xrange(2):
         #print("i:",i)
         parPool[0].parity[pair].heap = <Heap *>malloc((<int>(parPool[0].max * scale) + 1) * cython.sizeof(Heap) )
@@ -1455,4 +1495,3 @@ cdef void quick_sort (SParticle *a, int n, int axis)nogil:
     
     quick_sort(a, r - a + 1,axis)
     quick_sort(l, a + n - l,axis)
-
