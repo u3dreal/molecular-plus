@@ -19,8 +19,8 @@
 bl_info = {
     "name": "Molecular script",
     "author": "Jean-Francois Gallant(PyroEvil)",
-    "version": (0, 0, 1),
-    "blender": (2, 6, 6),
+    "version": (1, 0, 1),
+    "blender": (2, 6, 8),
     "location": "Properties editor > Particles Tabs",
     "description": ("Molecular script"),
     "warning": "",  # used for warning icon and text in addons panel
@@ -117,6 +117,8 @@ def define_props():
     parset.mol_relink_edamprand = bpy.props.FloatProperty(name = "mol_relink_deamprand", description = "Random variation on damping",min = 0 , max = 0, default = 0)
     parset.mol_relink_ebroken = bpy.props.FloatProperty(name = "mol_relink_ebroken", description = "How much link can stretch before they broken. 0.01 = 1% , 0.5 = 50% , 2.0 = 200% ...",min = 0, default = 0.5)
     parset.mol_relink_ebrokenrand = bpy.props.FloatProperty(name = "mol_relink_ebrokenrand", description = "Give a random variation to the stretch limit",min = 0, max = 1, default = 0)
+    
+    parset.mol_var1 = bpy.props.IntProperty(name = "mol_var1", description = "Targeted number of particles you want to increase or decrease from current system to calculate substep you need to achieve similar effect",min = 1, default = 1000)
     
     bpy.types.Scene.mol_timescale_active = bpy.props.BoolProperty(name = "mol_timescale_active", description = "Activate TimeScaling",default = False)
     bpy.types.Scene.timescale = bpy.props.FloatProperty(name = "timescale", description = "SpeedUp or Slow down the simulation with this multiplier", default = 1)
@@ -457,6 +459,31 @@ class MolecularPanel(bpy.types.Panel):
                 row = layout.row()
                 row.enabled = False
                 row.operator("ptcache.free_bake_all", text="Free All Bakes")
+            
+            box = layout.box()
+            row = box.row()
+            box.enabled = True
+            row.label(text = "TOOLS:")
+            subbox = box.box()
+            row = subbox.row()
+            row.label(text = "SUBSTEPS CALCULATOR:")
+            row = subbox.row()
+            row.label(text = "current systems have: " + str(len(psys.particles)) + " particles")
+            row = subbox.row()
+            row.label(text = "current substep is set to: " + str(scn.mol_substep))
+            row = subbox.row()
+            row.prop(psys.settings,"mol_var1",text = "Targeted numbers of particles")
+            diff = (psys.settings.mol_var1 / len(psys.particles))
+            factor = (psys.settings.mol_var1**(1/3) / len(psys.particles)**(1/3))
+            newsubstep = int(round(factor * scn.mol_substep))
+            row = subbox.row()
+            row.label(text = "You must set new substep to: " + str(newsubstep))
+            row = subbox.row()
+            row.label(text = "Multiply others sys particle number by: " + str(round(diff,5)))
+            row = subbox.row()
+            row.label(text = "Don't forget multiply particles size by: " + str(round(1/factor,5)))
+            
+            
             box = layout.box()
             row = box.row()
             box.enabled = False
