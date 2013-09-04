@@ -31,7 +31,7 @@ cdef Particle *parlist = NULL
 cdef SParticle *parlistcopy = NULL
 cdef ParSys *psys = NULL
 cdef KDTree *kdtree = NULL
-print("cmolcore imported with sucess! v0.04")
+print("cmolcore imported with success! v1.01")
 
 cpdef init(importdata):
     global fps
@@ -302,7 +302,7 @@ cpdef simulate(importdata):
         parPool[0].offset = 0 - minZ
         parPool[0].max = maxZ + parPool[0].offset       
     
-    if (parPool[0].max / ( cpunum * cpunum )) > maxSize:
+    if (parPool[0].max / ( cpunum * 8 )) > maxSize:
         maxSize = (parPool[0].max / ( cpunum * cpunum ))
     
     '''
@@ -335,7 +335,7 @@ cpdef simulate(importdata):
         
     cdef int pair
     cdef int heaps
-    cdef float scale = 1 / ( maxSize * 1.25 )
+    cdef float scale = 1 / ( maxSize * 2.1 )
     #printdb(297)
     #print('Maxsize',maxSize)
     #print('Max divide by square of CPU numbers:',(parPool[0].max / ( cpunum * cpunum )))
