@@ -24,8 +24,8 @@ bl_info = {
     "location": "Properties editor > Particles Tabs",
     "description": ("Molecular script"),
     "warning": "",  # used for warning icon and text in addons panel
-    "wiki_url": "http://pyroevil.com/?cat=7",
-    "tracker_url": "http://pyroevil.com/?cat=7" ,
+    "wiki_url": "http://pyroevil.com/molecular-script-docs/",
+    "tracker_url": "http://pyroevil.com/contact/" ,
     "category": "Object"}
     
 import bpy
@@ -118,7 +118,9 @@ def define_props():
     parset.mol_relink_ebroken = bpy.props.FloatProperty(name = "mol_relink_ebroken", description = "How much link can stretch before they broken. 0.01 = 1% , 0.5 = 50% , 2.0 = 200% ...",min = 0, default = 0.5)
     parset.mol_relink_ebrokenrand = bpy.props.FloatProperty(name = "mol_relink_ebrokenrand", description = "Give a random variation to the stretch limit",min = 0, max = 1, default = 0)
     
-    parset.mol_var1 = bpy.props.IntProperty(name = "mol_var1", description = "Targeted number of particles you want to increase or decrease from current system to calculate substep you need to achieve similar effect",min = 1, default = 1000)
+    parset.mol_var1 = bpy.props.IntProperty(name = "mol_var1", description = "Current number of particles to calculate substep",min = 1, default = 1000)
+    parset.mol_var2 = bpy.props.IntProperty(name = "mol_var2", description = "Current substep",min = 1, default = 4)
+    parset.mol_var3 = bpy.props.IntProperty(name = "mol_var3", description = "Targeted number of particles you want to increase or decrease from current system to calculate substep you need to achieve similar effect",min = 1, default = 1000)
     
     bpy.types.Scene.mol_timescale_active = bpy.props.BoolProperty(name = "mol_timescale_active", description = "Activate TimeScaling",default = False)
     bpy.types.Scene.timescale = bpy.props.FloatProperty(name = "timescale", description = "SpeedUp or Slow down the simulation with this multiplier", default = 1)
@@ -443,19 +445,19 @@ class MolecularPanel(bpy.types.Panel):
             row = layout.row()
             if mol_simrun == False and psys.point_cache.is_baked == False:
                 row.enabled = True
-                row.operator("object.mol_simulate",text = "Start Molecular Simulation")
+                row.operator("object.mol_simulate",icon = 'RADIO',text = "Start Molecular Simulation")
                 row = layout.row()
                 row.enabled = False
                 row.operator("ptcache.free_bake_all", text="Free All Bakes")
             if psys.point_cache.is_baked == True and mol_simrun == False:
                 row.enabled = False
-                row.operator("object.mol_simulate",text = "Simulation baked")
+                row.operator("object.mol_simulate",icon = 'RADIO',text = "Simulation baked")
                 row = layout.row()
                 row.enabled = True
                 row.operator("ptcache.free_bake_all", text="Free All Bakes")
             if mol_simrun == True:
                 row.enabled = False
-                row.operator("object.mol_simulate",text = "Process: " + mol_timeremain + " left")
+                row.operator("object.mol_simulate",icon = 'RADIO',text = "Process: " + mol_timeremain + " left")
                 row = layout.row()
                 row.enabled = False
                 row.operator("ptcache.free_bake_all", text="Free All Bakes")
@@ -463,35 +465,47 @@ class MolecularPanel(bpy.types.Panel):
             box = layout.box()
             row = box.row()
             box.enabled = True
-            row.label(text = "TOOLS:")
+            row.label(text = "Molecular Tools:",icon = 'MODIFIER')
             subbox = box.box()
             row = subbox.row()
             row.label(text = "SUBSTEPS CALCULATOR:")
             row = subbox.row()
-            row.label(text = "current systems have: " + str(len(psys.particles)) + " particles")
+            row.label(icon = 'INFO',text = "Current systems have: " + str(len(psys.particles)) + " particles")
             row = subbox.row()
-            row.label(text = "current substep is set to: " + str(scn.mol_substep))
+            row.prop(psys.settings,"mol_var1",text = "Current numbers of particles")
             row = subbox.row()
-            row.prop(psys.settings,"mol_var1",text = "Targeted numbers of particles")
-            diff = (psys.settings.mol_var1 / len(psys.particles))
-            factor = (psys.settings.mol_var1**(1/3) / len(psys.particles)**(1/3))
-            newsubstep = int(round(factor * scn.mol_substep))
+            row.prop(psys.settings,"mol_var2",text = "Current substep")
             row = subbox.row()
-            row.label(text = "You must set new substep to: " + str(newsubstep))
+            row.prop(psys.settings,"mol_var3",text = "Targeted numbers of particles")
+            diff = (psys.settings.mol_var3 / psys.settings.mol_var1)
+            factor = (psys.settings.mol_var3**(1/3) / psys.settings.mol_var1**(1/3))
+            newsubstep = int(round(factor * psys.settings.mol_var2))
             row = subbox.row()
-            row.label(text = "Multiply others sys particle number by: " + str(round(diff,5)))
+            row.label(icon = 'FORWARD',text = "You must set new substep to:   " + str(newsubstep))
             row = subbox.row()
-            row.label(text = "Don't forget multiply particles size by: " + str(round(1/factor,5)))
+            row.label(icon = 'ERROR',text = "Multiply particles size by: " + str(round(1/factor,5)))
+            row = subbox.row()
+            row.label(icon = 'ERROR',text = "Multiply others sys particle number by: " + str(round(diff,5)))
             
             
             box = layout.box()
             row = box.row()
-            box.enabled = False
-            row.label(text = "Thanks to all donators ! If you want donate")
+            box.active = False
+            box.alert = False
+            row.alignment = 'CENTER'
+            row.label(text = "THANKS TO ALL DONATORS !")
             row = box.row()
-            row.label(text = "to help me creating more stuffs like that")
+            row.alignment = 'CENTER'
+            row.label(text = "If you want donate to support my work")
             row = box.row()
-            row.label(text = "just visit: www.pyroevil.com.")
+            row.alignment = 'CENTER'
+            row.operator("wm.url_open", text=" click here to Donate ", icon='URL').url = "www.pyroevil.com/donate/"
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text = "or just visit: ")
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text = "www.pyroevil.com/donate/")
 
 
 
