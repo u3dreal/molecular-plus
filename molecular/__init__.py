@@ -248,16 +248,16 @@ def pack_data(initiate):
                     params[43] = psys.settings.mol_relink_ebrokenrand
                     params[44] = psys.settings.mol_link_friction                   
     
-            if initiate:
-                mol_exportdata[0][2] = psyslen
-                mol_exportdata[0][3] = parnum
-                #print(par_loc)
-                mol_exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
-                pass
-            else:
-                #print(par_loc)
-                mol_exportdata.append((par_loc,par_vel,par_alive))     
-                pass  
+                if initiate:
+                    mol_exportdata[0][2] = psyslen
+                    mol_exportdata[0][3] = parnum
+                    #print(par_loc)
+                    mol_exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
+                    pass
+                else:
+                    #print(par_loc)
+                    mol_exportdata.append((par_loc,par_vel,par_alive))     
+                    pass  
     
 
 
@@ -628,7 +628,7 @@ class MolSimulateModal(bpy.types.Operator):
                         #print(len(mol_importdata[i][1]))
                         #print(len(psys.particles))
                         psys.particles.foreach_set('velocity',mol_importdata[1][i])
-                    i += 1
+                        i += 1
             #print("inject new velocity time",clock() - stimex,"sec")
             framesubstep = frame_current/(mol_substep+1)        
             if framesubstep == int(framesubstep):
