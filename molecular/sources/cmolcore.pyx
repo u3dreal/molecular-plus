@@ -11,6 +11,7 @@ from libc.stdlib cimport malloc , realloc, free , rand , srand, abs
 
 cdef extern from *:
     int INT_MAX
+    float FLT_MAX
 
 cdef extern from "stdlib.h":
     ctypedef void const_void "const void"
@@ -250,7 +251,7 @@ cpdef simulate(importdata):
     newlinks = 0
     for i in xrange(cpunum):
         deadlinks[i] = 0
-    #printdb(170)
+    #printdb(140)
     if profiling == 1:
         print("-->start simulate")
         stime2 = clock()
@@ -261,10 +262,12 @@ cpdef simulate(importdata):
     if profiling == 1:
         print("-->update time", clock() - stime,"sec")
         stime = clock()
-    #printdb(175)
+    #printdb(145)
     for i in xrange(parnum):
         parlistcopy[i].id = parlist[i].id
         parlistcopy[i].loc[0] = parlist[i].loc[0]
+        #if parlist[i].loc[0] >= FLT_MAX or parlist[i].loc[0] <= -FLT_MAX :
+            #print('ALERT! INF value in X')
         if parlist[i].loc[0] < minX:
             minX = parlist[i].loc[0]
         if parlist[i].loc[0] > maxX:
@@ -302,8 +305,10 @@ cpdef simulate(importdata):
         parPool[0].offset = 0 - minZ
         parPool[0].max = maxZ + parPool[0].offset       
     
-    if (parPool[0].max / ( cpunum * 8 )) > maxSize:
-        maxSize = (parPool[0].max / ( cpunum * cpunum ))
+    if (parPool[0].max / ( cpunum * 10 )) > maxSize:
+        maxSize = (parPool[0].max / ( cpunum * 10 ))
+    
+    #printdb(155)
     
     '''
     cdef float Xsize = maxX - minX
@@ -336,9 +341,12 @@ cpdef simulate(importdata):
     cdef int pair
     cdef int heaps
     cdef float scale = 1 / ( maxSize * 2.1 )
-    #printdb(297)
-    #print('Maxsize',maxSize)
-    #print('Max divide by square of CPU numbers:',(parPool[0].max / ( cpunum * cpunum )))
+    #printdb(160)
+    #print('minX:',minX,'maxX:',maxX)
+    #print('minY:',minY,'maxY:',maxY)
+    #print('minZ:',minZ,'maxZ:',maxZ)
+    #print('Maxsize:',maxSize)
+    #print('Max divide by square of CPU numbers:',(parPool[0].max / ( cpunum * 8 )))
     #print('Axe:',parPool[0].axis)
     #print('Offset:',parPool[0].offset)
     #print('Max:',parPool[0].max)
@@ -351,27 +359,39 @@ cpdef simulate(importdata):
             parPool[0].parity[pair].heap[heaps].parnum = 0
             parPool[0].parity[pair].heap[heaps].maxalloc = 50
             parPool[0].parity[pair].heap[heaps].par = <int *>malloc( parPool[0].parity[pair].heap[heaps].maxalloc * cython.sizeof(int) )
-    #printdb(303)       
+    #printdb(165)       
     for i in xrange(parnum):
-        #printdb(305) 
+        #printdb(166)
+        #print('axis:',parPool[0].axis)
+        #print('position:',parlist[i].loc[parPool[0].axis])
+        #print('offset:',parPool[0].offset)
+        #print('scale:',scale)
+        #print('non-int pair',(((parlist[i].loc[parPool[0].axis] + parPool[0].offset) * scale) % 2))
         pair = <int>(((parlist[i].loc[parPool[0].axis] + parPool[0].offset) * scale) % 2)
         heaps = <int>((parlist[i].loc[parPool[0].axis] + parPool[0].offset) * scale)
-        #print("2- pair:",pair,"heaps:",heaps,"particles:",parlist[i].id)
+        #print("- pair:",pair,"heaps:",heaps,"particles:",parlist[i].id)
+        #print(parPool[0].parity[pair].heap[heaps].parnum)
         parPool[0].parity[pair].heap[heaps].parnum += 1
+        #print(parPool[0].parity[pair].heap[heaps].parnum)
+        #printdb(167)
         if parPool[0].parity[pair].heap[heaps].parnum > parPool[0].parity[pair].heap[heaps].maxalloc:
+            #printdb(168)
             parPool[0].parity[pair].heap[heaps].maxalloc = <int>(parPool[0].parity[pair].heap[heaps].maxalloc * 1.25)
+            #printdb(169)
             parPool[0].parity[pair].heap[heaps].par = <int *>realloc( parPool[0].parity[pair].heap[heaps].par,( parPool[0].parity[pair].heap[heaps].maxalloc + 2 ) * cython.sizeof(int) )
+            #printdb(170)
         parPool[0].parity[pair].heap[heaps].par[(parPool[0].parity[pair].heap[heaps].parnum - 1)] = parlist[i].id
+        #printdb(171)
     #'''
     
-        
+    #printdb(172)  
     if profiling == 1:
         print("-->copy data time", clock() - stime,"sec")
         stime = clock()
         
-    #printdb(178)   
+    #printdb(173)   
     KDTree_create_tree(kdtree,parlistcopy,0,parnum - 1,0,-1,0,1)
-    #printdb(182)
+    #printdb(180)
     with nogil:
         for i in prange(kdtree.thread_index,schedule='dynamic',chunksize=10,num_threads=cpunum):
             KDTree_create_tree(kdtree,parlistcopy,kdtree.thread_start[i],kdtree.thread_end[i],kdtree.thread_name[i],kdtree.thread_parent[i],kdtree.thread_depth[i],0)
