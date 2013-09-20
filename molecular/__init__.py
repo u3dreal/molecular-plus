@@ -140,7 +140,7 @@ def pack_data(initiate):
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
-            if psys.settings.mol_active == True:
+            if psys.settings.mol_active == True and len(psys.particles) > 0:
                 parlen = len(psys.particles)
                 par_loc = [0,0,0] * parlen
                 par_vel = [0,0,0] * parlen
@@ -468,6 +468,20 @@ class MolecularPanel(bpy.types.Panel):
             row.label(text = "Molecular Tools:",icon = 'MODIFIER')
             subbox = box.box()
             row = subbox.row()
+            row.label(text = "Particle UV:")
+            row = subbox.row()
+            row.alignment = 'CENTER'
+            row.label(icon = 'INFO',text = "Set current particles position  ")
+            row = subbox.row()
+            row.alignment = 'CENTER'
+            row.label(text = "has global uv in angular velocity. Retrieve")
+            row = subbox.row()
+            row.alignment = 'CENTER'
+            row.label(text = "it with Cycles particle info node")
+            row = subbox.row()
+            row.operator("object.mol_setuv",icon = 'GROUP_UVS',text = "Set UV")
+            subbox = box.box()
+            row = subbox.row()
             row.label(text = "SUBSTEPS CALCULATOR:")
             row = subbox.row()
             row.label(icon = 'INFO',text = "Current systems have: " + str(len(psys.particles)) + " particles")
@@ -569,6 +583,33 @@ class MolSimulate(bpy.types.Operator):
         print("  start processing:")
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
+        
+class MolSetUV(bpy.types.Operator):
+    """Tooltip"""
+    bl_idname = "object.mol_setuv"
+    bl_label = "Mol Set UV"
+
+
+    def execute(self, context):
+        global mol_substep
+        global mol_old_endframe
+        global mol_exportdata
+        global mol_report
+        global mol_minsize
+        global mol_newlink
+        global mol_deadlink
+        global mol_totallink
+        global mol_totaldeadlink
+        global mol_simrun
+        global mol_timeremain
+        scene = bpy.context.scene
+        object = bpy.context.object
+        psys = object.particle_systems.active
+        coord = [0,0,0] * len(psys.particles)
+        psys.particles.foreach_get("location",coord)
+        psys.particles.foreach_set("angular_velocity",coord)
+        
+        return {'FINISHED'}
 
 class MolSimulateModal(bpy.types.Operator):
     """Operator which runs its self from a timer"""
@@ -599,7 +640,7 @@ class MolSimulateModal(bpy.types.Operator):
                 fake_context = bpy.context.copy()
                 for obj in bpy.data.objects:
                     for psys in obj.particle_systems:
-                        if psys.settings.mol_active == True:
+                        if psys.settings.mol_active == True  and len(psys.particles) > 0:
                             fake_context["point_cache"] = psys.point_cache
                             bpy.ops.ptcache.bake_from_cache(fake_context)
             scene.render.frame_map_new = 1
@@ -624,7 +665,7 @@ class MolSimulateModal(bpy.types.Operator):
             #stimex = clock()
             for obj in bpy.data.objects:
                 for psys in obj.particle_systems:
-                    if psys.settings.mol_active == True:
+                    if psys.settings.mol_active == True  and len(psys.particles) > 0:
                         #print(len(mol_importdata[i][1]))
                         #print(len(psys.particles))
                         psys.particles.foreach_set('velocity',mol_importdata[1][i])
@@ -672,6 +713,7 @@ def register():
     define_props()
     bpy.utils.register_class(MolSimulateModal)
     bpy.utils.register_class(MolSimulate)
+    bpy.utils.register_class(MolSetUV)
     bpy.utils.register_class(MolecularPanel)
     pass
 
@@ -679,6 +721,7 @@ def register():
 def unregister():
     bpy.utils.unregister_class(MolSimulateModal)
     bpy.utils.unregister_class(MolSimulate)
+    bpy.utils.unregister_class(MolSetUV)
     bpy.utils.unregister_class(MolecularPanel)
     pass
 
