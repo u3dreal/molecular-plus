@@ -39,6 +39,8 @@ except:
     print("cmolcore not working")
 from random import random
 from math import pi
+from mathutils import Vector
+from mathutils.geometry import barycentric_transform as barycentric
 import imp
 from time import clock,sleep,strftime,gmtime
 import pstats, cProfile
@@ -474,12 +476,14 @@ class MolecularPanel(bpy.types.Panel):
             row.label(icon = 'INFO',text = "Set current particles position  ")
             row = subbox.row()
             row.alignment = 'CENTER'
-            row.label(text = "has global uv in angular velocity. Retrieve")
+            row.label(text = "has global or current uv in angular velocity.")
             row = subbox.row()
             row.alignment = 'CENTER'
-            row.label(text = "it with Cycles particle info node")
+            row.label(text = " Retrieve it with Cycles particle info node")
             row = subbox.row()
-            row.operator("object.mol_setuv",icon = 'GROUP_UVS',text = "Set UV")
+            row.operator("object.mol_set_global_uv",icon = 'GROUP_UVS',text = "Set Global UV")
+            row = subbox.row()
+            row.operator("object.mol_set_active_uv",icon = 'GROUP_UVS',text = "Set Active UV")
             subbox = box.box()
             row = subbox.row()
             row.label(text = "SUBSTEPS CALCULATOR:")
@@ -584,9 +588,9 @@ class MolSimulate(bpy.types.Operator):
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
         
-class MolSetUV(bpy.types.Operator):
+class MolSetGlobalUV(bpy.types.Operator):
     """Tooltip"""
-    bl_idname = "object.mol_setuv"
+    bl_idname = "object.mol_set_global_uv"
     bl_label = "Mol Set UV"
 
 
@@ -608,6 +612,64 @@ class MolSetUV(bpy.types.Operator):
         coord = [0,0,0] * len(psys.particles)
         psys.particles.foreach_get("location",coord)
         psys.particles.foreach_set("angular_velocity",coord)
+        
+        return {'FINISHED'}
+    
+    
+class MolSetActiveUV(bpy.types.Operator):
+    """Tooltip"""
+    bl_idname = "object.mol_set_active_uv"
+    bl_label = "Mol Set Active UV"
+
+
+    def execute(self, context):
+        global mol_substep
+        global mol_old_endframe
+        global mol_exportdata
+        global mol_report
+        global mol_minsize
+        global mol_newlink
+        global mol_deadlink
+        global mol_totallink
+        global mol_totaldeadlink
+        global mol_simrun
+        global mol_timeremain
+        scene = bpy.context.scene
+        object = bpy.context.object
+        psys = object.particle_systems.active
+        coord = [0,0,0] * len(psys.particles)
+        print('-------------start------------')
+        #aaa = 0
+        for par in psys.particles:
+            point = object.closest_point_on_mesh(par.location)
+            #print('closest:',par.location,point[0],point[2])
+            vindex1 = object.data.polygons[point[2]].vertices[0]
+            vindex2 = object.data.polygons[point[2]].vertices[1]
+            vindex3 = object.data.polygons[point[2]].vertices[2]
+            vertices1 = object.data.vertices[vindex1]
+            vertices2 = object.data.vertices[vindex2]
+            vertices3 = object.data.vertices[vindex3]
+            uvindex1 = object.data.polygons[point[2]].loop_start + 0
+            uvindex2 = object.data.polygons[point[2]].loop_start + 1
+            uvindex3 = object.data.polygons[point[2]].loop_start + 2
+            uv1 = bpy.context.object.data.uv_layers.active.data[uvindex1].uv.to_3d()
+            uv2 = bpy.context.object.data.uv_layers.active.data[uvindex2].uv.to_3d()
+            uv3 = bpy.context.object.data.uv_layers.active.data[uvindex3].uv.to_3d()
+            #print(vertices1.co,vertices2.co,vertices3.co)
+            #print(uv1,uv2,uv3)
+            p = Vector(point[0].to_tuple())
+            a = Vector(vertices1.co.to_tuple())
+            b = Vector(vertices2.co.to_tuple())
+            c = Vector(vertices3.co.to_tuple())
+            u = Vector(uv1.to_tuple())
+            v = Vector(uv2.to_tuple())
+            w = Vector(uv3.to_tuple())
+            #print(a,b,c,u,v,w,p)
+            newuv = barycentric(p,a,b,c,u,v,w)
+            #print('New UVs:',newuv)
+            newuv = newuv.to_tuple()
+            par.angular_velocity = newuv
+            
         
         return {'FINISHED'}
 
@@ -713,7 +775,8 @@ def register():
     define_props()
     bpy.utils.register_class(MolSimulateModal)
     bpy.utils.register_class(MolSimulate)
-    bpy.utils.register_class(MolSetUV)
+    bpy.utils.register_class(MolSetGlobalUV)
+    bpy.utils.register_class(MolSetActiveUV)
     bpy.utils.register_class(MolecularPanel)
     pass
 
@@ -721,7 +784,8 @@ def register():
 def unregister():
     bpy.utils.unregister_class(MolSimulateModal)
     bpy.utils.unregister_class(MolSimulate)
-    bpy.utils.unregister_class(MolSetUV)
+    bpy.utils.unregister_class(MolSetGlobalUV)
+    bpy.utils.unregister_class(MolSetActiveUV)
     bpy.utils.unregister_class(MolecularPanel)
     pass
 
