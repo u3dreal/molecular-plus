@@ -483,7 +483,11 @@ class MolecularPanel(bpy.types.Panel):
             row = subbox.row()
             row.operator("object.mol_set_global_uv",icon = 'GROUP_UVS',text = "Set Global UV")
             row = subbox.row()
-            row.operator("object.mol_set_active_uv",icon = 'GROUP_UVS',text = "Set Active UV")
+            if obj.data.uv_layers.active != None:
+                row.operator("object.mol_set_active_uv",icon = 'GROUP_UVS',text = "Set Active UV (current: " + str(obj.data.uv_layers.active.name) + ")" )
+            else:
+                row.active = False
+                row.operator("object.mol_set_active_uv",icon = 'GROUP_UVS',text = "Set Active UV ( no uvs found)")
             subbox = box.box()
             row = subbox.row()
             row.label(text = "SUBSTEPS CALCULATOR:")
@@ -636,19 +640,26 @@ class MolSetActiveUV(bpy.types.Operator):
         global mol_timeremain
         scene = bpy.context.scene
         object = bpy.context.object
+        #"""
+        oldmesh = object.data
+        newmesh = object.data.copy()
+        object.data = newmesh
+        mod = object.modifiers.new("tri_for_uv","TRIANGULATE")
+        mod.use_beauty = False
+        bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+        #"""
         psys = object.particle_systems.active
-        coord = [0,0,0] * len(psys.particles)
         print('-------------start------------')
-        #aaa = 0
         for par in psys.particles:
-            point = object.closest_point_on_mesh(par.location)
+            parloc = (par.location * object.matrix_world) - object.location
+            point = object.closest_point_on_mesh(parloc)
             #print('closest:',par.location,point[0],point[2])
             vindex1 = object.data.polygons[point[2]].vertices[0]
             vindex2 = object.data.polygons[point[2]].vertices[1]
             vindex3 = object.data.polygons[point[2]].vertices[2]
-            vertices1 = object.data.vertices[vindex1]
-            vertices2 = object.data.vertices[vindex2]
-            vertices3 = object.data.vertices[vindex3]
+            v1 = (object.matrix_world * object.data.vertices[vindex1].co).to_tuple()
+            v2 = (object.matrix_world * object.data.vertices[vindex2].co).to_tuple()
+            v3 = (object.matrix_world * object.data.vertices[vindex3].co).to_tuple()
             uvindex1 = object.data.polygons[point[2]].loop_start + 0
             uvindex2 = object.data.polygons[point[2]].loop_start + 1
             uvindex3 = object.data.polygons[point[2]].loop_start + 2
@@ -657,19 +668,24 @@ class MolSetActiveUV(bpy.types.Operator):
             uv3 = bpy.context.object.data.uv_layers.active.data[uvindex3].uv.to_3d()
             #print(vertices1.co,vertices2.co,vertices3.co)
             #print(uv1,uv2,uv3)
-            p = Vector(point[0].to_tuple())
-            a = Vector(vertices1.co.to_tuple())
-            b = Vector(vertices2.co.to_tuple())
-            c = Vector(vertices3.co.to_tuple())
-            u = Vector(uv1.to_tuple())
-            v = Vector(uv2.to_tuple())
-            w = Vector(uv3.to_tuple())
-            #print(a,b,c,u,v,w,p)
-            newuv = barycentric(p,a,b,c,u,v,w)
+            p = object.matrix_world * point[0]
+            v1 = Vector(v1)
+            v2 = Vector(v2)
+            v3 = Vector(v3)
+            uv1 = Vector(uv1)
+            uv2 = Vector(uv2)
+            uv3 = Vector(uv3)
+            #print(a,b,c,uv1,uv2,uv3,p)
+            newuv = barycentric(p,v1,v2,v3,uv1,uv2,uv3)
             #print('New UVs:',newuv)
+            parloc = par.location * object.matrix_world
+            dist = (Vector((parloc[0] - p[0],parloc[1] - p[1],parloc[2] - p[2]))).length
+            newuv[2] = dist
             newuv = newuv.to_tuple()
             par.angular_velocity = newuv
-            
+        
+        object.data = oldmesh
+        bpy.data.meshes.remove(newmesh)
         
         return {'FINISHED'}
 
