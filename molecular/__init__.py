@@ -640,35 +640,44 @@ class MolSetActiveUV(bpy.types.Operator):
         global mol_timeremain
         scene = bpy.context.scene
         object = bpy.context.object
-        #"""
+        
+        object = bpy.context.object
+        object2 = object.copy()
+        bpy.context.scene.objects.link(object2)
+        mod = object2.modifiers.new("tri_for_uv","TRIANGULATE")
+        mod.use_beauty = False
+        newmesh = object2.to_mesh(bpy.context.scene,True,"RENDER",True,False)
+        object2.data = newmesh
+        bpy.context.scene.update()
+        """
         oldmesh = object.data
         newmesh = object.data.copy()
         object.data = newmesh
         mod = object.modifiers.new("tri_for_uv","TRIANGULATE")
         mod.use_beauty = False
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
-        #"""
+        """
         psys = object.particle_systems.active
-        print('-------------start------------')
+        #print('-------------start------------')
         for par in psys.particles:
-            parloc = (par.location * object.matrix_world) - object.location
-            point = object.closest_point_on_mesh(parloc)
+            parloc = (par.location * object2.matrix_world) - object2.location
+            point = object2.closest_point_on_mesh(parloc)
             #print('closest:',par.location,point[0],point[2])
-            vindex1 = object.data.polygons[point[2]].vertices[0]
-            vindex2 = object.data.polygons[point[2]].vertices[1]
-            vindex3 = object.data.polygons[point[2]].vertices[2]
-            v1 = (object.matrix_world * object.data.vertices[vindex1].co).to_tuple()
-            v2 = (object.matrix_world * object.data.vertices[vindex2].co).to_tuple()
-            v3 = (object.matrix_world * object.data.vertices[vindex3].co).to_tuple()
-            uvindex1 = object.data.polygons[point[2]].loop_start + 0
-            uvindex2 = object.data.polygons[point[2]].loop_start + 1
-            uvindex3 = object.data.polygons[point[2]].loop_start + 2
-            uv1 = bpy.context.object.data.uv_layers.active.data[uvindex1].uv.to_3d()
-            uv2 = bpy.context.object.data.uv_layers.active.data[uvindex2].uv.to_3d()
-            uv3 = bpy.context.object.data.uv_layers.active.data[uvindex3].uv.to_3d()
+            vindex1 = object2.data.polygons[point[2]].vertices[0]
+            vindex2 = object2.data.polygons[point[2]].vertices[1]
+            vindex3 = object2.data.polygons[point[2]].vertices[2]
+            v1 = (object2.matrix_world * object2.data.vertices[vindex1].co).to_tuple()
+            v2 = (object2.matrix_world * object2.data.vertices[vindex2].co).to_tuple()
+            v3 = (object2.matrix_world * object2.data.vertices[vindex3].co).to_tuple()
+            uvindex1 = object2.data.polygons[point[2]].loop_start + 0
+            uvindex2 = object2.data.polygons[point[2]].loop_start + 1
+            uvindex3 = object2.data.polygons[point[2]].loop_start + 2
+            uv1 = object2.data.uv_layers.active.data[uvindex1].uv.to_3d()
+            uv2 = object2.data.uv_layers.active.data[uvindex2].uv.to_3d()
+            uv3 = object2.data.uv_layers.active.data[uvindex3].uv.to_3d()
             #print(vertices1.co,vertices2.co,vertices3.co)
             #print(uv1,uv2,uv3)
-            p = object.matrix_world * point[0]
+            p = object2.matrix_world * point[0]
             v1 = Vector(v1)
             v2 = Vector(v2)
             v3 = Vector(v3)
@@ -678,13 +687,13 @@ class MolSetActiveUV(bpy.types.Operator):
             #print(a,b,c,uv1,uv2,uv3,p)
             newuv = barycentric(p,v1,v2,v3,uv1,uv2,uv3)
             #print('New UVs:',newuv)
-            parloc = par.location * object.matrix_world
+            parloc = par.location * object2.matrix_world
             dist = (Vector((parloc[0] - p[0],parloc[1] - p[1],parloc[2] - p[2]))).length
             newuv[2] = dist
             newuv = newuv.to_tuple()
             par.angular_velocity = newuv
-        
-        object.data = oldmesh
+        scene.objects.unlink(object2)
+        bpy.data.objects.remove(object2)
         bpy.data.meshes.remove(newmesh)
         
         return {'FINISHED'}
