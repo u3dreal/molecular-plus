@@ -123,6 +123,7 @@ def define_props():
     parset.mol_var1 = bpy.props.IntProperty(name = "mol_var1", description = "Current number of particles to calculate substep",min = 1, default = 1000)
     parset.mol_var2 = bpy.props.IntProperty(name = "mol_var2", description = "Current substep",min = 1, default = 4)
     parset.mol_var3 = bpy.props.IntProperty(name = "mol_var3", description = "Targeted number of particles you want to increase or decrease from current system to calculate substep you need to achieve similar effect",min = 1, default = 1000)
+    parset.mol_bakeuv = bpy.props.BoolProperty(name = "mol_bakeuv", description = "Bake uv when finish",default = False)
     
     bpy.types.Scene.mol_timescale_active = bpy.props.BoolProperty(name = "mol_timescale_active", description = "Activate TimeScaling",default = False)
     bpy.types.Scene.timescale = bpy.props.FloatProperty(name = "timescale", description = "SpeedUp or Slow down the simulation with this multiplier", default = 1)
@@ -282,8 +283,11 @@ class MolecularPanel(bpy.types.Panel):
     def draw(self, context):
         global mol_simrun
         global mol_timeremain
+        global mol_objuvbake
+        global mol_psysuvbake
         
         layout = self.layout
+        scn = bpy.context.scene
         obj = context.object
         psys = obj.particle_systems.active
         if psys != None:
@@ -424,7 +428,18 @@ class MolecularPanel(bpy.types.Panel):
             row.prop(psys.settings,"mol_relink_ebrokenrand",text = "Rand E broken")
             
             row = layout.row()
-            scn = bpy.context.scene
+            row.label(text = "UV's:")
+            box = layout.box()
+            row = box.row()
+            if obj.data.uv_layers.active != None:
+                row.prop(psys.settings,"mol_bakeuv",text = "Bake UV at ending (current: " + str(obj.data.uv_textures.active.name) + ")" )
+            else:
+                row.active = False
+                row.prop(psys.settings,"mol_bakeuv",text = "Bake UV at ending (current: None)" )
+                
+            row = layout.row()
+            row.label(text = "")
+            row = layout.row()
             row.label(text = "Simulate")
             row = layout.row()
             row.prop(scn,"frame_start",text = "Start Frame")
@@ -484,7 +499,9 @@ class MolecularPanel(bpy.types.Panel):
             row.operator("object.mol_set_global_uv",icon = 'GROUP_UVS',text = "Set Global UV")
             row = subbox.row()
             if obj.data.uv_layers.active != None:
-                row.operator("object.mol_set_active_uv",icon = 'GROUP_UVS',text = "Set Active UV (current: " + str(obj.data.uv_layers.active.name) + ")" )
+                mol_objuvbake = context.object
+                mol_psysuvbake = context.object.particle_systems.active
+                row.operator("object.mol_set_active_uv",icon = 'GROUP_UVS',text = "Set Active UV (current: " + str(obj.data.uv_textures.active.name) + ")" )
             else:
                 row.active = False
                 row.operator("object.mol_set_active_uv",icon = 'GROUP_UVS',text = "Set Active UV ( no uvs found)")
@@ -524,7 +541,7 @@ class MolecularPanel(bpy.types.Panel):
             row.operator("wm.url_open", text=" click here to Donate ", icon='URL').url = "www.pyroevil.com/donate/"
             row = box.row()
             row.alignment = 'CENTER'
-            row.label(text = "or just visit: ")
+            row.label(text = "or visit: ")
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text = "www.pyroevil.com/donate/")
@@ -638,17 +655,25 @@ class MolSetActiveUV(bpy.types.Operator):
         global mol_totaldeadlink
         global mol_simrun
         global mol_timeremain
-        scene = bpy.context.scene
-        object = bpy.context.object
+        global mol_objuvbake
+        global mol_psysuvbake
         
-        object = bpy.context.object
-        object2 = object.copy()
-        bpy.context.scene.objects.link(object2)
+        scene = context.scene
+        object = mol_objuvbake
+        
+        print('  start bake uv from:',object.name)
+        #object2 = object.copy()
+        
+        obdata = object.data.copy()
+        object2 = bpy.data.objects.new(name="mol_uv_temp",object_data = obdata)
+        object2.matrix_world = object.matrix_world
+        
+        context.scene.objects.link(object2)
         mod = object2.modifiers.new("tri_for_uv","TRIANGULATE")
         mod.use_beauty = False
         newmesh = object2.to_mesh(bpy.context.scene,True,"RENDER",True,False)
         object2.data = newmesh
-        bpy.context.scene.update()
+        context.scene.update()
         """
         oldmesh = object.data
         newmesh = object.data.copy()
@@ -657,7 +682,7 @@ class MolSetActiveUV(bpy.types.Operator):
         mod.use_beauty = False
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
         """
-        psys = object.particle_systems.active
+        psys = mol_psysuvbake
         #print('-------------start------------')
         for par in psys.particles:
             parloc = (par.location * object2.matrix_world) - object2.location
@@ -695,6 +720,7 @@ class MolSetActiveUV(bpy.types.Operator):
         scene.objects.unlink(object2)
         bpy.data.objects.remove(object2)
         bpy.data.meshes.remove(newmesh)
+        print('         uv baked on:',psys.settings.name)
         
         return {'FINISHED'}
 
@@ -717,6 +743,8 @@ class MolSimulateModal(bpy.types.Operator):
         global mol_totaldeadlink
         global mol_timeremain
         global mol_simrun
+        global mol_objuvbake
+        global mol_psysuvbake
         
         #mol_stime = clock()
         scene = bpy.context.scene
@@ -732,9 +760,23 @@ class MolSimulateModal(bpy.types.Operator):
                             bpy.ops.ptcache.bake_from_cache(fake_context)
             scene.render.frame_map_new = 1
             scene.frame_end = mol_old_endframe
+            
+            for obj in bpy.data.objects:
+                for psys in obj.particle_systems:
+                    for psys in obj.particle_systems:
+                        if psys.settings.mol_bakeuv == True:
+                            mol_objuvbake = obj
+                            mol_psysuvbake = psys
+                            bpy.context.scene.update()
+                            scene.frame_set(frame = psys.settings.frame_start)
+                            bpy.context.scene.update()
+                            bpy.ops.object.mol_set_active_uv()
+            
             if frame_current == frame_end and scene.mol_render == True:
                 bpy.ops.render.render(animation=True)
+                
             scene.frame_set(frame = scene.frame_start)
+
             cmolcore.memfree()
             mol_simrun = False
             print("--------------------------------------------------Molecular Sim end")
