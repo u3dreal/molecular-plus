@@ -32,10 +32,6 @@ import bpy
 try:
     from molecular import cmolcore
 except:
-    try:
-        from molecular import import_test
-    except:
-        print("import_test not working")
     print("cmolcore not working")
 from random import random
 from math import pi
