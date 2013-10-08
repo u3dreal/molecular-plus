@@ -27,5 +27,5 @@
 [x] Multithread particles collisions and links solving
 [ ] Optimize my own quicksort to stop when median is find
 [ ] make particles not born or dead don't be calculated in kdtree
-[ ] optimize links searching byt puting dead links at the end of array and calloc them when iteration finish
+[ ] optimize links searching by puting dead links at the end of array and calloc them when iteration finish
 [ ] Make link exponent work more propertly
