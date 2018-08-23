@@ -19,8 +19,8 @@
 bl_info = {
     "name": "Molecular script",
     "author": "Jean-Francois Gallant(PyroEvil)",
-    "version": (1, 0, 1),
-    "blender": (2, 6, 8),
+    "version": (1, 0, 3),
+    "blender": (2, 7, 9),
     "location": "Properties editor > Particles Tabs",
     "description": ("Molecular script"),
     "warning": "",  # used for warning icon and text in addons panel
@@ -329,7 +329,7 @@ class MolecularPanel(bpy.types.Panel):
             
             subbox = box.box()
             subbox.enabled  = psys.settings.mol_links_active
-            subbox.label(text = "Initial Linking (at bird):")
+            subbox.label(text = "Initial Linking (at birth):")
             row = subbox.row()
             row.prop(psys.settings,"mol_link_length",text = "search length")
             row.prop(psys.settings,"mol_link_rellength",text = "Relative")
@@ -666,7 +666,8 @@ class MolSetActiveUV(bpy.types.Operator):
         
         context.scene.objects.link(object2)
         mod = object2.modifiers.new("tri_for_uv","TRIANGULATE")
-        mod.use_beauty = False
+        mod.ngon_method = 'BEAUTY'
+        mod.quad_method = 'BEAUTY'
         newmesh = object2.to_mesh(bpy.context.scene,True,"RENDER",True,False)
         object2.data = newmesh
         context.scene.update()
@@ -684,21 +685,21 @@ class MolSetActiveUV(bpy.types.Operator):
             parloc = (par.location * object2.matrix_world) - object2.location
             point = object2.closest_point_on_mesh(parloc)
             #print('closest:',par.location,point[0],point[2])
-            vindex1 = object2.data.polygons[point[2]].vertices[0]
-            vindex2 = object2.data.polygons[point[2]].vertices[1]
-            vindex3 = object2.data.polygons[point[2]].vertices[2]
+            vindex1 = object2.data.polygons[point[3]].vertices[0]
+            vindex2 = object2.data.polygons[point[3]].vertices[1]
+            vindex3 = object2.data.polygons[point[3]].vertices[2]
             v1 = (object2.matrix_world * object2.data.vertices[vindex1].co).to_tuple()
             v2 = (object2.matrix_world * object2.data.vertices[vindex2].co).to_tuple()
             v3 = (object2.matrix_world * object2.data.vertices[vindex3].co).to_tuple()
-            uvindex1 = object2.data.polygons[point[2]].loop_start + 0
-            uvindex2 = object2.data.polygons[point[2]].loop_start + 1
-            uvindex3 = object2.data.polygons[point[2]].loop_start + 2
+            uvindex1 = object2.data.polygons[point[3]].loop_start + 0
+            uvindex2 = object2.data.polygons[point[3]].loop_start + 1
+            uvindex3 = object2.data.polygons[point[3]].loop_start + 2
             uv1 = object2.data.uv_layers.active.data[uvindex1].uv.to_3d()
             uv2 = object2.data.uv_layers.active.data[uvindex2].uv.to_3d()
             uv3 = object2.data.uv_layers.active.data[uvindex3].uv.to_3d()
             #print(vertices1.co,vertices2.co,vertices3.co)
             #print(uv1,uv2,uv3)
-            p = object2.matrix_world * point[0]
+            p = object2.matrix_world * point[1]
             v1 = Vector(v1)
             v2 = Vector(v2)
             v3 = Vector(v3)
