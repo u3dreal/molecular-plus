@@ -267,7 +267,11 @@ class MolecularPanel(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "particle"
-    
+
+    @classmethod
+    def poll(cls, context):
+        return context.object.particle_systems.active
+
     def draw_header(self, context):
         layout = self.layout
         obj = context.object
