@@ -88,7 +88,7 @@ cpdef init(importdata):
             parlist[jj].state = importdata[i + 1][5][ii]
             psys[i].selfcollision_active = importdata[i + 1][6][0]
             psys[i].othercollision_active = importdata[i + 1][6][1]
-            psys[i].collision_group = int(importdata[i + 1][6][2])
+            psys[i].collision_group = importdata[i + 1][6][2]
             psys[i].friction = importdata[i + 1][6][3]
             psys[i].collision_damp = importdata[i + 1][6][4]
             psys[i].links_active = importdata[i + 1][6][5]
@@ -110,7 +110,7 @@ cpdef init(importdata):
             psys[i].link_edamprand = importdata[i + 1][6][21]
             psys[i].link_ebroken = importdata[i + 1][6][22]
             psys[i].link_ebrokenrand = importdata[i + 1][6][23]
-            psys[i].relink_group = int(importdata[i + 1][6][24])
+            psys[i].relink_group = importdata[i + 1][6][24]
             psys[i].relink_chance = importdata[i + 1][6][25]
             psys[i].relink_chancerand = importdata[i + 1][6][26]
             psys[i].relink_max = importdata[i + 1][6][27]
@@ -131,7 +131,7 @@ cpdef init(importdata):
             psys[i].relink_ebroken = importdata[i + 1][6][42]
             psys[i].relink_ebrokenrand = importdata[i + 1][6][43]
             psys[i].link_friction = importdata[i + 1][6][44]
-            psys[i].link_group = int(importdata[i + 1][6][45])
+            psys[i].link_group = importdata[i + 1][6][45]
             psys[i].other_link_active = importdata[i + 1][6][46]
             
             parlist[jj].sys = &psys[i]

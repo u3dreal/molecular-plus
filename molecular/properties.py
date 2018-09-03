@@ -17,18 +17,13 @@ def define_props():
     parset.mol_othercollision_active = bpy.props.BoolProperty(name = "mol_othercollision_active", description = "Activate collision with particles from others systems",default = False)
     parset.mol_friction = bpy.props.FloatProperty(name = "mol_friction", description = "Friction between particles at collision 0 = no friction , 1 = full friction",default = 0.005 , min = 0 , max = 1, precision=6, subtype='FACTOR')
     parset.mol_collision_damp = bpy.props.FloatProperty(name = "mol_collision_damp", description = "Damping between particles at collision 0 = bouncy , 1 = no collision",default = 0.005 , min = 0 , max = 1, precision=6, subtype='FACTOR')
-    item = []
-    for i in range(1,12):
-        item.append((str(i),"Collision Group " + str(i),"collide only with group " + str(i) ))
-    parset.mol_collision_group = bpy.props.EnumProperty(items = item, description = "Choose a collision group you want to collide with")
+
+    parset.mol_collision_group = bpy.props.IntProperty(default=1, min=1, description = "Choose a collision group you want to collide with")
 
     parset.mol_links_active = bpy.props.BoolProperty(name = "mol_links_active", description = "Activate links between particles of this system",default = False)
     parset.mol_other_link_active = bpy.props.BoolProperty(name = "mol_other_link_active", description = "",default = False)
 
-    item = []
-    for i in range(1,12):
-        item.append((str(i),"Link Group " + str(i),"Link only with group " + str(i) ))
-    parset.mol_link_group = bpy.props.EnumProperty(items = item, description = "")
+    parset.mol_link_group = bpy.props.IntProperty(default=1, min=1, description = "")
 
     parset.mol_link_rellength = bpy.props.BoolProperty(name = "mol_link_rellength", description = "Activate search distance relative to particles radius",default = True)
     parset.mol_link_friction = bpy.props.FloatProperty(name = "mol_link_friction", description = "Friction in links , a kind of viscosity. Slow down tangent velocity. 0 = no friction , 1.0 = full of friction",min = 0,max = 1, default = 0.005, precision=6, subtype='FACTOR')
@@ -54,10 +49,8 @@ def define_props():
     parset.mol_link_ebroken = bpy.props.FloatProperty(name = "mol_link_ebroken", description = "How much link can expand before they broken. 0.01 = 1% , 0.5 = 50% , 2.0 = 200% ...",min = 0, default = 0.5, precision = 6)
     parset.mol_link_ebrokenrand = bpy.props.FloatProperty(name = "mol_link_ebrokenrand", description = "Give a random variation to the expension stretch limit",min = 0 ,max = 1, default = 0, precision=6, subtype='FACTOR')
 
-    item = []
-    for i in range(1,12):
-        item.append((str(i),"Relink Group " + str(i),"Relink only with group " + str(i) ))
-    parset.mol_relink_group = bpy.props.EnumProperty(items = item, description = "Choose a group that new link are possible")        
+    parset.mol_relink_group = bpy.props.IntProperty(default=1, min=1, description = "Choose a group that new link are possible")        
+
     parset.mol_relink_chance = bpy.props.FloatProperty(name = "mol_relink_chance", description = "Chance of a new link are created on collision. 0 = off , 100 = 100% of chance",min = 0, max = 100, default = 0, precision=6)
     parset.mol_relink_chancerand = bpy.props.FloatProperty(name = "mol_relink_chancerand", description = "Give a random variation to the chance of new link", default = 0, min=0, max=1, precision=6, subtype='FACTOR')
     parset.mol_relink_tension = bpy.props.FloatProperty(name = "mol_relink_tension", description = "Make link bigger or smaller than it's created (1 = normal , 0.9 = 10% smaller , 1.15 = 15% bigger)",min = 0, precision = 6, default = 1)
