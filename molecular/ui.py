@@ -67,6 +67,8 @@ class MolecularPanel(bpy.types.Panel):
             row.label(text = "Links:")
             box = layout.box()
             box.prop(psys.settings,"mol_links_active", text = "Activate Particles linking")
+            box.prop(psys.settings,"mol_other_link_active", text = "Activate Particles linking with Others")
+            box.prop(psys.settings,"mol_link_group",text = " Linking only with:")
 
             subbox = box.box()
             subbox.enabled  = psys.settings.mol_links_active

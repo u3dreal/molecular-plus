@@ -70,7 +70,7 @@ def pack_data(initiate):
                         psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
                         psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
                     
-                    params = [0] * 45
+                    params = [0] * 47
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
                     params[2] = psys.settings.mol_collision_group
@@ -118,7 +118,9 @@ def pack_data(initiate):
                     params[41] = psys.settings.mol_relink_edamprand
                     params[42] = psys.settings.mol_relink_ebroken
                     params[43] = psys.settings.mol_relink_ebrokenrand
-                    params[44] = psys.settings.mol_link_friction                   
+                    params[44] = psys.settings.mol_link_friction  
+                    params[45] = psys.settings.mol_link_group 
+                    params[46] = psys.settings.mol_other_link_active 
     
                 mol_exportdata = bpy.context.scene.mol_exportdata
                 if initiate:

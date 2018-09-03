@@ -23,6 +23,13 @@ def define_props():
     parset.mol_collision_group = bpy.props.EnumProperty(items = item, description = "Choose a collision group you want to collide with")
 
     parset.mol_links_active = bpy.props.BoolProperty(name = "mol_links_active", description = "Activate links between particles of this system",default = False)
+    parset.mol_other_link_active = bpy.props.BoolProperty(name = "mol_other_link_active", description = "",default = False)
+
+    item = []
+    for i in range(1,12):
+        item.append((str(i),"Link Group " + str(i),"Link only with group " + str(i) ))
+    parset.mol_link_group = bpy.props.EnumProperty(items = item, description = "")
+
     parset.mol_link_rellength = bpy.props.BoolProperty(name = "mol_link_rellength", description = "Activate search distance relative to particles radius",default = True)
     parset.mol_link_friction = bpy.props.FloatProperty(name = "mol_link_friction", description = "Friction in links , a kind of viscosity. Slow down tangent velocity. 0 = no friction , 1.0 = full of friction",min = 0,max = 1, default = 0.005, precision=6, subtype='FACTOR')
     parset.mol_link_length = bpy.props.FloatProperty(name = "mol_link_length", description = "Searching range to make a link between particles",min = 0, precision = 6, default = 1)
