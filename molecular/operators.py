@@ -196,6 +196,8 @@ class MolSimulateModal(bpy.types.Operator):
 
             cmolcore.memfree()
             scene.mol_simrun = False
+            mol_exportdata = scene.mol_exportdata
+            mol_exportdata.clear()
             print("--------------------------------------------------Molecular Sim end")
             return self.cancel(context)
 
