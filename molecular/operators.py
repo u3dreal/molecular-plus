@@ -18,7 +18,6 @@ class MolSimulate(bpy.types.Operator):
     bl_idname = "object.mol_simulate"
     bl_label = "Mol Simulate"
 
-
     def execute(self, context):
         print("Molecular Sim start--------------------------------------------------")
         mol_stime = clock()
@@ -31,57 +30,57 @@ class MolSimulate(bpy.types.Operator):
         scene.mol_totaldeadlink = 0
         scene.mol_timeremain = "...Simulating..."
         object = bpy.context.object
-        scene.frame_set(frame = scene.frame_start)
+        scene.frame_set(frame=scene.frame_start)
         scene.mol_old_endframe = scene.frame_end
         mol_substep = scene.mol_substep
         scene.render.frame_map_old = 1
         scene.render.frame_map_new = mol_substep + 1
         scene.frame_end *= mol_substep + 1
-        
+
         if scene.mol_timescale_active == True:
             fps = scene.render.fps / scene.timescale
         else:
             fps = scene.render.fps
+
         cpu = scene.mol_cpu
         mol_exportdata = bpy.context.scene.mol_exportdata
         mol_exportdata.clear()
-        mol_exportdata.append([fps,mol_substep,0,0,cpu])
+        mol_exportdata.append([fps, mol_substep, 0, 0, cpu])
         mol_stime = clock()
         simulate.pack_data(True)
         #print("sys number",mol_exportdata[0][2])
         etime = clock()
-        print("  " + "PackData take " + str(round(etime - mol_stime,3)) + "sec")
+        print("  PackData take " + str(round(etime - mol_stime, 3)) + "sec")
         mol_stime = clock()
         mol_report = cmolcore.init(mol_exportdata)
         etime = clock()
-        print("  " + "Export time take " + str(round(etime - mol_stime,3)) + "sec")
+        print("  Export time take " + str(round(etime - mol_stime, 3)) + "sec")
         print("  total numbers of particles: " + str(mol_report))
         print("  start processing:")
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
-        
+
+
 class MolSetGlobalUV(bpy.types.Operator):
     """Tooltip"""
     bl_idname = "object.mol_set_global_uv"
     bl_label = "Mol Set UV"
 
-
     def execute(self, context):
         scene = bpy.context.scene
         object = bpy.context.object
         psys = object.particle_systems.active
-        coord = [0,0,0] * len(psys.particles)
-        psys.particles.foreach_get("location",coord)
-        psys.particles.foreach_set("angular_velocity",coord)
-        
+        coord = [0, 0, 0] * len(psys.particles)
+        psys.particles.foreach_get("location", coord)
+        psys.particles.foreach_set("angular_velocity", coord)
+
         return {'FINISHED'}
-    
-    
+
+
 class MolSetActiveUV(bpy.types.Operator):
     """Tooltip"""
     bl_idname = "object.mol_set_active_uv"
     bl_label = "Mol Set Active UV"
-
 
     def execute(self, context):
         scene = context.scene
@@ -94,16 +93,16 @@ class MolSetActiveUV(bpy.types.Operator):
 
         print('  start bake uv from:',object.name)
         #object2 = object.copy()
-        
+
         obdata = object.data.copy()
-        object2 = bpy.data.objects.new(name="mol_uv_temp",object_data = obdata)
+        object2 = bpy.data.objects.new(name="mol_uv_temp", object_data=obdata)
         object2.matrix_world = object.matrix_world
-        
+
         context.scene.objects.link(object2)
-        mod = object2.modifiers.new("tri_for_uv","TRIANGULATE")
+        mod = object2.modifiers.new("tri_for_uv", "TRIANGULATE")
         mod.ngon_method = 'BEAUTY'
         mod.quad_method = 'BEAUTY'
-        newmesh = object2.to_mesh(bpy.context.scene,True,"RENDER",True,False)
+        newmesh = object2.to_mesh(bpy.context.scene, True, "RENDER", True, False)
         object2.data = newmesh
         context.scene.update()
         """
@@ -145,7 +144,7 @@ class MolSetActiveUV(bpy.types.Operator):
             newuv = barycentric(p,v1,v2,v3,uv1,uv2,uv3)
             #print('New UVs:',newuv)
             parloc = par.location * object2.matrix_world
-            dist = (Vector((parloc[0] - p[0],parloc[1] - p[1],parloc[2] - p[2]))).length
+            dist = (Vector((parloc[0] - p[0], parloc[1] - p[1], parloc[2] - p[2]))).length
             newuv[2] = dist
             newuv = newuv.to_tuple()
             par.angular_velocity = newuv
@@ -153,8 +152,9 @@ class MolSetActiveUV(bpy.types.Operator):
         bpy.data.objects.remove(object2)
         bpy.data.meshes.remove(newmesh)
         print('         uv baked on:',psys.settings.name)
-        
+
         return {'FINISHED'}
+
 
 class MolSimulateModal(bpy.types.Operator):
     """Operator which runs its self from a timer"""
@@ -177,7 +177,7 @@ class MolSimulateModal(bpy.types.Operator):
                             bpy.ops.ptcache.bake_from_cache(fake_context)
             scene.render.frame_map_new = 1
             scene.frame_end = scene.mol_old_endframe
-            
+
             for obj in bpy.data.objects:
                 for psys in obj.particle_systems:
                     for psys in obj.particle_systems:
@@ -188,10 +188,10 @@ class MolSimulateModal(bpy.types.Operator):
                             scene.frame_set(frame = psys.settings.frame_start)
                             bpy.context.scene.update()
                             bpy.ops.object.mol_set_active_uv()
-            
+
             if frame_current == frame_end and scene.mol_render == True:
                 bpy.ops.render.render(animation=True)
-                
+
             scene.frame_set(frame = scene.frame_start)
 
             cmolcore.memfree()
@@ -221,17 +221,17 @@ class MolSimulateModal(bpy.types.Operator):
                         i += 1
             #print("inject new velocity time",clock() - stimex,"sec")
             mol_substep = scene.mol_substep
-            framesubstep = frame_current/(mol_substep+1)        
+            framesubstep = frame_current/(mol_substep + 1)        
             if framesubstep == int(framesubstep):
                 etime = clock()
                 print("    frame " + str(framesubstep + 1) + ":")
                 print("      links created:", scene.mol_newlink)
                 if scene.mol_totallink != 0:
                     print("      links broked :", scene.mol_deadlink)
-                    print("      total links:", scene.mol_totallink - scene.mol_totaldeadlink ,"/", scene.mol_totallink," (",round((((scene.mol_totallink - scene.mol_totaldeadlink) / scene.mol_totallink) * 100),2),"%)")
-                print("      Molecular Script: " + str(round(etime - scene.mol_stime,3)) + " sec")
+                    print("      total links:", scene.mol_totallink - scene.mol_totaldeadlink ,"/", scene.mol_totallink," (",round((((scene.mol_totallink - scene.mol_totaldeadlink) / scene.mol_totallink) * 100), 2), "%)")
+                print("      Molecular Script: " + str(round(etime - scene.mol_stime, 3)) + " sec")
                 remain = (((etime - scene.mol_stime) * (scene.mol_old_endframe - framesubstep - 1)))
-                days = int(strftime('%d',gmtime(remain))) - 1
+                days = int(strftime('%d', gmtime(remain))) - 1
                 scene.mol_timeremain = strftime(str(days) + ' days %H hours %M mins %S secs', gmtime(remain))
                 print("      Remaining estimated:", scene.mol_timeremain)
                 scene.mol_newlink = 0
@@ -245,7 +245,7 @@ class MolSimulateModal(bpy.types.Operator):
             scene.frame_set(frame = frame_current + 1)
             if framesubstep == int(framesubstep):
                 etime2 = clock()
-                print("      Blender: " + str(round(etime2 - stime2,3)) + " sec")
+                print("      Blender: " + str(round(etime2 - stime2, 3)) + " sec")
                 stime2 = clock()
         return {'PASS_THROUGH'}
 
