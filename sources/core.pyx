@@ -1490,10 +1490,10 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
                         newlinks += 1
                         # free(link)
     # free(neighbours)
-    # free(fakepar)
-    # free(link)
-    # free(par)
-    # free(par2)
+    free(fakepar)
+    free(link)
+    free(par)
+    free(par2)
 
 
 cdef struct Links:
