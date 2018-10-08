@@ -67,8 +67,8 @@ class MolSetGlobalUV(bpy.types.Operator):
     bl_label = "Mol Set UV"
 
     def execute(self, context):
-        scene = bpy.context.scene
-        object = bpy.context.object
+        scene = context.scene
+        object = context.object
         psys = object.particle_systems.active
         coord = [0, 0, 0] * len(psys.particles)
         psys.particles.foreach_get("location", coord)
@@ -84,9 +84,9 @@ class MolSetActiveUV(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        scene.mol_objuvbake = context.object.name
-        scene.mol_psysuvbake = context.object.particle_systems.active.name
-        object = bpy.data.objects[scene.mol_objuvbake]
+        object = context.object
+        scene.mol_objuvbake = object.name
+        scene.mol_psysuvbake = object.particle_systems.active.name
 
         if not object.data.uv_layers.active:
             return {'FINISHED'}
@@ -102,7 +102,7 @@ class MolSetActiveUV(bpy.types.Operator):
         mod = object2.modifiers.new("tri_for_uv", "TRIANGULATE")
         mod.ngon_method = 'BEAUTY'
         mod.quad_method = 'BEAUTY'
-        newmesh = object2.to_mesh(bpy.context.scene, True, "RENDER", True, False)
+        newmesh = object2.to_mesh(context.scene, True, "RENDER", True, False)
         object2.data = newmesh
         context.scene.update()
         """
@@ -113,7 +113,7 @@ class MolSetActiveUV(bpy.types.Operator):
         mod.use_beauty = False
         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
         """
-        psys = context.object.particle_systems[scene.mol_psysuvbake]
+        psys = object.particle_systems[scene.mol_psysuvbake]
         #print('-------------start------------')
         for par in psys.particles:
             parloc = (par.location * object2.matrix_world) - object2.location
@@ -141,7 +141,7 @@ class MolSetActiveUV(bpy.types.Operator):
             uv2 = Vector(uv2)
             uv3 = Vector(uv3)
             #print(a,b,c,uv1,uv2,uv3,p)
-            newuv = barycentric(p,v1,v2,v3,uv1,uv2,uv3)
+            newuv = barycentric(p, v1, v2, v3, uv1, uv2, uv3)
             #print('New UVs:',newuv)
             parloc = par.location * object2.matrix_world
             dist = (Vector((parloc[0] - p[0], parloc[1] - p[1], parloc[2] - p[2]))).length
@@ -151,7 +151,8 @@ class MolSetActiveUV(bpy.types.Operator):
         scene.objects.unlink(object2)
         bpy.data.objects.remove(object2)
         bpy.data.meshes.remove(newmesh)
-        print('         uv baked on:',psys.settings.name)
+        bpy.data.meshes.remove(obdata)
+        print('         uv baked on:', psys.settings.name)
 
         return {'FINISHED'}
 
