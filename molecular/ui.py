@@ -105,7 +105,8 @@ class MolecularPanel(bpy.types.Panel):
         )
 
         subbox = box.box()
-        subbox.enabled  = psys.settings.mol_links_active
+        subbox.enabled = psys.settings.mol_links_active or \
+                         psys.settings.mol_other_link_active
         subbox.label(text="Initial Linking (at birth):")
         row = subbox.row()
         row.prop(psys.settings, "mol_link_length", text="search length")
