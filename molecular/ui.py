@@ -37,13 +37,12 @@ class MolecularPanel(bpy.types.Panel):
         box = layout.box()
         box.prop(
             psys.settings,
-            "mol_density_active",
-            text="Calculate particles weight by density"
+            "mol_density_active"
         )
         subbox = box.box()
         subbox.enabled  = psys.settings.mol_density_active
         row = subbox.row()
-        row.prop(psys.settings, "mol_matter", text="Preset:")
+        row.prop(psys.settings, "mol_matter")
         row = subbox.row()
 
         if int(psys.settings.mol_matter) == 0:
@@ -51,7 +50,7 @@ class MolecularPanel(bpy.types.Panel):
         elif int(psys.settings.mol_matter) >= 1:
             row.enabled = False
 
-        row.prop(psys.settings, "mol_density", text = "Kg per CubeMeter:")
+        row.prop(psys.settings, "mol_density")
         pmass = (psys.settings.particle_size ** 3) * psys.settings.mol_density
         row = subbox.row()
         weight_text = "Total system approx weight: {0:.4} kg".format(
@@ -63,28 +62,23 @@ class MolecularPanel(bpy.types.Panel):
         box = layout.box()
         box.prop(
             psys.settings,
-            "mol_selfcollision_active",
-            text="Activate Self Collision"
+            "mol_selfcollision_active"
         )
         box.prop(
             psys.settings,
-            "mol_othercollision_active",
-            text="Activate Collision with others"
+            "mol_othercollision_active"
         )
         box.prop(
             psys.settings,
             "mol_collision_group",
-            text="Collide only with:"
         )
         box.prop(
             psys.settings,
             "mol_friction",
-            text="Friction:"
         )
         box.prop(
             psys.settings,
-            "mol_collision_damp",
-            text = "Damping:"
+            "mol_collision_damp"
         )
 
         row = layout.row()
@@ -92,18 +86,15 @@ class MolecularPanel(bpy.types.Panel):
         box = layout.box()
         box.prop(
             psys.settings,
-            "mol_links_active",
-            text="Activate Particles linking"
+            "mol_links_active"
         )
         box.prop(
             psys.settings,
-            "mol_other_link_active",
-            text="Activate Particles linking with Others"
+            "mol_other_link_active"
         )
         box.prop(
             psys.settings,
-            "mol_link_group",
-            text="Linking only with:"
+            "mol_link_group"
         )
 
         subbox = box.box()
@@ -111,100 +102,98 @@ class MolecularPanel(bpy.types.Panel):
                          psys.settings.mol_other_link_active
         subbox.label(text=names.INITIAL_LINKING)
         row = subbox.row()
-        row.prop(psys.settings, "mol_link_length", text="search length")
-        row.prop(psys.settings, "mol_link_rellength", text="Relative")
+        row.prop(psys.settings, "mol_link_length")
+        row.prop(psys.settings, "mol_link_rellength")
         row = subbox.row()
-        row.prop(psys.settings, "mol_link_max", text="Max links")
+        row.prop(psys.settings, "mol_link_max")
         row = subbox.row()
-        row.prop(psys.settings, "mol_link_friction", text="Link friction")
+        row.prop(psys.settings, "mol_link_friction")
         layout.separator()
         row = subbox.row()
-        row.prop(psys.settings, "mol_link_tension", text="Tension")
-        row.prop(psys.settings, "mol_link_tensionrand", text="Rand Tension")
+        row.prop(psys.settings, "mol_link_tension")
+        row.prop(psys.settings, "mol_link_tensionrand")
         row = subbox.row()
-        row.prop(psys.settings, "mol_link_stiff", text="Stiff")
-        row.prop(psys.settings, "mol_link_stiffrand", text="Rand Stiff")
+        row.prop(psys.settings, "mol_link_stiff")
+        row.prop(psys.settings, "mol_link_stiffrand")
         #row = subbox.row()
-        #row.prop(psys.settings, "mol_link_stiffexp", text="Exponent")
+        #row.prop(psys.settings, "mol_link_stiffexp")
         row = subbox.row()
-        row.prop(psys.settings, "mol_link_damp", text="Damping")
-        row.prop(psys.settings, "mol_link_damprand", text="Rand Damping")
+        row.prop(psys.settings, "mol_link_damp")
+        row.prop(psys.settings, "mol_link_damprand")
         row = subbox.row()
-        row.prop(psys.settings, "mol_link_broken", text="broken")
-        row.prop(psys.settings, "mol_link_brokenrand", text="Rand Broken")
+        row.prop(psys.settings, "mol_link_broken")
+        row.prop(psys.settings, "mol_link_brokenrand")
         row = subbox.row()
         layout.separator()
         row = subbox.row()
         row.prop(
             psys.settings,
-            "mol_link_samevalue",
-            text="Same values for compression/expansion"
+            "mol_link_samevalue"
         )
         row = subbox.row()
         row.enabled = not psys.settings.mol_link_samevalue
-        row.prop(psys.settings, "mol_link_estiff", text="E Stiff")
-        row.prop(psys.settings, "mol_link_estiffrand", text="Rand E Stiff")
+        row.prop(psys.settings, "mol_link_estiff")
+        row.prop(psys.settings, "mol_link_estiffrand")
         #row = subbox.row()
         #row.enabled = not psys.settings.mol_link_samevalue
-        #row.prop(psys.settings, "mol_link_estiffexp", text="E Exponent")
+        #row.prop(psys.settings, "mol_link_estiffexp")
         row = subbox.row()
         row.enabled = not psys.settings.mol_link_samevalue
-        row.prop(psys.settings, "mol_link_edamp", text="E Damping")
-        row.prop(psys.settings, "mol_link_edamprand", text="Rand E Damping")
+        row.prop(psys.settings, "mol_link_edamp")
+        row.prop(psys.settings, "mol_link_edamprand")
         row = subbox.row()
         row.enabled = not psys.settings.mol_link_samevalue
-        row.prop(psys.settings, "mol_link_ebroken", text="E broken")
-        row.prop(psys.settings, "mol_link_ebrokenrand", text="Rand E Broken")
+        row.prop(psys.settings, "mol_link_ebroken")
+        row.prop(psys.settings, "mol_link_ebrokenrand")
 
         subbox = box.box()
         subbox.active = psys.settings.mol_links_active
         subbox.label(text=names.NEW_LINKING)
         row = subbox.row()
-        row.prop(psys.settings, "mol_relink_group", text="Only links with:")
+        row.prop(psys.settings, "mol_relink_group")
         row = subbox.row()
-        row.prop(psys.settings, "mol_relink_chance", text="% linking")
-        row.prop(psys.settings, "mol_relink_chancerand", text="Rand % linking")
+        row.prop(psys.settings, "mol_relink_chance")
+        row.prop(psys.settings, "mol_relink_chancerand")
         row = subbox.row()
-        row.prop(psys.settings, "mol_relink_max", text="Max links")
+        row.prop(psys.settings, "mol_relink_max")
         row = subbox.row()
         layout.separator()
         row = subbox.row()
-        row.prop(psys.settings,"mol_relink_tension",text = "Tension")
-        row.prop(psys.settings,"mol_relink_tensionrand",text = "Rand Tension")
+        row.prop(psys.settings,"mol_relink_tension")
+        row.prop(psys.settings,"mol_relink_tensionrand")
         row = subbox.row()
-        row.prop(psys.settings,"mol_relink_stiff",text = "Stiff")
-        row.prop(psys.settings,"mol_relink_stiffrand",text = "Rand Stiff")
+        row.prop(psys.settings,"mol_relink_stiff")
+        row.prop(psys.settings,"mol_relink_stiffrand")
         #row = subbox.row()
-        #row.prop(psys.settings, "mol_relink_stiffexp", text="Exp")
+        #row.prop(psys.settings, "mol_relink_stiffexp")
         row = subbox.row()
-        row.prop(psys.settings, "mol_relink_damp", text="Damping")
-        row.prop(psys.settings, "mol_relink_damprand", text="Rand Damping")
+        row.prop(psys.settings, "mol_relink_damp")
+        row.prop(psys.settings, "mol_relink_damprand")
         row = subbox.row()
-        row.prop(psys.settings, "mol_relink_broken", text="broken")
-        row.prop(psys.settings, "mol_relink_brokenrand", text="Rand broken")
+        row.prop(psys.settings, "mol_relink_broken")
+        row.prop(psys.settings, "mol_relink_brokenrand")
         row = subbox.row()
         layout.separator()
         row = subbox.row()
         row.prop(
             psys.settings,
-            "mol_relink_samevalue",
-            text="Same values for compression/expansion"
+            "mol_relink_samevalue"
         )
         row = subbox.row()
         row.enabled = not psys.settings.mol_relink_samevalue
-        row.prop(psys.settings, "mol_relink_estiff",text="E Stiff")
-        row.prop(psys.settings, "mol_relink_estiffrand",text="Rand E Stiff")
+        row.prop(psys.settings, "mol_relink_estiff")
+        row.prop(psys.settings, "mol_relink_estiffrand")
         #row = subbox.row()
         #row.enabled = not psys.settings.mol_relink_samevalue
-        #row.prop(psys.settings, "mol_relink_estiffexp", text="Exp")
+        #row.prop(psys.settings, "mol_relink_estiffexp")
         row = subbox.row()
         row.enabled = not psys.settings.mol_relink_samevalue
-        row.prop(psys.settings, "mol_relink_edamp", text="E Damping")
-        row.prop(psys.settings, "mol_relink_edamprand", text="Rand E Damping")
+        row.prop(psys.settings, "mol_relink_edamp")
+        row.prop(psys.settings, "mol_relink_edamprand")
         row = subbox.row()
         row.enabled = not psys.settings.mol_relink_samevalue
-        row.prop(psys.settings, "mol_relink_ebroken", text="E broken")
-        row.prop(psys.settings, "mol_relink_ebrokenrand", text="Rand E broken")
+        row.prop(psys.settings, "mol_relink_ebroken")
+        row.prop(psys.settings, "mol_relink_ebrokenrand")
 
         row = layout.row()
         row.label(text=names.UVS)
@@ -240,14 +229,14 @@ class MolecularPanel(bpy.types.Panel):
         #row.enabled = scn.mol_timescale_active
         #row.prop(scn,"timescale",text = "TimeScale")
         row = layout.row()
-        row.prop(scn, "mol_substep", text="Substeps")
+        row.prop(scn, "mol_substep")
         row.label(text='')
         row = layout.row()
         row.label(text=names.CPU_USED)
-        row.prop(scn, "mol_cpu", text="CPU")
+        row.prop(scn, "mol_cpu")
         row = layout.row()
-        row.prop(scn, "mol_bake", text="Bake all at ending")
-        row.prop(scn, "mol_render", text="Render at ending")
+        row.prop(scn, "mol_bake")
+        row.prop(scn, "mol_render")
         row = layout.row()
 
         if scn.mol_simrun == False and psys.point_cache.is_baked == False:
@@ -332,13 +321,13 @@ class MolecularPanel(bpy.types.Panel):
             text="Current systems have: {} particles".format(len(psys.particles))
         )
         row = subbox.row()
-        row.prop(psys.settings, "mol_var1", text="Current numbers of particles")
+        row.prop(psys.settings, "mol_var1")
         row = subbox.row()
-        row.prop(psys.settings,"mol_var2",text = "Current substep")
+        row.prop(psys.settings,"mol_var2")
         row = subbox.row()
-        row.prop(psys.settings,"mol_var3", text="Targeted numbers of particles")
+        row.prop(psys.settings,"mol_var3")
         diff = (psys.settings.mol_var3 / psys.settings.mol_var1)
-        factor = psys.settings.mol_var3 ** (1/3) / psys.settings.mol_var1 ** (1/3)
+        factor = psys.settings.mol_var3 ** (1 / 3) / psys.settings.mol_var1 ** (1 / 3)
         newsubstep = int(round(factor * psys.settings.mol_var2))
         row = subbox.row()
         row.label(
