@@ -317,7 +317,7 @@ class MolecularPanel(bpy.types.Panel):
             row.operator(
                 "object.mol_set_active_uv",
                 icon='GROUP_UVS',
-                text="Set Active UV ( no uvs found)"
+                text="Set Active UV (no uvs found)"
             )
 
         subbox = box.box()
@@ -326,7 +326,7 @@ class MolecularPanel(bpy.types.Panel):
         row = subbox.row()
         row.label(
             icon='INFO',
-            text="Current systems have: {} particles".format(psys.particles)
+            text="Current systems have: {} particles".format(len(psys.particles))
         )
         row = subbox.row()
         row.prop(psys.settings, "mol_var1", text="Current numbers of particles")
