@@ -147,15 +147,15 @@ class MolSimulateModal(bpy.types.Operator):
     _timer = None
 
     def modal(self, context, event):
-        scene = bpy.context.scene
+        scene = context.scene
         frame_end = scene.frame_end
         frame_current = scene.frame_current
         if event.type == 'ESC' or frame_current == frame_end:
-            if frame_current == frame_end and scene.mol_bake == True:
-                fake_context = bpy.context.copy()
+            if frame_current == frame_end and scene.mol_bake:
+                fake_context = context.copy()
                 for obj in bpy.data.objects:
                     for psys in obj.particle_systems:
-                        if psys.settings.mol_active == True  and len(psys.particles) > 0:
+                        if psys.settings.mol_active and len(psys.particles):
                             fake_context["point_cache"] = psys.point_cache
                             bpy.ops.ptcache.bake_from_cache(fake_context)
             scene.render.frame_map_new = 1
@@ -163,19 +163,17 @@ class MolSimulateModal(bpy.types.Operator):
 
             for obj in bpy.data.objects:
                 for psys in obj.particle_systems:
-                    for psys in obj.particle_systems:
-                        if psys.settings.mol_bakeuv == True:
-                            scene.mol_objuvbake = obj.name
-                            mol_psysuvbake = psys.name
-                            bpy.context.scene.update()
-                            scene.frame_set(frame = psys.settings.frame_start)
-                            bpy.context.scene.update()
-                            bpy.ops.object.mol_set_active_uv()
+                    if psys.settings.mol_bakeuv:
+                        scene.mol_objuvbake = obj.name
+                        context.scene.update()
+                        scene.frame_set(frame=psys.settings.frame_start)
+                        bpy.context.scene.update()
+                        bpy.ops.object.mol_set_active_uv()
 
-            if frame_current == frame_end and scene.mol_render == True:
+            if frame_current == frame_end and scene.mol_render:
                 bpy.ops.render.render(animation=True)
 
-            scene.frame_set(frame = scene.frame_start)
+            scene.frame_set(frame=scene.frame_start)
 
             cmolcore.memfree()
             scene.mol_simrun = False
@@ -187,25 +185,25 @@ class MolSimulateModal(bpy.types.Operator):
         if event.type == 'TIMER':
             if frame_current == scene.frame_start:            
                 scene.mol_stime = clock()
-            mol_exportdata = bpy.context.scene.mol_exportdata
+            mol_exportdata = context.scene.mol_exportdata
             mol_exportdata.clear()
             simulate.pack_data(False)
             mol_importdata = cmolcore.simulate(mol_exportdata)
-            i = 0
 
+            i = 0
             for obj in bpy.data.objects:
                 for psys in obj.particle_systems:
-                    if psys.settings.mol_active == True  and len(psys.particles) > 0:
-                        psys.particles.foreach_set('velocity',mol_importdata[1][i])
+                    if psys.settings.mol_active and len(psys.particles):
+                        psys.particles.foreach_set('velocity', mol_importdata[1][i])
                         i += 1
 
             mol_substep = scene.mol_substep
-            framesubstep = frame_current/(mol_substep + 1)        
+            framesubstep = frame_current / (mol_substep + 1)        
             if framesubstep == int(framesubstep):
                 etime = clock()
                 print("    frame " + str(framesubstep + 1) + ":")
                 print("      links created:", scene.mol_newlink)
-                if scene.mol_totallink != 0:
+                if scene.mol_totallink:
                     print("      links broked :", scene.mol_deadlink)
                     print("      total links:", scene.mol_totallink - scene.mol_totaldeadlink ,"/", scene.mol_totallink," (",round((((scene.mol_totallink - scene.mol_totaldeadlink) / scene.mol_totallink) * 100), 2), "%)")
                 print("      Molecular Script: " + str(round(etime - scene.mol_stime, 3)) + " sec")
@@ -221,11 +219,12 @@ class MolSimulateModal(bpy.types.Operator):
             scene.mol_deadlink += mol_importdata[3]
             scene.mol_totallink = mol_importdata[4]
             scene.mol_totaldeadlink = mol_importdata[5]
-            scene.frame_set(frame = frame_current + 1)
+            scene.frame_set(frame=frame_current + 1)
             if framesubstep == int(framesubstep):
                 etime2 = clock()
                 print("      Blender: " + str(round(etime2 - stime2, 3)) + " sec")
                 stime2 = clock()
+
         return {'PASS_THROUGH'}
 
     def execute(self, context):
