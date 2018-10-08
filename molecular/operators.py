@@ -14,14 +14,13 @@ except:
 
 
 class MolSimulate(bpy.types.Operator):
-    """Tooltip"""
     bl_idname = "object.mol_simulate"
     bl_label = "Mol Simulate"
 
     def execute(self, context):
         print("Molecular Sim start--------------------------------------------------")
         mol_stime = clock()
-        scene = bpy.context.scene
+        scene = context.scene
         scene.mol_simrun = True
         scene.mol_minsize = 1000000000.0
         scene.mol_newlink = 0
@@ -29,7 +28,7 @@ class MolSimulate(bpy.types.Operator):
         scene.mol_totallink = 0
         scene.mol_totaldeadlink = 0
         scene.mol_timeremain = "...Simulating..."
-        object = bpy.context.object
+        object = context.object
         scene.frame_set(frame=scene.frame_start)
         scene.mol_old_endframe = scene.frame_end
         mol_substep = scene.mol_substep
@@ -43,12 +42,11 @@ class MolSimulate(bpy.types.Operator):
             fps = scene.render.fps
 
         cpu = scene.mol_cpu
-        mol_exportdata = bpy.context.scene.mol_exportdata
+        mol_exportdata = context.scene.mol_exportdata
         mol_exportdata.clear()
         mol_exportdata.append([fps, mol_substep, 0, 0, cpu])
         mol_stime = clock()
         simulate.pack_data(True)
-        #print("sys number",mol_exportdata[0][2])
         etime = clock()
         print("  PackData take " + str(round(etime - mol_stime, 3)) + "sec")
         mol_stime = clock()
@@ -62,7 +60,6 @@ class MolSimulate(bpy.types.Operator):
 
 
 class MolSetGlobalUV(bpy.types.Operator):
-    """Tooltip"""
     bl_idname = "object.mol_set_global_uv"
     bl_label = "Mol Set UV"
 
@@ -78,7 +75,6 @@ class MolSetGlobalUV(bpy.types.Operator):
 
 
 class MolSetActiveUV(bpy.types.Operator):
-    """Tooltip"""
     bl_idname = "object.mol_set_active_uv"
     bl_label = "Mol Set Active UV"
 
@@ -92,7 +88,6 @@ class MolSetActiveUV(bpy.types.Operator):
             return {'FINISHED'}
 
         print('  start bake uv from:',object.name)
-        #object2 = object.copy()
 
         obdata = object.data.copy()
         object2 = bpy.data.objects.new(name="mol_uv_temp", object_data=obdata)
@@ -105,20 +100,11 @@ class MolSetActiveUV(bpy.types.Operator):
         newmesh = object2.to_mesh(context.scene, True, "RENDER", True, False)
         object2.data = newmesh
         context.scene.update()
-        """
-        oldmesh = object.data
-        newmesh = object.data.copy()
-        object.data = newmesh
-        mod = object.modifiers.new("tri_for_uv","TRIANGULATE")
-        mod.use_beauty = False
-        bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
-        """
         psys = object.particle_systems[scene.mol_psysuvbake]
-        #print('-------------start------------')
+
         for par in psys.particles:
             parloc = (par.location * object2.matrix_world) - object2.location
             point = object2.closest_point_on_mesh(parloc)
-            #print('closest:',par.location,point[0],point[2])
             vindex1 = object2.data.polygons[point[3]].vertices[0]
             vindex2 = object2.data.polygons[point[3]].vertices[1]
             vindex3 = object2.data.polygons[point[3]].vertices[2]
@@ -131,8 +117,6 @@ class MolSetActiveUV(bpy.types.Operator):
             uv1 = object2.data.uv_layers.active.data[uvindex1].uv.to_3d()
             uv2 = object2.data.uv_layers.active.data[uvindex2].uv.to_3d()
             uv3 = object2.data.uv_layers.active.data[uvindex3].uv.to_3d()
-            #print(vertices1.co,vertices2.co,vertices3.co)
-            #print(uv1,uv2,uv3)
             p = object2.matrix_world * point[1]
             v1 = Vector(v1)
             v2 = Vector(v2)
@@ -140,14 +124,13 @@ class MolSetActiveUV(bpy.types.Operator):
             uv1 = Vector(uv1)
             uv2 = Vector(uv2)
             uv3 = Vector(uv3)
-            #print(a,b,c,uv1,uv2,uv3,p)
             newuv = barycentric(p, v1, v2, v3, uv1, uv2, uv3)
-            #print('New UVs:',newuv)
             parloc = par.location * object2.matrix_world
             dist = (Vector((parloc[0] - p[0], parloc[1] - p[1], parloc[2] - p[2]))).length
             newuv[2] = dist
             newuv = newuv.to_tuple()
             par.angular_velocity = newuv
+
         scene.objects.unlink(object2)
         bpy.data.objects.remove(object2)
         bpy.data.meshes.remove(newmesh)
@@ -164,7 +147,6 @@ class MolSimulateModal(bpy.types.Operator):
     _timer = None
 
     def modal(self, context, event):
-        #mol_stime = clock()
         scene = bpy.context.scene
         frame_end = scene.frame_end
         frame_current = scene.frame_current
@@ -207,20 +189,16 @@ class MolSimulateModal(bpy.types.Operator):
                 scene.mol_stime = clock()
             mol_exportdata = bpy.context.scene.mol_exportdata
             mol_exportdata.clear()
-            #stimex = clock()
             simulate.pack_data(False)
-            #print("packdata time",clock() - stimex,"sec")
             mol_importdata = cmolcore.simulate(mol_exportdata)
             i = 0
-            #stimex = clock()
+
             for obj in bpy.data.objects:
                 for psys in obj.particle_systems:
                     if psys.settings.mol_active == True  and len(psys.particles) > 0:
-                        #print(len(mol_importdata[i][1]))
-                        #print(len(psys.particles))
                         psys.particles.foreach_set('velocity',mol_importdata[1][i])
                         i += 1
-            #print("inject new velocity time",clock() - stimex,"sec")
+
             mol_substep = scene.mol_substep
             framesubstep = frame_current/(mol_substep + 1)        
             if framesubstep == int(framesubstep):

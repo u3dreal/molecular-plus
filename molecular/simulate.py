@@ -1,5 +1,5 @@
 
-from math import pi
+import math
 
 import bpy
 
@@ -12,10 +12,10 @@ def pack_data(initiate):
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
-            if psys.settings.mol_active == True and len(psys.particles) > 0:
+            if psys.settings.mol_active and len(psys.particles):
                 parlen = len(psys.particles)
-                par_loc = [0,0,0] * parlen
-                par_vel = [0,0,0] * parlen
+                par_loc = [0, 0, 0] * parlen
+                par_vel = [0, 0, 0] * parlen
                 par_size = [0] * parlen
                 par_alive = []
                 for par in psys.particles:
@@ -26,32 +26,32 @@ def pack_data(initiate):
                         par_alive.append(0)
                     if par.alive_state == "DEAD":
                         par_alive.append(3)
-                        
-                psys.particles.foreach_get('location',par_loc)
-                psys.particles.foreach_get('velocity',par_vel)
-                
+
+                psys.particles.foreach_get('location', par_loc)
+                psys.particles.foreach_get('velocity', par_vel)
+
                 if initiate:
                     par_mass = []
-                    
+
                     if psys.settings.mol_density_active:
                         for par in psys.particles:
-                            par_mass.append(psys.settings.mol_density * (4/3*pi*((par.size/2)**3)))
+                            par_mass.append(psys.settings.mol_density * (4 / 3 * math.pi * ((par.size / 2) ** 3)))
                     else:
                         for par in psys.particles:
                             par_mass.append(psys.settings.mass)
+
                     """
                     if scene.mol_timescale_active == True:
                         psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
                     else:
                         psys.settings.timestep = 1 / scene.render.fps 
                     """
-                    #psys.settings.count = psys.settings.count
-                    psys.point_cache.frame_step = psys.point_cache.frame_step
+
                     psyslen += 1
-                    psys.particles.foreach_get('size',par_size)
+                    psys.particles.foreach_get('size', par_size)
                     if bpy.context.scene.mol_minsize > min(par_size):
                         bpy.context.scene.mol_minsize = min(par_size)
-                    
+
                     if psys.settings.mol_link_samevalue:
                         psys.settings.mol_link_estiff = psys.settings.mol_link_stiff
                         psys.settings.mol_link_estiffrand = psys.settings.mol_link_stiffrand
@@ -60,7 +60,7 @@ def pack_data(initiate):
                         psys.settings.mol_link_edamprand = psys.settings.mol_link_damprand
                         psys.settings.mol_link_ebroken = psys.settings.mol_link_broken
                         psys.settings.mol_link_ebrokenrand = psys.settings.mol_link_brokenrand
-                        
+
                     if psys.settings.mol_relink_samevalue:
                         psys.settings.mol_relink_estiff = psys.settings.mol_relink_stiff
                         psys.settings.mol_relink_estiffrand = psys.settings.mol_relink_stiffrand
@@ -69,18 +69,21 @@ def pack_data(initiate):
                         psys.settings.mol_relink_edamprand = psys.settings.mol_relink_damprand
                         psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
                         psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
-                    
+
                     params = [0] * 47
+
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
                     params[2] = psys.settings.mol_collision_group
                     params[3] = psys.settings.mol_friction
                     params[4] = psys.settings.mol_collision_damp
                     params[5] = psys.settings.mol_links_active
-                    if psys.settings.mol_link_rellength == True:
+
+                    if psys.settings.mol_link_rellength:
                         params[6] = psys.settings.particle_size * psys.settings.mol_link_length
                     else:
                         params[6] = psys.settings.mol_link_length
+
                     params[7] = psys.settings.mol_link_max
                     params[8] = psys.settings.mol_link_tension
                     params[9] = psys.settings.mol_link_tensionrand
@@ -121,15 +124,20 @@ def pack_data(initiate):
                     params[44] = psys.settings.mol_link_friction  
                     params[45] = psys.settings.mol_link_group 
                     params[46] = psys.settings.mol_other_link_active 
-    
+
                 mol_exportdata = bpy.context.scene.mol_exportdata
+
                 if initiate:
                     mol_exportdata[0][2] = psyslen
                     mol_exportdata[0][3] = parnum
-                    #print(par_loc)
-                    mol_exportdata.append((parlen,par_loc,par_vel,par_size,par_mass,par_alive,params))
-                    pass
+                    mol_exportdata.append((
+                        parlen,
+                        par_loc,
+                        par_vel,
+                        par_size,
+                        par_mass,
+                        par_alive,
+                        params
+                    ))
                 else:
-                    #print(par_loc)
-                    mol_exportdata.append((par_loc,par_vel,par_alive))     
-                    pass
+                    mol_exportdata.append((par_loc, par_vel, par_alive))
