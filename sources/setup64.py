@@ -5,7 +5,7 @@ import Cython.Compiler.Options
 
 Cython.Compiler.Options.annotate = True
 
-ext_modules = [Extension("cmolcore", ["cmolcore.pyx"],extra_compile_args=['/Ox','/openmp','/GT','/arch:SSE2','/fp:fast'])]
+ext_modules = [Extension("core", ["core.pyx"],extra_compile_args=['/Ox','/openmp','/GT','/arch:SSE2','/fp:fast'])]
 
 setup(
   name = 'Molecular script',

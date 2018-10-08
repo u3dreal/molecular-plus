@@ -8,9 +8,9 @@ from mathutils.geometry import barycentric_transform as barycentric
 from . import simulate
 
 try:
-    from . import cmolcore
+    from . import core
 except:
-    print("cmolcore not working")
+    print("core not working")
 
 
 class MolSimulate(bpy.types.Operator):
@@ -50,7 +50,7 @@ class MolSimulate(bpy.types.Operator):
         etime = clock()
         print("  PackData take " + str(round(etime - mol_stime, 3)) + "sec")
         mol_stime = clock()
-        mol_report = cmolcore.init(mol_exportdata)
+        mol_report = core.init(mol_exportdata)
         etime = clock()
         print("  Export time take " + str(round(etime - mol_stime, 3)) + "sec")
         print("  total numbers of particles: " + str(mol_report))
@@ -175,7 +175,7 @@ class MolSimulateModal(bpy.types.Operator):
 
             scene.frame_set(frame=scene.frame_start)
 
-            cmolcore.memfree()
+            core.memfree()
             scene.mol_simrun = False
             mol_exportdata = scene.mol_exportdata
             mol_exportdata.clear()
@@ -188,7 +188,7 @@ class MolSimulateModal(bpy.types.Operator):
             mol_exportdata = context.scene.mol_exportdata
             mol_exportdata.clear()
             simulate.pack_data(False)
-            mol_importdata = cmolcore.simulate(mol_exportdata)
+            mol_importdata = core.simulate(mol_exportdata)
 
             i = 0
             for obj in bpy.data.objects:
