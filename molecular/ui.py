@@ -1,6 +1,8 @@
 
 import bpy
 
+from . import names
+
 
 class MolecularPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
@@ -31,7 +33,7 @@ class MolecularPanel(bpy.types.Panel):
             return
         layout.enabled = psys.settings.mol_active
         row = layout.row()
-        row.label(text = "Density:")
+        row.label(text=names.DENSITY)
         box = layout.box()
         box.prop(
             psys.settings,
@@ -55,9 +57,9 @@ class MolecularPanel(bpy.types.Panel):
         weight_text = "Total system approx weight: {0:.4} kg".format(
             len(psys.particles) * pmass
         )
-        row.label(icon ="INFO", text=weight_text) 
+        row.label(icon="INFO", text=weight_text) 
         row = layout.row()
-        row.label(text = "Collision:")
+        row.label(text=names.COLLISION)
         box = layout.box()
         box.prop(
             psys.settings,
@@ -86,7 +88,7 @@ class MolecularPanel(bpy.types.Panel):
         )
 
         row = layout.row()
-        row.label(text="Links:")
+        row.label(text=names.LINKS)
         box = layout.box()
         box.prop(
             psys.settings,
@@ -107,7 +109,7 @@ class MolecularPanel(bpy.types.Panel):
         subbox = box.box()
         subbox.enabled = psys.settings.mol_links_active or \
                          psys.settings.mol_other_link_active
-        subbox.label(text="Initial Linking (at birth):")
+        subbox.label(text=names.INITIAL_LINKING)
         row = subbox.row()
         row.prop(psys.settings, "mol_link_length", text="search length")
         row.prop(psys.settings, "mol_link_rellength", text="Relative")
@@ -156,7 +158,7 @@ class MolecularPanel(bpy.types.Panel):
 
         subbox = box.box()
         subbox.active = psys.settings.mol_links_active
-        subbox.label(text="New Linking (at collision):")
+        subbox.label(text=names.NEW_LINKING)
         row = subbox.row()
         row.prop(psys.settings, "mol_relink_group", text="Only links with:")
         row = subbox.row()
@@ -205,7 +207,7 @@ class MolecularPanel(bpy.types.Panel):
         row.prop(psys.settings, "mol_relink_ebrokenrand", text="Rand E broken")
 
         row = layout.row()
-        row.label(text="UV's:")
+        row.label(text=names.UVS)
         box = layout.box()
         row = box.row()
 
@@ -228,7 +230,7 @@ class MolecularPanel(bpy.types.Panel):
         row = layout.row()
         row.label(text='')
         row = layout.row()
-        row.label(text="Simulate")
+        row.label(text=names.SIMULATE)
         row = layout.row()
         row.prop(scn, "frame_start", text="Start Frame")
         row.prop(scn, "frame_end", text="End Frame")
@@ -241,7 +243,7 @@ class MolecularPanel(bpy.types.Panel):
         row.prop(scn, "mol_substep", text="Substeps")
         row.label(text='')
         row = layout.row()
-        row.label(text = "CPU used:")
+        row.label(text=names.CPU_USED)
         row.prop(scn, "mol_cpu", text="CPU")
         row = layout.row()
         row.prop(scn, "mol_bake", text="Bake all at ending")
@@ -284,19 +286,19 @@ class MolecularPanel(bpy.types.Panel):
         box = layout.box()
         row = box.row()
         box.enabled = True
-        row.label(text="Molecular Tools:", icon='MODIFIER')
+        row.label(text=names.MOLECULAR_TOOLS, icon='MODIFIER')
         subbox = box.box()
         row = subbox.row()
-        row.label(text="Particle UV:")
+        row.label(text=names.PARTICLE_UV)
         row = subbox.row()
         row.alignment = 'CENTER'
-        row.label(icon='INFO', text="Set current particles position")
+        row.label(icon='INFO', text=names.SET_POSITION)
         row = subbox.row()
         row.alignment = 'CENTER'
-        row.label(text="Has global or current uv in angular velocity")
+        row.label(text=names.UV_HELP)
         row = subbox.row()
         row.alignment = 'CENTER'
-        row.label(text="Retrieve it with Cycles particle info node")
+        row.label(text=names.CYCLES_HELP)
         row = subbox.row()
         row.operator(
             "object.mol_set_global_uv",
@@ -323,7 +325,7 @@ class MolecularPanel(bpy.types.Panel):
 
         subbox = box.box()
         row = subbox.row()
-        row.label(text = "SUBSTEPS CALCULATOR:")
+        row.label(text=names.SUBSTEPS_CALCULATOR)
         row = subbox.row()
         row.label(
             icon='INFO',
@@ -359,10 +361,10 @@ class MolecularPanel(bpy.types.Panel):
         box.active = False
         box.alert = False
         row.alignment = 'CENTER'
-        row.label(text="THANKS TO ALL DONATORS !")
+        row.label(text=names.THANKS)
         row = box.row()
         row.alignment = 'CENTER'
-        row.label(text="If you want donate to support my work")
+        row.label(text=names.SUPPORT_WORK)
         row = box.row()
         row.alignment = 'CENTER'
         row.operator(
@@ -372,7 +374,7 @@ class MolecularPanel(bpy.types.Panel):
         ).url = "www.pyroevil.com/donate/"
         row = box.row()
         row.alignment = 'CENTER'
-        row.label(text="or visit: ")
+        row.label(text=names.VISIT)
         row = box.row()
         row.alignment = 'CENTER'
-        row.label(text = "www.pyroevil.com/donate/")
+        row.label(text=names.SITE)
