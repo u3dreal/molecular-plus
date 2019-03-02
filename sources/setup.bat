@@ -30,4 +30,9 @@ del core.c
 rd /s /q build
 ren core_37_32.cp37-win32.pyd core_37_32.pyd
 
+move core_35_64.pyd ..\molecular\core_35_64.pyd
+move core_37_64.pyd ..\molecular\core_37_64.pyd
+move core_35_32.pyd ..\molecular\core_35_32.pyd
+move core_37_32.pyd ..\molecular\core_37_32.pyd
+
 pause

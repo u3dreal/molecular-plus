@@ -26,17 +26,18 @@ bl_info = {
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "http://pyroevil.com/molecular-script-docs/",
     "tracker_url": "http://pyroevil.com/contact/" ,
-    "category": "Object"}
-
-
-import bpy
-
-from . import properties
-from . import ui
-from . import operators
+    "category": "Object"
+}
 
 
 def register():
+
+    import bpy
+
+    from . import properties
+    from . import ui
+    from . import operators
+
     properties.define_props()
     bpy.utils.register_class(operators.MolSimulateModal)
     bpy.utils.register_class(operators.MolSimulate)
@@ -46,6 +47,13 @@ def register():
 
 
 def unregister():
+
+    import bpy
+
+    from . import properties
+    from . import ui
+    from . import operators
+
     bpy.utils.unregister_class(operators.MolSimulateModal)
     bpy.utils.unregister_class(operators.MolSimulate)
     bpy.utils.unregister_class(operators.MolSetGlobalUV)
