@@ -1,4 +1,6 @@
 
+import sys
+import platform
 from time import clock, sleep, strftime, gmtime
 
 import bpy
@@ -7,10 +9,18 @@ from mathutils.geometry import barycentric_transform as barycentric
 
 from . import simulate
 
-try:
-    from . import core
-except:
-    print("core not working")
+
+bit_depth = platform.architecture()[0]
+if sys.version_info.major == 3 and sys.version_info.minor == 5 and bit_depth == '64bit':
+    from . import core_35_64 as core
+elif sys.version_info.major == 3 and sys.version_info.minor == 7 and bit_depth == '64bit':
+    from . import core_37_64 as core
+elif sys.version_info.major == 3 and sys.version_info.minor == 5 and bit_depth == '32bit':
+    from . import core_35_32 as core
+elif sys.version_info.major == 3 and sys.version_info.minor == 7 and bit_depth == '32bit':
+    from . import core_37_32 as core
+else:
+    raise BaseException('Unsupported python version')
 
 
 class MolSimulate(bpy.types.Operator):

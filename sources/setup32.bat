@@ -1,1 +1,0 @@
-"C:\Program Project\Python 3.5.4 32 bit\python.exe" setup32.py build_ext --inplace
