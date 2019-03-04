@@ -2,6 +2,7 @@
 import bpy
 
 from . import names
+from .utils import is_blender_28
 
 
 class MolecularPanel(bpy.types.Panel):
@@ -205,7 +206,7 @@ class MolecularPanel(bpy.types.Panel):
                 psys.settings,
                 "mol_bakeuv",
                 text="Bake UV at ending (current: \"{0}\")".format(
-                    obj.data.uv_textures.active.name
+                    obj.data.uv_layers.active.name
                 )
             )
         else:
@@ -239,11 +240,16 @@ class MolecularPanel(bpy.types.Panel):
         row.prop(scn, "mol_render")
         row = layout.row()
 
+        if is_blender_28():
+            icon = 'PARTICLE_DATA'
+        else:
+            icon = 'RADIO'
+
         if scn.mol_simrun == False and psys.point_cache.is_baked == False:
             row.enabled = True
             row.operator(
                 "object.mol_simulate",
-                icon='RADIO',
+                icon=icon,
                 text="Start Molecular Simulation"
             )
             row = layout.row()
@@ -254,7 +260,7 @@ class MolecularPanel(bpy.types.Panel):
             row.enabled = False
             row.operator(
                 "object.mol_simulate",
-                icon = 'RADIO',
+                icon=icon,
                 text="Simulation baked"
             )
             row = layout.row()
@@ -265,7 +271,7 @@ class MolecularPanel(bpy.types.Panel):
             row.enabled = False
             row.operator(
                 "object.mol_simulate",
-                icon = 'RADIO',
+                icon=icon,
                 text="Process: {} left".format(scn.mol_timeremain)
             )
             row = layout.row()
@@ -301,7 +307,7 @@ class MolecularPanel(bpy.types.Panel):
                 "object.mol_set_active_uv",
                 icon='GROUP_UVS',
                 text = "Set Active UV (current: \"{0}\")".format(
-                    obj.data.uv_textures.active.name
+                    obj.data.uv_layers.active.name
                 )
             )
         else:

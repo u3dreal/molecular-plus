@@ -3,12 +3,18 @@ import math
 
 import bpy
 
+from .utils import is_blender_28
+
 
 def pack_data(initiate):
     psyslen = 0
     parnum = 0
     scene = bpy.context.scene
     for obj in bpy.data.objects:
+
+        if is_blender_28():
+            obj = bpy.context.depsgraph.objects.get(obj.name)
+
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
