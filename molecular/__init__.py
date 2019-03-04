@@ -19,7 +19,7 @@
 bl_info = {
     "name": "Molecular script",
     "author": "Jean-Francois Gallant(PyroEvil), Pavel_Blend",
-    "version": (1, 0, 6),
+    "version": (1, 0, 7),
     "blender": (2, 80, 0),
     "location": "Properties editor > Particles Tabs",
     "description": ("Molecular script"),
