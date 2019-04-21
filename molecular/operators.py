@@ -207,6 +207,8 @@ class MolSimulateModal(bpy.types.Operator):
 
                     if is_blender_28():
                         obj = bpy.context.depsgraph.objects.get(obj.name)
+                        if not obj:
+                            continue
 
                     for psys in obj.particle_systems:
                         if psys.settings.mol_active and len(psys.particles):
@@ -219,6 +221,8 @@ class MolSimulateModal(bpy.types.Operator):
 
                 if is_blender_28():
                     obj = bpy.context.depsgraph.objects.get(obj.name)
+                    if not obj:
+                        continue
 
                 for psys in obj.particle_systems:
                     if psys.settings.mol_bakeuv:
@@ -253,6 +257,8 @@ class MolSimulateModal(bpy.types.Operator):
 
                 if is_blender_28():
                     obj = bpy.context.depsgraph.objects.get(obj.name)
+                    if not obj:
+                        continue
 
                 for psys in obj.particle_systems:
                     if psys.settings.mol_active and len(psys.particles):
