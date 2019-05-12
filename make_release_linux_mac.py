@@ -26,7 +26,7 @@ except:
 with Popen(["python3.7m", "setup.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
     print(proc.stdout.read())
     if is_linux: #TODO, test
-        shutil.move("core_37_64.cpython-37m.so", "../molecular/core_37_64.cpython-37m.so")
+        shutil.move("core_37_64.cpython-37m-x86_64-linux-gnu.so", "../molecular/core_37_64.cpython-37m-x86_64-linux-gnu.so")
     else:
         shutil.move("core_37_64.cpython-37m-darwin.so", "../molecular/core_37_64.cpython-37m-darwin.so")
 
