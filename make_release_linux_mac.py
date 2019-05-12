@@ -5,7 +5,7 @@ import shutil
 import platform
 from subprocess import Popen, PIPE
 
-is_linux = platform.architecture()[1] == "ELF"
+is_linux = platform.architecture()[1] == "ELF" or platform.system() == "Linux"
 
 name = 'mac'
 if is_linux:
