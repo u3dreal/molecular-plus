@@ -8,7 +8,7 @@ from mathutils import Vector
 from mathutils.geometry import barycentric_transform as barycentric
 
 from . import simulate
-from .utils import is_blender_28
+from .utils import is_blender_28, get_object
 
 
 bit_depth = platform.architecture()[0]
@@ -57,7 +57,7 @@ class MolSimulate(bpy.types.Operator):
         mol_exportdata.clear()
         mol_exportdata.append([fps, mol_substep, 0, 0, cpu])
         mol_stime = clock()
-        simulate.pack_data(True)
+        simulate.pack_data(context, True)
         etime = clock()
         print("  PackData take " + str(round(etime - mol_stime, 3)) + "sec")
         mol_stime = clock()
@@ -76,10 +76,7 @@ class MolSetGlobalUV(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        obj = context.object
-
-        if is_blender_28():
-            obj = bpy.context.depsgraph.objects.get(obj.name)
+        obj = get_object(context, context.object)
 
         psys = obj.particle_systems.active
         coord = [0, 0, 0] * len(psys.particles)
@@ -95,10 +92,7 @@ class MolSetActiveUV(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        obj = context.object
-
-        if is_blender_28():
-            obj = bpy.context.depsgraph.objects.get(obj.name)
+        obj = get_object(context, context.object)
 
         scene.mol_objuvbake = obj.name
         scene.mol_psysuvbake = obj.particle_systems.active.name
@@ -120,7 +114,8 @@ class MolSetActiveUV(bpy.types.Operator):
         mod.ngon_method = 'BEAUTY'
         mod.quad_method = 'BEAUTY'
         if is_blender_28():
-            newmesh = object2.to_mesh(bpy.context.depsgraph, True)
+            depsgraph = bpy.context.evaluated_depsgraph_get()
+            newmesh = object2.to_mesh(True, depsgraph)
         else:
             newmesh = object2.to_mesh(context.scene, True, "RENDER", True, False)
         object2.data = newmesh
@@ -203,26 +198,17 @@ class MolSimulateModal(bpy.types.Operator):
         if event.type == 'ESC' or frame_current == frame_end:
             if frame_current == frame_end and scene.mol_bake:
                 fake_context = context.copy()
-                for obj in bpy.data.objects:
-
-                    if is_blender_28():
-                        obj = bpy.context.depsgraph.objects.get(obj.name)
-                        if not obj:
-                            continue
-
+                for ob in bpy.data.objects:
+                    obj = get_object(context, ob)
                     for psys in obj.particle_systems:
                         if psys.settings.mol_active and len(psys.particles):
                             fake_context["point_cache"] = psys.point_cache
                             bpy.ops.ptcache.bake_from_cache(fake_context)
             scene.render.frame_map_new = 1
             scene.frame_end = scene.mol_old_endframe
-
-            for obj in bpy.data.objects:
-
-                if is_blender_28():
-                    obj = bpy.context.depsgraph.objects.get(obj.name)
-                    if not obj:
-                        continue
+            #scene.update()
+            for ob in bpy.data.objects:
+                obj = get_object(context, ob)
 
                 for psys in obj.particle_systems:
                     if psys.settings.mol_bakeuv:
@@ -245,20 +231,17 @@ class MolSimulateModal(bpy.types.Operator):
             return self.cancel(context)
 
         if event.type == 'TIMER':
+            #scene.update()
             if frame_current == scene.frame_start:            
                 scene.mol_stime = clock()
             mol_exportdata = context.scene.mol_exportdata
             mol_exportdata.clear()
-            simulate.pack_data(False)
+            simulate.pack_data(context, False)
             mol_importdata = core.simulate(mol_exportdata)
 
             i = 0
-            for obj in bpy.data.objects:
-
-                if is_blender_28():
-                    obj = bpy.context.depsgraph.objects.get(obj.name)
-                    if not obj:
-                        continue
+            for ob in bpy.data.objects:
+                obj = get_object(context, ob)
 
                 for psys in obj.particle_systems:
                     if psys.settings.mol_active and len(psys.particles):

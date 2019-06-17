@@ -3,19 +3,15 @@ import math
 
 import bpy
 
-from .utils import is_blender_28
+from .utils import is_blender_28, get_object
 
 
-def pack_data(initiate):
+def pack_data(context, initiate):
     psyslen = 0
     parnum = 0
-    scene = bpy.context.scene
-    for obj in bpy.data.objects:
-
-        if is_blender_28():
-            obj = bpy.context.depsgraph.objects.get(obj.name)
-            if not obj:
-                continue
+    scene = context.scene
+    for ob in bpy.data.objects:
+        obj = get_object(context, ob)
 
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":

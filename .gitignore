@@ -1,2 +1,6 @@
 __pycache__
 *.pyd
+build
+*.c
+*.html
+.vscode

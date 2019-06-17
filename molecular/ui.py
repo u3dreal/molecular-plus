@@ -2,7 +2,7 @@
 import bpy
 
 from . import names
-from .utils import is_blender_28
+from .utils import is_blender_28, get_object
 
 
 class MolecularPanel(bpy.types.Panel):
@@ -32,6 +32,9 @@ class MolecularPanel(bpy.types.Panel):
         psys = obj.particle_systems.active
         if psys is None:
             return
+        #for the data    
+        psys_eval = get_object(context, context.object).particle_systems.active
+        
         layout.enabled = psys.settings.mol_active
         row = layout.row()
         row.label(text=names.DENSITY)
@@ -55,7 +58,7 @@ class MolecularPanel(bpy.types.Panel):
         pmass = (psys.settings.particle_size ** 3) * psys.settings.mol_density
         row = subbox.row()
         weight_text = "Total system approx weight: {0:.4} kg".format(
-            len(psys.particles) * pmass
+            len(psys_eval.particles) * pmass
         )
         row.label(icon="INFO", text=weight_text) 
         row = layout.row()
@@ -324,7 +327,7 @@ class MolecularPanel(bpy.types.Panel):
         row = subbox.row()
         row.label(
             icon='INFO',
-            text="Current systems have: {} particles".format(len(psys.particles))
+            text="Current systems have: {} particles".format(len(psys_eval.particles))
         )
         row = subbox.row()
         row.prop(psys.settings, "mol_var1")

@@ -14,6 +14,10 @@ if is_linux:
 chdir(getcwd()+"/sources")
 
 try:
+    if is_linux:
+        remove("core_37_64.cpython-37m-x86_64-linux-gnu.so")
+    else:
+        remove("core_37_64.cpython-37m-darwin.so")
     remove("core.html")
     remove("core.c")
     shutil.rmtree("build")
@@ -38,3 +42,13 @@ with Popen(["python3.7m", "setup.py", "build_ext", "--inplace"], stdout=PIPE) as
                 if not file.endswith('.py') and not file.endswith('.so'):
                     continue
                 z.write(path.join(root, file), compress_type=ZIP_DEFLATED)
+
+    chdir(getcwd()+"/molecular")
+    try:
+        if is_linux:
+            remove("core_37_64.cpython-37m-x86_64-linux-gnu.so")
+        else:
+            remove("core_37_64.cpython-37m-darwin.so")
+    except:
+        pass
+    chdir("..")
