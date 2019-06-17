@@ -1,15 +1,19 @@
 import sys
 import platform
-import setuptools
+
+bit_depth = platform.architecture()[0]
+os_name = platform.architecture()[1]
+
+if os_name == "WindowsPE":
+    #only needed under windows
+    import setuptools
+
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 import Cython.Compiler.Options 
 
 Cython.Compiler.Options.annotate = True
-
-bit_depth = platform.architecture()[0]
-os_name = platform.architecture()[1]
 
 if sys.version_info.major == 3 and sys.version_info.minor == 5 and bit_depth == '64bit':
     module_name = 'core_35_64'
