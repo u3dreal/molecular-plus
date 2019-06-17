@@ -2,6 +2,7 @@ from molecular import bl_info
 from zipfile import ZipFile, ZIP_DEFLATED
 from os import path, walk, remove, chdir, getcwd
 import shutil
+import sys
 from subprocess import Popen, PIPE
 
 chdir(getcwd()+"\\sources")
@@ -17,7 +18,7 @@ except:
 #TODO, blenders (or a compatible) python bin needs to be in $PATH, and if you use blender's you need to copy the python includes from SVN
 #into the include folder of blenders python, too
 
-with Popen(["python3.7", "setup.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
+with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
     print(proc.stdout.read())
    
     shutil.move("core_37_64.cp37-win_amd64.pyd", "..\\molecular\\core_37_64.cp37-win_amd64.pyd")
