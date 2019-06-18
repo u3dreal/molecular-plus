@@ -8,7 +8,7 @@ from mathutils import Vector
 from mathutils.geometry import barycentric_transform as barycentric
 
 from . import simulate
-from .utils import is_blender_28, get_object
+from .utils import is_blender_28, get_object, destroy_caches
 
 
 bit_depth = platform.architecture()[0]
@@ -29,6 +29,9 @@ class MolSimulate(bpy.types.Operator):
     bl_label = "Mol Simulate"
 
     def execute(self, context):
+        for ob in bpy.data.objects:
+            destroy_caches(ob)
+
         print("Molecular Sim start--------------------------------------------------")
         mol_stime = clock()
         scene = context.scene
