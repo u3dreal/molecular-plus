@@ -117,12 +117,20 @@ class MolSetActiveUV(bpy.types.Operator):
         mod.ngon_method = 'BEAUTY'
         mod.quad_method = 'BEAUTY'
         if is_blender_28():
-            depsgraph = bpy.context.evaluated_depsgraph_get()
-            newmesh = object2.to_mesh(True, depsgraph)
+            #depsgraph = bpy.context.evaluated_depsgraph_get()
+            #newmesh = object2.to_mesh(True, depsgraph)
+            ctx = bpy.context.copy()
+            ctx["object"] = object2
+            bpy.ops.object.modifier_apply(ctx, modifier=mod.name)
         else:
             newmesh = object2.to_mesh(context.scene, True, "RENDER", True, False)
-        object2.data = newmesh
-        context.scene.update()
+            object2.data = newmesh
+        
+        if is_blender_28():
+            context.view_layer.update()
+        else:
+            context.scene.update()
+            
         psys = obj.particle_systems[scene.mol_psysuvbake]
 
         for par in psys.particles:
@@ -181,7 +189,8 @@ class MolSetActiveUV(bpy.types.Operator):
         else:
             scene.objects.unlink(object2)
         bpy.data.objects.remove(object2)
-        bpy.data.meshes.remove(newmesh)
+        if not is_blender_28():
+            bpy.data.meshes.remove(newmesh)
         bpy.data.meshes.remove(obdata)
         print('         uv baked on:', psys.settings.name)
 
@@ -209,16 +218,31 @@ class MolSimulateModal(bpy.types.Operator):
                             bpy.ops.ptcache.bake_from_cache(fake_context)
             scene.render.frame_map_new = 1
             scene.frame_end = scene.mol_old_endframe
-            #scene.update()
+            
+            if is_blender_28():
+                context.view_layer.update()
+            else:
+                context.scene.update()
+                
             for ob in bpy.data.objects:
                 obj = get_object(context, ob)
 
                 for psys in obj.particle_systems:
                     if psys.settings.mol_bakeuv:
                         scene.mol_objuvbake = obj.name
-                        context.scene.update()
+                        
+                        if is_blender_28():
+                            context.view_layer.update()
+                        else:
+                            context.scene.update()
+                            
                         scene.frame_set(frame=psys.settings.frame_start)
-                        bpy.context.scene.update()
+                         
+                        if is_blender_28():
+                            context.view_layer.update()
+                        else:
+                            context.scene.update()
+                            
                         bpy.ops.object.mol_set_active_uv()
 
             if frame_current == frame_end and scene.mol_render:
