@@ -95,6 +95,11 @@ class MolSetActiveUV(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
+        
+        #dont use rotation data here from cache, only for render mode
+        psys_orig = context.object.particle_systems.active
+        psys_orig.settings.use_rotations = False
+        
         obj = get_object(context, context.object)
 
         scene.mol_objuvbake = obj.name
@@ -117,8 +122,6 @@ class MolSetActiveUV(bpy.types.Operator):
         mod.ngon_method = 'BEAUTY'
         mod.quad_method = 'BEAUTY'
         if is_blender_28():
-            #depsgraph = bpy.context.evaluated_depsgraph_get()
-            #newmesh = object2.to_mesh(True, depsgraph)
             ctx = bpy.context.copy()
             ctx["object"] = object2
             bpy.ops.object.modifier_apply(ctx, modifier=mod.name)
@@ -132,6 +135,7 @@ class MolSetActiveUV(bpy.types.Operator):
             context.scene.update()
             
         psys = obj.particle_systems[scene.mol_psysuvbake]
+        par_uv = []
 
         for par in psys.particles:
 
@@ -183,6 +187,7 @@ class MolSetActiveUV(bpy.types.Operator):
             newuv[2] = dist
             newuv = newuv.to_tuple()
             par.angular_velocity = newuv
+            par_uv.append(newuv)
 
         if is_blender_28():
             scene.collection.objects.unlink(object2)
@@ -193,7 +198,8 @@ class MolSetActiveUV(bpy.types.Operator):
             bpy.data.meshes.remove(newmesh)
         bpy.data.meshes.remove(obdata)
         print('         uv baked on:', psys.settings.name)
-
+        context.object["par_uv"] = par_uv   
+                  
         return {'FINISHED'}
 
 
@@ -202,6 +208,47 @@ class MolSimulateModal(bpy.types.Operator):
     bl_idname = "wm.mol_simulate_modal"
     bl_label = "Simulate Molecular"
     _timer = None
+    
+    def check_write_uv_cache(self, context):
+        for ob in bpy.data.objects:
+            obj = get_object(context, ob)
+
+            for psys in obj.particle_systems:
+                
+                 #prepare object as in "open" the cache for angular velocity data
+                if context.scene.frame_current == context.scene.frame_start:   
+                    psys.settings.use_rotations = True
+                    psys.settings.angular_velocity_mode = 'RAND'
+                
+                if psys.settings.mol_bakeuv and "par_uv" in ob:
+                    par_uv = ob["par_uv"]
+                    print("Writing UV data...")
+                    for k, par in enumerate(psys.particles):
+                        par.angular_velocity = par_uv[k]
+    
+    def check_bake_uv(self, context):
+        #bake the UV in the beginning, and store coordinates in custom property 
+        for ob in bpy.data.objects:
+            obj = get_object(context, ob)
+
+            for psys in obj.particle_systems:
+                if psys.settings.mol_bakeuv:
+                    
+                    context.scene.mol_objuvbake = obj.name
+                    
+                    if is_blender_28():
+                        context.view_layer.update()
+                    else:
+                        context.scene.update()
+                      
+                    context.scene.frame_set(frame=psys.settings.frame_start)
+                     
+                    if is_blender_28():
+                        context.view_layer.update()
+                    else:
+                        context.scene.update()
+                        
+                    bpy.ops.object.mol_set_active_uv()
 
     def modal(self, context, event):
         scene = context.scene
@@ -224,26 +271,7 @@ class MolSimulateModal(bpy.types.Operator):
             else:
                 context.scene.update()
                 
-            for ob in bpy.data.objects:
-                obj = get_object(context, ob)
-
-                for psys in obj.particle_systems:
-                    if psys.settings.mol_bakeuv:
-                        scene.mol_objuvbake = obj.name
-                        
-                        if is_blender_28():
-                            context.view_layer.update()
-                        else:
-                            context.scene.update()
-                            
-                        scene.frame_set(frame=psys.settings.frame_start)
-                         
-                        if is_blender_28():
-                            context.view_layer.update()
-                        else:
-                            context.scene.update()
-                            
-                        bpy.ops.object.mol_set_active_uv()
+            #self.check_bake_uv(context)
 
             if frame_current == frame_end and scene.mol_render:
                 bpy.ops.render.render(animation=True)
@@ -258,7 +286,6 @@ class MolSimulateModal(bpy.types.Operator):
             return self.cancel(context)
 
         if event.type == 'TIMER':
-            #scene.update()
             if frame_current == scene.frame_start:            
                 scene.mol_stime = clock()
             mol_exportdata = context.scene.mol_exportdata
@@ -297,7 +324,10 @@ class MolSimulateModal(bpy.types.Operator):
             scene.mol_deadlink += mol_importdata[3]
             scene.mol_totallink = mol_importdata[4]
             scene.mol_totaldeadlink = mol_importdata[5]
+            
+            self.check_write_uv_cache(context)
             scene.frame_set(frame=frame_current + 1)
+            
             if framesubstep == int(framesubstep):
                 etime2 = clock()
                 print("      Blender: " + str(round(etime2 - stime2, 3)) + " sec")
@@ -306,6 +336,8 @@ class MolSimulateModal(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
+    
+        self.check_bake_uv(context)
         self._timer = context.window_manager.event_timer_add(0.000000001, window=context.window)
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
