@@ -16,9 +16,9 @@ chdir(getcwd()+"/sources")
 
 try:
     if is_linux:
-        remove("core_37_64.cpython-37m-x86_64-linux-gnu.so")
+        remove("core.cpython-37m-x86_64-linux-gnu.so")
     else:
-        remove("core_37_64.cpython-37m-darwin.so")
+        remove("core.cpython-37m-darwin.so")
     remove("core.html")
     remove("core.c")
     shutil.rmtree("build")
@@ -31,9 +31,9 @@ except:
 with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
     print(proc.stdout.read())
     if is_linux: #TODO, test
-        shutil.move("core_37_64.cpython-37m-x86_64-linux-gnu.so", "../molecular/core_37_64.cpython-37m-x86_64-linux-gnu.so")
+        shutil.move("core.cpython-37m-x86_64-linux-gnu.so", "../molecular/core.cpython-37m-x86_64-linux-gnu.so")
     else:
-        shutil.move("core_37_64.cpython-37m-darwin.so", "../molecular/core_37_64.cpython-37m-darwin.so")
+        shutil.move("core.cpython-37m-darwin.so", "../molecular/core.cpython-37m-darwin.so")
 
     chdir("..")
 
@@ -47,9 +47,9 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
     chdir(getcwd()+"/molecular")
     try:
         if is_linux:
-            remove("core_37_64.cpython-37m-x86_64-linux-gnu.so")
+            remove("core.cpython-37m-x86_64-linux-gnu.so")
         else:
-            remove("core_37_64.cpython-37m-darwin.so")
+            remove("core.cpython-37m-darwin.so")
     except:
         pass
     chdir("..")

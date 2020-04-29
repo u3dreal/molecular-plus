@@ -22,7 +22,7 @@ bl_info = {
         "Jean-Francois Gallant (PyroEvil), "
         "Pavel_Blend, "
         "Martin Felke (scorpion81)",
-    "version": (1, 1, 0),
+    "version": (1, 1, 1),
     "blender": (2, 80, 0),
     "location": "Properties editor > Particles Tabs",
     "description":
