@@ -9,6 +9,7 @@ from subprocess import Popen, PIPE
 
 is_linux = platform.architecture()[1] == "ELF" or platform.system() == "Linux"
 is_windows = platform.architecture()[1] == "WindowsPE" or platform.system() == "Windows"
+v = str(sys.version_info.major) + str(sys.version_info.minor) + sys.abiflags
 
 name = 'mac'
 if is_linux:
@@ -24,11 +25,11 @@ chdir(getcwd()+"//sources")
 with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
     print(proc.stdout.read())
     if is_linux: #TODO, test
-        shutil.move("core.cpython-37m-x86_64-linux-gnu.so", "..//molecular//core.cpython-37m-x86_64-linux-gnu.so")
+        shutil.move("core.cpython-{}-x86_64-linux-gnu.so".format(v), "..//molecular//core.cpython-{}-x86_64-linux-gnu.so".format(v))
     elif is_windows: 
-        shutil.move("core.cp37-win_amd64.pyd", "..//molecular//core.cp37-win_amd64.pyd")
+        shutil.move("core.cp{}-win_amd64.pyd".format(v), "..//molecular//core.cp{}-win_amd64.pyd").format(v)
     else:
-        shutil.move("core.cpython-37m-darwin.so", "..//molecular//core.cpython-37m-darwin.so")
+        shutil.move("core.cpython-{}-darwin.so".format(v), "..//molecular//core.cpython-{}-darwin.so".format(v))
 
     chdir("..")
 
@@ -42,11 +43,11 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
     chdir(getcwd()+"//molecular")
     try:
         if is_linux:
-            remove("core.cpython-37m-x86_64-linux-gnu.so")
+            remove("core.cpython-{}-x86_64-linux-gnu.so".format(v))
         elif is_windows:
-            remove("core.cp37-win_amd64.pyd")
+            remove("core.cp{}-win_amd64.pyd".format(v))
         else:
-            remove("core.cpython-37m-darwin.so")
+            remove("core.cpython-{}-darwin.so".format(v))
     except:
         pass
     chdir("..")
