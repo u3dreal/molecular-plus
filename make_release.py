@@ -9,7 +9,14 @@ from subprocess import Popen, PIPE
 
 is_linux = platform.architecture()[1] == "ELF" or platform.system() == "Linux"
 is_windows = platform.architecture()[1] == "WindowsPE" or platform.system() == "Windows"
-v = str(sys.version_info.major) + str(sys.version_info.minor) + sys.abiflags
+
+#in python 3.8.x, sys.abiflags attribute doesnt seem to exist any more instead of returning empty string.
+#so better check for existence here before accessing it.
+abiflags = ''
+if hasattr(sys, 'abiflags'):
+    abiflags = sys.abiflags
+
+v = str(sys.version_info.major) + str(sys.version_info.minor) + abiflags
 
 name = 'mac'
 if is_linux:
