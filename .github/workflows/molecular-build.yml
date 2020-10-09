@@ -33,7 +33,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Get current version string
       id: version
-      run: echo "::set-output name=version::$(python -c \"from molecular import bl_info; print(bl_info['version'])\")"
+      run: echo "::set-output name=version::$(python -c '''from molecular import bl_info; print(bl_info['version'])''' )"
     - name: Build with Cython
       run: | 
         python make_release.py    
