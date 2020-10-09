@@ -61,8 +61,13 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Build with Cython
-      run: | 
-        python make_release.py
+      id: build
+      run: echo "::set-output name=version::$(python make_release.py)"
+    - name: Upload linux zip
+      uses: actions/upload-artifact@v2
+      with:
+          name: molecular_${{steps.build.outputs.version}}_linux.zip
+          path: molecular_${{steps.build.outputs.version}}_linux.zip
   
   build_macos:
 
@@ -85,5 +90,10 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Build with Cython
-      run: | 
-        python make_release.py
+      id: build
+      run: echo "::set-output name=version::$(python make_release.py)"
+    - name: Upload mac zip
+      uses: actions/upload-artifact@v2
+      with:
+          name: molecular_${{steps.build.outputs.version}}_mac.zip
+          path: molecular_${{steps.build.outputs.version}}_mac.zip
