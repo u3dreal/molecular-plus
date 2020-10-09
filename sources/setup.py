@@ -20,6 +20,7 @@ else:
         module_name,
         ['core' + '.pyx'],
         extra_compile_args=['-O3','-msse4.2','-ffast-math','-fno-builtin'],
+        extra_link_args=['-lm'],
         cython_directives={'language_level' : "3"}
     )]
 
