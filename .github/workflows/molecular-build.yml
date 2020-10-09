@@ -36,7 +36,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Build with Cython
       run: |
-        env.version = ${{ python make_release.py }}
+        env.version = ${{ "python make_release.py" }}
     - name: Upload windows zip
       uses: actions/upload-artifact@v2
       with:
