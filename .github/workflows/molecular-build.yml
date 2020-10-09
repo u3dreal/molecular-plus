@@ -9,9 +9,6 @@ on:
   pull_request:
     branches: [ master ]
 
-env: 
-  version: '1.1.2' #override in job, but set as fallback here
-
 jobs:
   build_windows:
 
@@ -35,13 +32,13 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Build with Cython
-      run: |
-        env.version = ${{ "python make_release.py" }}
+      id: build
+      run: echo "::set-output name=version::$(python make_release.py)"
     - name: Upload windows zip
       uses: actions/upload-artifact@v2
       with:
-          name: molecular_${{env.version}}_win.zip
-          path: molecular_${{env.version}}_win.zip
+          name: molecular_${{steps.build.outputs.version}}_win.zip
+          path: molecular_${{steps.build.outputs.version}}_win.zip
              
   build_linux:
 
