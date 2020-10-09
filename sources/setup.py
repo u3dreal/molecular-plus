@@ -13,13 +13,15 @@ if os_name == "WindowsPE":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['/Ox','/openmp','/GT','/arch:SSE2','/fp:fast']
+        extra_compile_args=['/Ox','/openmp','/GT','/arch:SSE2','/fp:fast'],
+        compiler_directives={'language_level' : "3"}
     )]
 else:
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['-O3','-msse4.2','-ffast-math']
+        extra_compile_args=['-O3','-msse4.2','-ffast-math'],
+        compiler_directives={'language_level' : "3"}
     )]
 
 setup(
