@@ -19,7 +19,7 @@ else:
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['-O3','-msse4.2','-ffast-math'],
+        extra_compile_args=['-O3','-msse4.2','-ffast-math','-fno-builtin'],
         cython_directives={'language_level' : "3"}
     )]
 
