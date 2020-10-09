@@ -36,7 +36,7 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
     if is_linux: #TODO, test
         shutil.move("core.cpython-{}-x86_64-linux-gnu.so".format(v), "..//molecular//core.cpython-{}-x86_64-linux-gnu.so".format(v))
     elif is_windows: 
-        shutil.move("core.cp{}-win_amd64.pyd".format(v), "..//molecular//core.cp{}-win_amd64.pyd").format(v))
+        shutil.move("core.cp{}-win_amd64.pyd".format(v), "..//molecular//core.cp{}-win_amd64.pyd".format(v))
     else:
         shutil.move("core.cpython-{}-darwin.so".format(v), "..//molecular//core.cpython-{}-darwin.so".format(v))
 
