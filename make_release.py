@@ -30,7 +30,7 @@ chdir(getcwd()+"//sources")
 #into the include folder of blenders python, too
 
 with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
-    #print(proc.stdout.read())
+    proc.stdout.read()
     if is_linux: #TODO, test
         shutil.move("core.cpython-{}-x86_64-linux-gnu.so".format(v), "..//molecular//core.cpython-{}-x86_64-linux-gnu.so".format(v))
     elif is_windows: 
