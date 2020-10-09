@@ -31,17 +31,14 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Get current version string
-      id: version
-      run: echo "::set-output name=version::$(python -c '''from molecular import bl_info; print(bl_info['version'])''' )"
     - name: Build with Cython
-      run: | 
-        python make_release.py    
+      id: build
+      run: echo "::set-output name=version::$(python make_release.py)"
     - name: Upload windows zip
       uses: actions/upload-artifact@v2
       with:
-          name: molecular_${{steps.version.outputs.version}}_win.zip
-          path: molecular_${{steps.version.outputs.version}}_win.zip
+          name: molecular_${{steps.build.outputs.version}}_win.zip
+          path: molecular_${{steps.build.outputs.version}}_win.zip
              
   build_linux:
 
