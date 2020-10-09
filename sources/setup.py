@@ -1,7 +1,6 @@
 import platform
 from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
+from Cython.Distutils import build_ext, Extension
 import Cython.Compiler.Options
 
 
@@ -14,14 +13,14 @@ if os_name == "WindowsPE":
         module_name,
         ['core' + '.pyx'],
         extra_compile_args=['/Ox','/openmp','/GT','/arch:SSE2','/fp:fast'],
-        compiler_directives={'language_level' : "3"}
+        cython_directives={'language_level' : "3"}
     )]
 else:
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
         extra_compile_args=['-O3','-msse4.2','-ffast-math'],
-        compiler_directives={'language_level' : "3"}
+        cython_directives={'language_level' : "3"}
     )]
 
 setup(
