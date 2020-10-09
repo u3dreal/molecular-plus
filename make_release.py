@@ -29,6 +29,8 @@ chdir(getcwd()+"//sources")
 #TODO, blenders (or a compatible) python bin needs to be in $PATH, and if you use blender's you need to copy the python includes from SVN
 #into the include folder of blenders python, too
 
+version = '.'.join(map(str, bl_info['version']))
+
 with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
     proc.stdout.read()
     if is_linux: #TODO, test
@@ -69,4 +71,4 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
 
     chdir("..")
     
-print(bl_info['version'])
+print(version)
