@@ -8,4 +8,4 @@ __pycache__/simulate.cpython-37.pyc
 __pycache__/ui.cpython-37.pyc
 __pycache__/utils.cpython-37.pyc
 
-core.cython*
+core.cython*.so
