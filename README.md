@@ -2,12 +2,13 @@
 particle solver for Blender 2.8+
 
 Originally based on molecular addon from pyroevil. https://github.com/Pyroevil/Blender-Molecular-Script
+and the effords of PavelBlend and Scorpion81 for maintaining compatibility with Blender 2.8+. https://github.com/scorpion81/Blender-Molecular-Script
 
 This is my extended version of the addon adding a create panel to be able to fast setup a scene.
 
-I cleaned up the code and moved the molecular+ panel to the physics section of blender. where it belongs.
+I cleaned up the code and moved the molecular+ panel to the physics section of blender, where it belongs.
 
-Added a n-panel to get fast access to setup / recalulation.
+Added a n-panel to get fast access to setup / recalculation.
 
 ![header image](https://github.com/u3dreal/molecular-plus/blob/main/doc/molecular-plus.png)
 
