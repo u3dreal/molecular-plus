@@ -7,7 +7,7 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_molecular_helper"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = "Molecular"
+    bl_category = "Molecular+"
     
     @classmethod
     def poll(cls, context):
