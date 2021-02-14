@@ -7,7 +7,10 @@
 
 
 cimport cython
-from time import clock
+try:
+    from time import process_time as clock
+except ImportError:
+    from time import clock
 from cython.parallel import parallel, prange, threadid
 from libc.stdlib cimport malloc, realloc, free, rand, srand, abs
 

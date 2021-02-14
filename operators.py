@@ -1,4 +1,8 @@
-from time import clock, sleep, strftime, gmtime, time
+try:
+    from time import process_time as clock
+except ImportError:
+    from time import clock
+from time import sleep, strftime, gmtime, time
 
 import bpy
 from mathutils import Vector
