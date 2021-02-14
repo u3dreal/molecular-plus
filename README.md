@@ -10,12 +10,16 @@ I cleaned up the code and moved the molecular+ panel to the physics section of b
 
 Added a n-panel to get fast access to setup / recalculation.
 
-![header image](https://github.com/u3dreal/molecular-plus/blob/main/doc/molecular-plus.png)
+More info on my website. http://q3de.com/research/molecular/
+
+Join my discord https://discord.gg/zUfwAcq
 
 If you find this helpful please consider supporting me. Thanks !
 
-
 [![paypal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA)
+
+![header image](https://github.com/u3dreal/molecular-plus/blob/main/doc/molecular-plus.png)
+
 
 
 
