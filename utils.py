@@ -14,19 +14,4 @@ def destroy_caches(obj):
             step = psys.point_cache.frame_step
             psys.point_cache.frame_step = step
             
-def set_substeps():
-    parcount = 0
-    context = bpy.context
-    scene = context.scene
-    for obj in bpy.data.objects:
-        if obj.particle_systems.active != None:
-            psys = get_object(context, obj).particle_systems.active
-            parcount += len(psys.particles)
-            
-    diff = (psys.settings.mol_var3 / psys.settings.mol_var1)
-    factor = (parcount**(1/3) / psys.settings.mol_var1**(1/3))
-    newsubstep = int(round(factor * psys.settings.mol_var2))
-        
-    scene.mol_substep = newsubstep
-    scene.mol_parnum = parcount
-    return 
+

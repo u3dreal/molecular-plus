@@ -1,10 +1,9 @@
 import bpy  
-from .utils import set_substeps
 
 class MolecularGrid3d(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_makegrid3d"
     bl_label = "Create Molecular 3d grid"
-    bl_description = "Create / Set Gridopbject 3d"
+    bl_description = "Create / Set Gridobject 3d"
     bl_options = {'REGISTER'}
     
     def execute(self,  context):
@@ -27,10 +26,7 @@ class MolecularGrid3d(bpy.types.Operator):
             psys.grid_resolution = max_dim/voxel_size
             psys.particle_size = voxel_size/2
             psys.display_size = voxel_size/4
-            if context.scene.mol_hexgrid:
-                psys.hexagonal_grid = True
-            else:
-                psys.hexagonal_grid = False
+            psys.hexagonal_grid = context.scene.mol_hexgrid
             
             if init:
                 psys.frame_start = 1
@@ -55,7 +51,7 @@ class MolecularGrid3d(bpy.types.Operator):
             psys.grid_resolution = psys_res
             
             if context.scene.mol_autosubsteps:
-                set_substeps()
+                bpy.ops.object.mol_set_subs()
             
         return {'FINISHED'}
     
@@ -63,7 +59,7 @@ class MolecularGrid3d(bpy.types.Operator):
 class MolecularGrid2d(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_makegrid2d"
     bl_label = "Create Molecular 2d grid"
-    bl_description = "Create / Set Gridopbject 2d"
+    bl_description = "Create / Set Gridobject 2d"
     bl_options = {'REGISTER'}
     
     def execute(self,  context):
@@ -86,10 +82,7 @@ class MolecularGrid2d(bpy.types.Operator):
             psys.grid_resolution = max_dim/voxel_size
             psys.particle_size = voxel_size/2
             psys.display_size = voxel_size/4
-            if context.scene.mol_hexgrid:
-                psys.hexagonal_grid = True
-            else:
-                psys.hexagonal_grid = False
+            psys.hexagonal_grid = context.scene.mol_hexgrid
                 
             if init:
                 psys.frame_start = 1
@@ -116,7 +109,7 @@ class MolecularGrid2d(bpy.types.Operator):
             psys.grid_resolution = psys_res
             
             if context.scene.mol_autosubsteps:
-                set_substeps()
+                bpy.ops.object.mol_set_subs()
             
         return {'FINISHED'}
     

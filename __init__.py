@@ -30,8 +30,8 @@ bl_info = {
         "Addon for calculating collisions "
         "and for creating links between particles",
     "warning": "",  # used for warning icon and text in addons panel
-    "wiki_url": "http://pyroevil.com/molecular-script-docs/",
-    "tracker_url": "http://pyroevil.com/contact/" ,
+    "wiki_url": "http://q3de.com/research/molecular/",
+    "tracker_url": "https://discord.gg/vKUUmDDu" ,
     "category": "Physics"
 }
 
@@ -47,6 +47,7 @@ def register():
     bpy.utils.register_class(operators.MolSimulate)
     bpy.utils.register_class(operators.MolSetGlobalUV)
     bpy.utils.register_class(operators.MolSetActiveUV)
+    bpy.utils.register_class(operators.MolSet_Substeps)
     for panel in ui.panel_classes:
         bpy.utils.register_class(panel)
     for panel in creators.create_classes:
@@ -67,6 +68,7 @@ def unregister():
     bpy.utils.unregister_class(operators.MolSimulate)
     bpy.utils.unregister_class(operators.MolSetGlobalUV)
     bpy.utils.unregister_class(operators.MolSetActiveUV)
+    bpy.utils.unregister_class(operators.MolSet_Substeps)
     for panel in reversed(ui.panel_classes):
         bpy.utils.unregister_class(panel)
     for panel in reversed(creators.create_classes):

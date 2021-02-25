@@ -23,16 +23,16 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
         if context.object != None:
             psys = get_object(context, obj).particle_systems.active
         
-        
         row = layout.row()
         
         if obj and psys != None:
-
-            row.label(text = "Molecular Object: " + obj.name)
-            row = layout.row()
-            row.label(text = str(scn.mol_parnum) + " parts")
-            row.label(text = " -> subs: " + str(scn.mol_substep))
-            row.prop(scn,"mol_autosubsteps", text = "auto")
+                
+            box = layout.box()
+            row = box.row()
+            row.label(text = "Molecular Object : " + obj.name)
+            row = box.row()
+            row.label(text = "System particles : " + str(scn.mol_parnum))
+            row.operator("object.mol_set_subs", text = "", icon = "FILE_REFRESH")
             
             box = layout.box()
             row = box.row()
@@ -66,16 +66,18 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
             #row.prop(scn,"timescale",text = "TimeScale")
             #row.label(text = "")
             #row = box.row()
-            row = box.row()           
-            if not scn.mol_autosubsteps:
-                row.prop(scn,"mol_substep", text = "substeps")
-            row.prop(scn,"mol_cpu",text = "CPUs")
+            
             row = box.row()
             row.prop(scn,"mol_bake",text = "Bake Solve")
-            
-            #row = layout.row()
             row.prop(scn,"mol_render",text = "Render")
-            row = layout.row()
+            #row = layout.row()
+            col = layout.column()
+            row = col.row()
+            row.active = not scn.mol_autosubsteps
+            row.prop(scn,"mol_substep", text = "Steps")#, enabled = !scn.mol_autosubsteps)
+            row.prop(scn,"mol_autosubsteps", text = "auto")
+            col.prop(scn,"mol_cpu",text = "CPUs")
+            
         
         if obj and ('Collision' in obj.modifiers) and not psys:
             box = layout.box()
@@ -194,7 +196,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         box = layout.box()
         row = box.row()
         row.prop(psys.settings,"mol_links_active", icon = 'CONSTRAINT', text = "Link at Birth")
-        #row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Link with Others at Birth")
+        row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Link with Others at Birth")
         
         if psys.settings.mol_links_active :
             row = box.row()
@@ -243,7 +245,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
 
         box = layout.box()
         row = box.row()
-        #row.prop(psys.settings,"mol_selfrelink_active", icon = 'CONSTRAINT', text = "Self Relink")
+        row.prop(psys.settings,"mol_selfrelink_active", icon = 'CONSTRAINT', text = "Self Relink")
         row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Relink with Others")
        
         if psys.settings.mol_other_link_active: 

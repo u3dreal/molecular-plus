@@ -11,6 +11,27 @@ from mathutils.geometry import barycentric_transform as barycentric
 from . import simulate, core
 from .utils import get_object, destroy_caches
 
+class MolSet_Substeps(bpy.types.Operator):
+    bl_idname = "object.mol_set_subs"
+    bl_label = 'Set SubSteps'
+    
+    def execute(self, context):
+        parcount = 0
+        scene = context.scene
+        for obj in bpy.data.objects:
+            if obj.particle_systems.active != None:
+                psys = get_object(context, obj).particle_systems.active
+                parcount += len(psys.particles)
+
+        diff = (psys.settings.mol_var3 / psys.settings.mol_var1)
+        factor = (parcount**(1/3) / psys.settings.mol_var1**(1/3))
+        newsubstep = int(round(factor * psys.settings.mol_var2))
+        if scene.mol_autosubsteps:
+            scene.mol_substep = newsubstep
+        scene.mol_parnum = parcount
+        
+        return {'FINISHED'} 
+
 
 class MolSimulate(bpy.types.Operator):
     bl_idname = "object.mol_simulate"
@@ -49,7 +70,7 @@ class MolSimulate(bpy.types.Operator):
         mol_stime = clock()
         simulate.pack_data(context, True)
         etime = clock()
-        print("  PackData take " + str(round(etime - mol_stime, 3)) + "sec")
+        print("  PackData took " + str(round(etime - mol_stime, 3)) + "sec")
         mol_stime = clock()
         mol_report = core.init(mol_exportdata)
         etime = clock()
@@ -209,6 +230,7 @@ class MolSimulateModal(bpy.types.Operator):
 
                 if psys.settings.mol_bakeuv and "par_uv" in ob:
                     par_uv = ob["par_uv"]
+                    #print(par_uv)
                     #print("Writing UV data...")
                     for k, par in enumerate(psys.particles):
                         par.angular_velocity = par_uv[k]

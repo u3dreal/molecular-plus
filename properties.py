@@ -191,12 +191,12 @@ def define_props():
     parset.mol_relink_chance = bpy.props.FloatProperty(
         name="% Linking",
         description=descriptions.RELINK_CHANCE,
-        min=0, max=100, default=0, precision=6
+        min=0, max=100, default=0, precision=1, subtype='FACTOR'
     )
     parset.mol_relink_chancerand = bpy.props.FloatProperty(
         name="Rand % Linking",
         description=descriptions.RELINK_CHANCE_RANDOM,
-        default=0, min=0, max=1, precision=6, subtype='FACTOR'
+        default=0, min=0, max=1, precision=2, subtype='FACTOR'
     )
     parset.mol_relink_tension = bpy.props.FloatProperty(
         name="Tension",
