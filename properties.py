@@ -178,13 +178,13 @@ def define_props():
     parset.mol_relink_group = bpy.props.IntProperty(
         name='Only links with:',
         default=1, min=1, description=descriptions.RELINK_GROUP
-    )   
-    
+    )
+
 #    item = []
 #    for i in range(1,12):
 #        item.append((str(i),"Relink Group " + str(i),"Relink only with group " + str(i) ))
 #    parset.mol_relink_group = bpy.props.EnumProperty(
-#        items = item, 
+#        items = item,
 #        description = "Choose a group that new link are possible"
 #    )
 
@@ -333,8 +333,8 @@ def define_props():
         min=0, max=900, default=4
     )
     bpy.types.Scene.mol_autosubsteps = bpy.props.BoolProperty(
-        name="Auto Substeps", 
-        description="auto substeps", 
+        name="Auto Substeps",
+        description="auto substeps",
         default=True
     )
     bpy.types.Scene.mol_bake = bpy.props.BoolProperty(
@@ -359,14 +359,14 @@ def define_props():
         default=0
     )
     bpy.types.Scene.mol_voxel_size = bpy.props.FloatProperty(
-        name = "mol_voxel_size", 
-        description = "Voxel Size for Grid", 
-        min = 0.001, precision = 3, 
+        name = "mol_voxel_size",
+        description = "Voxel Size for Grid",
+        min = 0.001, precision = 4, 
         default = 0.1
     )
     bpy.types.Scene.mol_hexgrid = bpy.props.BoolProperty(
-        name = "mol_hexgrid", 
-        description = "Create Hexagonal Grid", 
+        name = "mol_hexgrid",
+        description = "Create Hexagonal Grid",
         default = False
     )
 

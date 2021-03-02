@@ -48,11 +48,13 @@ def register():
     bpy.utils.register_class(operators.MolSetGlobalUV)
     bpy.utils.register_class(operators.MolSetActiveUV)
     bpy.utils.register_class(operators.MolSet_Substeps)
+    bpy.utils.register_class(operators.MolClearCache)
+    bpy.utils.register_class(operators.MolResetCache)
     for panel in ui.panel_classes:
         bpy.utils.register_class(panel)
     for panel in creators.create_classes:
         bpy.utils.register_class(panel)
-        
+
     bpy.types.PHYSICS_PT_add.append(ui.append_to_PHYSICS_PT_add_panel)
 
 
@@ -61,14 +63,16 @@ def unregister():
     import bpy
 
     from . import properties, ui, operators, creators
-    
+
     bpy.types.PHYSICS_PT_add.remove(ui.append_to_PHYSICS_PT_add_panel)
-    
+
     bpy.utils.unregister_class(operators.MolSimulateModal)
     bpy.utils.unregister_class(operators.MolSimulate)
     bpy.utils.unregister_class(operators.MolSetGlobalUV)
     bpy.utils.unregister_class(operators.MolSetActiveUV)
     bpy.utils.unregister_class(operators.MolSet_Substeps)
+    bpy.utils.unregister_class(operators.MolClearCache)
+    bpy.utils.register_class(operators.MolResetCache)
     for panel in reversed(ui.panel_classes):
         bpy.utils.unregister_class(panel)
     for panel in reversed(creators.create_classes):

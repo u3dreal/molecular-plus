@@ -14,7 +14,7 @@ from .utils import get_object, destroy_caches
 class MolSet_Substeps(bpy.types.Operator):
     bl_idname = "object.mol_set_subs"
     bl_label = 'Set SubSteps'
-    
+
     def execute(self, context):
         parcount = 0
         scene = context.scene
@@ -29,8 +29,8 @@ class MolSet_Substeps(bpy.types.Operator):
         if scene.mol_autosubsteps:
             scene.mol_substep = newsubstep
         scene.mol_parnum = parcount
-        
-        return {'FINISHED'} 
+
+        return {'FINISHED'}
 
 
 class MolSimulate(bpy.types.Operator):
@@ -132,7 +132,7 @@ class MolSetActiveUV(bpy.types.Operator):
         bpy.ops.object.modifier_apply(ctx, modifier=mod.name)
 
         context.view_layer.update()
-            
+
         psys = obj.particle_systems[scene.mol_psysuvbake]
         par_uv = []
         me = obj2.data
@@ -184,7 +184,7 @@ class MolSetActiveUV(bpy.types.Operator):
         bpy.data.objects.remove(obj2)
         bpy.data.meshes.remove(obdata)
         print('         uv baked on:', psys.settings.name)
-        context.object["par_uv"] = par_uv   
+        context.object["par_uv"] = par_uv
 
         return {'FINISHED'}
 
@@ -216,7 +216,7 @@ class MolSimulateModal(bpy.types.Operator):
     bl_idname = "wm.mol_simulate_modal"
     bl_label = "Simulate Molecular"
     _timer = None
-    
+
     def check_write_uv_cache(self, context):
         for ob in bpy.data.objects:
             obj = get_object(context, ob)
@@ -224,7 +224,7 @@ class MolSimulateModal(bpy.types.Operator):
             for psys in obj.particle_systems:
 
                 # prepare object as in "open" the cache for angular velocity data
-                if context.scene.frame_current == context.scene.frame_start:   
+                if context.scene.frame_current == context.scene.frame_start:
                     psys.settings.use_rotations = True
                     psys.settings.angular_velocity_mode = 'RAND'
 
@@ -234,9 +234,9 @@ class MolSimulateModal(bpy.types.Operator):
                     #print("Writing UV data...")
                     for k, par in enumerate(psys.particles):
                         par.angular_velocity = par_uv[k]
-    
+
     def check_bake_uv(self, context):
-        # bake the UV in the beginning, and store coordinates in custom property 
+        # bake the UV in the beginning, and store coordinates in custom property
         scene = context.scene
         frame_old = scene.frame_current
 
@@ -245,7 +245,7 @@ class MolSimulateModal(bpy.types.Operator):
 
             for psys in obj.particle_systems:
                 if psys.settings.mol_bakeuv:
-                    
+
                     scene.mol_objuvbake = obj.name
                     context.view_layer.update()
 
@@ -295,7 +295,7 @@ class MolSimulateModal(bpy.types.Operator):
             return self.cancel(context)
 
         if event.type == 'TIMER':
-            if frame_current == scene.frame_start:            
+            if frame_current == scene.frame_start:
                 scene.mol_stime = clock()
             mol_exportdata = context.scene.mol_exportdata
             mol_exportdata.clear()
@@ -312,7 +312,7 @@ class MolSimulateModal(bpy.types.Operator):
                         i += 1
 
             mol_substep = scene.mol_substep
-            framesubstep = frame_current / (mol_substep + 1)        
+            framesubstep = frame_current / (mol_substep + 1)
             if framesubstep == int(framesubstep):
                 etime = clock()
                 print("    frame " + str(framesubstep + 1) + ":")
@@ -333,10 +333,10 @@ class MolSimulateModal(bpy.types.Operator):
             scene.mol_deadlink += mol_importdata[3]
             scene.mol_totallink = mol_importdata[4]
             scene.mol_totaldeadlink = mol_importdata[5]
-            
+
             self.check_write_uv_cache(context)
             scene.frame_set(frame=frame_current + 1)
-            
+
             if framesubstep == int(framesubstep):
                 etime2 = clock()
                 print("      Blender: " + str(round(etime2 - stime2, 3)) + " sec")
@@ -354,4 +354,31 @@ class MolSimulateModal(bpy.types.Operator):
 
     def cancel(self, context):
         context.window_manager.event_timer_remove(self._timer)
-        return {'CANCELLED'}   
+        return {'CANCELLED'}
+
+
+class MolClearCache(bpy.types.Operator):
+    """Clear Particle Cache"""
+    bl_idname = "object.clear_pcache"
+    bl_label = "Clear Particle Cache"
+
+    def execute(self, context):
+        bpy.ops.ptcache.free_bake_all()
+        ccache = context.object.particle_systems.active.settings.count
+        context.object.particle_systems.active.settings.count = ccache
+        context.scene.frame_current = 1
+        return {'FINISHED'}
+
+class MolResetCache(bpy.types.Operator):
+    """Clear Particle Cache"""
+    bl_idname = "object.reset_pcache"
+    bl_label = "Clear Particle Cache"
+
+    def execute(self, context):
+        ccache = context.object.particle_systems.active.settings.use_modifier_stack
+        context.object.particle_systems.active.settings.use_modifier_stack = not ccache
+        context.view_layer.update()
+        context.object.particle_systems.active.settings.use_modifier_stack = ccache
+        #context.view_layer.update()
+        context.scene.frame_current = 1
+        return {'FINISHED'}

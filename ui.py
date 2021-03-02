@@ -41,7 +41,7 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row.operator("object.mol_simulate", icon = 'RADIOBUT_ON',text = "Start Simulation")
                 row = box.row()
                 row.enabled = False
-                row.operator("ptcache.free_bake_all", text="Free All Bakes")
+                row.operator("object.clear_pcache", text="Free All Bakes")
 
 
             if psys.point_cache.is_baked == True and scn.mol_simrun == False:
@@ -49,13 +49,13 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Simulation baked")
                 row = box.row()
                 row.enabled = True
-                row.operator("ptcache.free_bake_all", text="Free All Bakes")
+                row.operator("object.clear_pcache", text="Free All Bakes")
             if scn.mol_simrun == True:
                 row.enabled = False
                 row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Process: " + scn.mol_timeremain + " left")
                 row = box.row()
                 row.enabled = False
-                row.operator("ptcache.free_bake_all", text="Free All Bakes")
+                row.operator("object.clear_pcache", text="Free All Bakes")
 
             #row.prop(scn,"frame_start",text = "start")
             #row.prop(scn,"frame_end",text = "end")
