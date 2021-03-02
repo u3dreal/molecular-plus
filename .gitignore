@@ -14,3 +14,4 @@ c_sources/core.c
 c_sources/core.html
 core.cpython-37m-darwin.so
 *.so
+c_sources/.DS_Store

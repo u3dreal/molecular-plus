@@ -8,32 +8,32 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Molecular+"
-    
+
     @classmethod
     def poll(cls, context):
         return True #context.object != None and context.object.type == 'MESH'
-    
+
     def draw(self, context):
-        
+
         layout = self.layout
         scn = context.scene
         obj = context.object
         #psys = obj.particle_systems.active
-        
+
         if context.object != None:
             psys = get_object(context, obj).particle_systems.active
-        
+
         row = layout.row()
-        
+
         if obj and psys != None:
-                
+
             box = layout.box()
             row = box.row()
             row.label(text = "Molecular Object : " + obj.name)
             row = box.row()
             row.label(text = "System particles : " + str(scn.mol_parnum))
             row.operator("object.mol_set_subs", text = "", icon = "FILE_REFRESH")
-            
+
             box = layout.box()
             row = box.row()
             if scn.mol_simrun == False and psys.point_cache.is_baked == False:
@@ -42,8 +42,8 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row = box.row()
                 row.enabled = False
                 row.operator("ptcache.free_bake_all", text="Free All Bakes")
-                
-                
+
+
             if psys.point_cache.is_baked == True and scn.mol_simrun == False:
                 row.enabled = False
                 row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Simulation baked")
@@ -56,7 +56,7 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row = box.row()
                 row.enabled = False
                 row.operator("ptcache.free_bake_all", text="Free All Bakes")
-            
+
             #row.prop(scn,"frame_start",text = "start")
             #row.prop(scn,"frame_end",text = "end")
             #row = layout.row()
@@ -66,7 +66,7 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
             #row.prop(scn,"timescale",text = "TimeScale")
             #row.label(text = "")
             #row = box.row()
-            
+
             row = box.row()
             row.prop(scn,"mol_bake",text = "Bake Solve")
             row.prop(scn,"mol_render",text = "Render")
@@ -77,8 +77,8 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
             row.prop(scn,"mol_substep", text = "Steps")#, enabled = !scn.mol_autosubsteps)
             row.prop(scn,"mol_autosubsteps", text = "auto")
             col.prop(scn,"mol_cpu",text = "CPUs")
-            
-        
+
+
         if obj and ('Collision' in obj.modifiers) and not psys:
             box = layout.box()
             row = box.row()
@@ -89,7 +89,7 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
             row.prop(obj.collision, "friction_factor", text = "Friction")
             row = box.row()
             row.prop(obj.collision, "stickiness", text = "Stickiness", slider=True)
-        
+
         if obj and obj.type == 'MESH' and not ('Collision' in obj.modifiers):
             box = layout.box()
             row = box.row()
@@ -98,14 +98,17 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
             row.prop(scn,"mol_voxel_size",text = "Voxel Size")
             row.alignment=('RIGHT')
             row.prop(scn,"mol_hexgrid", text = "hexa")
-            
-            
+
+
             #box=layout.box()
+
+            row = box.row()
+            row.operator("molecular_operators.molecular_makeemitter", icon = 'MOD_PARTICLE_INSTANCE',text = "Emitter")
             row = box.row()
             row.operator("molecular_operators.molecular_makegrid2d", icon = 'GRID',text = "2D Grid")
             row = box.row()
             row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
-            row = box.row()   
+            row = box.row()
             row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
                 #row = box.row
         else:
@@ -121,40 +124,40 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
     bl_region_type = 'WINDOW'
     bl_context = "physics"
     bl_category = "Molecular"
-    
+
     @classmethod
     def poll(cls, context):
         if context.object.particle_systems.active and context.object.particle_systems.active.settings.mol_active == True:
             return True
-        
+
     def draw(self, context):
-        
+
         layout = self.layout
         scn = context.scene
         obj = context.object
         #obj = bpy.context.view_layer.depsgraph.objects.get(obj.name, None)
-        
+
         psys = obj.particle_systems.active
         if psys is None:
             return
-        
-        #for the data    
+
+        #for the data
         psys_eval = get_object(context, obj).particle_systems.active
-        
+
         if psys.settings.mol_active == False:
             return
         layout.enabled = psys.settings.mol_active
         #row = layout.row()
-        
+
         ###   Density by Mass   ###
         box = layout.box()
         box.prop(psys.settings,"mol_density_active", icon = "PLUS",text = "Calculate particles weight by density")
-        
+
         if psys.settings.mol_density_active:
-          
+
             subbox = box.box()
             row = subbox.row()
-            
+
             row.prop(psys.settings,"mol_matter",text = "Preset:")
             row = subbox.row()
             if psys.settings.mol_matter != "-1":
@@ -164,18 +167,18 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             else:
                 row.prop(psys.settings,"mol_density", text = "Kg per CubeMeter:")
                 row = subbox.row()
-            
+
                 pmass = (psys.settings.particle_size**3) * psys.settings.mol_density
-            
+
             row = subbox.row()
             row.label(icon = "INFO",text = "Mass per Particle: " + str(round(pmass,5)) + " kg")
             row = subbox.row()
-            row.label(icon = "INFO",text = "Total system approx weight: " + str(round(len(psys_eval.particles) * pmass,4)) + " kg") 
-        
-        
+            row.label(icon = "INFO",text = "Total system approx weight: " + str(round(len(psys_eval.particles) * pmass,4)) + " kg")
+
+
         #row = layout.separator()
         row = layout.row()
-        
+
         ###   Collision   ###
         row.label(text = "Collisions :")
         box = layout.box()
@@ -197,12 +200,12 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         row = box.row()
         row.prop(psys.settings,"mol_links_active", icon = 'CONSTRAINT', text = "Link at Birth")
         row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Link with Others at Birth")
-        
+
         if psys.settings.mol_links_active :
             row = box.row()
             row.prop(psys.settings,"mol_link_length",text = "Search Distance")
             row.prop(psys.settings,"mol_link_rellength",text = "Relative")
-          
+
             row = box.row()
             row.prop(psys.settings,"mol_link_max",text = "Max links")
             row = box.row()
@@ -226,7 +229,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row = box.row()
             row.prop(psys.settings,"mol_link_samevalue", text = "Same values for compression/expansion")
             row = box.row()
-            
+
             if not psys.settings.mol_link_samevalue:
                 row.prop(psys.settings,"mol_link_estiff",text = "E Stiff")
                 row.prop(psys.settings,"mol_link_estiffrand",text = "Rand E Stiff")
@@ -240,23 +243,23 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
                 row = box.row()
                 row.prop(psys.settings,"mol_link_ebroken",text = "E broken")
                 row.prop(psys.settings,"mol_link_ebrokenrand",text = "Rand E Broken")
-            
+
         ###   Relinking   ###
 
         box = layout.box()
         row = box.row()
         row.prop(psys.settings,"mol_selfrelink_active", icon = 'CONSTRAINT', text = "Self Relink")
         row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Relink with Others")
-       
-        if psys.settings.mol_other_link_active: 
-            row = box.row()         
+
+        if psys.settings.mol_other_link_active:
+            row = box.row()
             row.prop(psys.settings,"mol_relink_group",text = "Only with:")
-            
+
         if psys.settings.mol_other_link_active:#psys:#.settings.mol_selfrelink_active or psys.settings.mol_otherrelink_active:
             row = box.row()
             row.prop(psys.settings,"mol_relink_chance",text = "% linking")
             row.prop(psys.settings,"mol_relink_chancerand",text = "Rand % linking")
-            
+
             row = box.row()
             row.prop(psys.settings,"mol_relink_max",text = "Max links")
             row = box.row()
@@ -287,7 +290,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row = box.row()
             row.prop(psys.settings,"mol_relink_ebroken",text = "E broken")
             row.prop(psys.settings,"mol_relink_ebrokenrand",text = "Rand E broken")
-        
+
         box = layout.box()
         row = box.row()
         if obj.data.uv_layers.active != None:
@@ -300,9 +303,9 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         row = box.row()
         row.active = psys.settings.mol_bakeuv
         row.prop(psys.settings,"mol_bakeuv_global",text = "Global")
-                    
+
         row = layout.separator()
-        
+
         """
         box = layout.box()
         row = box.row()
@@ -329,7 +332,7 @@ class MolecularAdd(bpy.types.Operator):
     bl_label = "Add Molecular object"
     bl_description = "Add active object as Molecular"
     bl_options = {'REGISTER'}
-    
+
     @classmethod
     def poll(cls, context):
         return context.object.particle_systems.active
@@ -337,11 +340,11 @@ class MolecularAdd(bpy.types.Operator):
     def execute(self, context):
         obj = context.object
         psys = obj.particle_systems.active
-        #for the data    
+        #for the data
         psys_eval = get_object(context, obj).particle_systems.active
-        
+
         psys.settings.mol_active = True
-        
+
         return {'FINISHED'}
 
 class MolecularRemove(bpy.types.Operator):
@@ -352,21 +355,21 @@ class MolecularRemove(bpy.types.Operator):
 
     def execute(self, context):
         obj = context.object
-        
+
         psys = obj.particle_systems.active
-        #for the data    
+        #for the data
         psys_eval = get_object(context, obj).particle_systems.active
-        
+
         psys.settings.mol_active = False
         return {'FINISHED'}
-    
-    
+
+
 def append_to_PHYSICS_PT_add_panel(self, context):
     obj = context.object
 
     if not obj.type == 'MESH':
         return
-    
+
     psys = obj.particle_systems.active
     if not psys:
         return
@@ -375,25 +378,24 @@ def append_to_PHYSICS_PT_add_panel(self, context):
     #column_left = split.column()
     #column_right = split.column()
     col = column
-    
-    #for the data    
+
+    #for the data
     psys_eval = get_object(context, obj).particle_systems.active
-        
+
     if psys.settings.mol_active:
-        
+
         col.operator(
-                "molecular_operators.molecular_remove", 
+                "molecular_operators.molecular_remove",
                  text="Molecular",
                  icon='X'
                 )
     else:
-        
+
         col.operator(
-                "molecular_operators.molecular_add", 
-                text="Molecular", 
+                "molecular_operators.molecular_add",
+                text="Molecular",
                 icon='MOD_PARTICLES'
                 )
-                  
-                    
-panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel)
 
+
+panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel)
