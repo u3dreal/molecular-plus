@@ -89,7 +89,9 @@ class MolSetGlobalUV(bpy.types.Operator):
         
     def execute(self, context):
         scene = context.scene
-        obj = get_object(context, bpy.data.objects[self.objname])
+        obj = get_object(context, context.view_layer.objects[self.objname])
+        
+        print('  start bake global uv from:', obj.name)
 
         psys = obj.particle_systems.active
         psys.settings.use_rotations = True
@@ -97,6 +99,8 @@ class MolSetGlobalUV(bpy.types.Operator):
         coord = [0, 0, 0] * len(psys.particles)
         psys.particles.foreach_get("location", coord)
         psys.particles.foreach_set("angular_velocity", coord)
+        
+        print('         global uv baked on:', psys.settings.name)
 
         return {'FINISHED'}
 
@@ -110,7 +114,7 @@ class MolSetActiveUV(bpy.types.Operator):
     def execute(self, context):
         scene = context.scene
 
-        obj = get_object(context, bpy.data.objects[self.objname])
+        obj = get_object(context, context.view_layer.objects[self.objname])
         
         if not obj.data.uv_layers.active:
             return {'FINISHED'}
@@ -185,14 +189,11 @@ class MolSetActiveUV(bpy.types.Operator):
         bpy.data.meshes.remove(obdata)
         
         print('         uv baked on:', psys.settings.name)
-        
-        psys = obj.particle_systems.active
+      
         psys.settings.use_rotations = True
         psys.settings.angular_velocity_mode = 'RAND'
         
         psys.particles.foreach_set("angular_velocity", par_uv)
-        
-        #jcontext.object["par_uv"] = par_uv
         
         return {'FINISHED'}
 
@@ -354,7 +355,7 @@ class MolClearCache(bpy.types.Operator):
 
     def execute(self, context):
         bpy.ops.ptcache.free_bake_all()
-        for ob in context.view_layer.objects:
+        for ob in bpy.data.objects:
             obj = get_object(context, ob)
             for psys in obj.particle_systems:
                 if psys.settings.mol_active:
