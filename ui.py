@@ -248,7 +248,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
 
         box = layout.box()
         row = box.row()
-        row.prop(psys.settings,"mol_selfrelink_active", icon = 'CONSTRAINT', text = "Self Relink")
+        #row.prop(psys.settings,"mol_selfrelink_active", icon = 'CONSTRAINT', text = "Self Relink")
         row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Relink with Others")
 
         if psys.settings.mol_other_link_active:

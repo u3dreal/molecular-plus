@@ -1,26 +1,26 @@
-import math
-
 import bpy
-
+import math
 from .utils import get_object
-
 
 def pack_data(context, initiate):
     psyslen = 0
     parnum = 0
     scene = context.scene
+    
     for ob in bpy.data.objects:
         obj = get_object(context, ob)
-
+        
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
+                
             if psys.settings.mol_active and len(psys.particles):
                 parlen = len(psys.particles)
                 par_loc = [0, 0, 0] * parlen
                 par_vel = [0, 0, 0] * parlen
                 par_size = [0] * parlen
                 par_alive = []
+                
                 for par in psys.particles:
                     parnum += 1
                     if par.alive_state == "UNBORN":
@@ -29,10 +29,10 @@ def pack_data(context, initiate):
                         par_alive.append(0)
                     if par.alive_state == "DEAD":
                         par_alive.append(3)
-
+                
                 psys.particles.foreach_get('location', par_loc)
                 psys.particles.foreach_get('velocity', par_vel)
-
+                
                 if initiate:
                     par_mass = []
 
@@ -51,7 +51,9 @@ def pack_data(context, initiate):
                     """
 
                     psyslen += 1
+                    
                     psys.particles.foreach_get('size', par_size)
+                    
                     if bpy.context.scene.mol_minsize > min(par_size):
                         bpy.context.scene.mol_minsize = min(par_size)
 

@@ -72,7 +72,7 @@ def unregister():
     bpy.utils.unregister_class(operators.MolSetActiveUV)
     bpy.utils.unregister_class(operators.MolSet_Substeps)
     bpy.utils.unregister_class(operators.MolClearCache)
-    bpy.utils.register_class(operators.MolResetCache)
+    bpy.utils.unregister_class(operators.MolResetCache)
     for panel in reversed(ui.panel_classes):
         bpy.utils.unregister_class(panel)
     for panel in reversed(creators.create_classes):

@@ -379,6 +379,5 @@ def define_props():
     bpy.types.Scene.mol_deadlink = bpy.props.IntProperty()
     bpy.types.Scene.mol_totallink = bpy.props.IntProperty()
     bpy.types.Scene.mol_totaldeadlink = bpy.props.IntProperty()
-    bpy.types.Scene.mol_objuvbake = bpy.props.StringProperty()
-    bpy.types.Scene.mol_psysuvbake = bpy.props.StringProperty()
-    bpy.types.Scene.mol_stime = bpy.props.FloatProperty()
+    #bpy.types.Scene.mol_objuvbake = bpy.props.StringProperty()
+    #bpy.types.Scene.mol_psysuvbake = bpy.props.StringProperty()

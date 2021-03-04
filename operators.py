@@ -74,7 +74,7 @@ class MolSimulate(bpy.types.Operator):
         mol_stime = clock()
         mol_report = core.init(mol_exportdata)
         etime = clock()
-        print("  Export time take " + str(round(etime - mol_stime, 3)) + "sec")
+        print("  Export time took " + str(round(etime - mol_stime, 3)) + "sec")
         print("  total numbers of particles: " + str(mol_report))
         print("  start processing:")
         bpy.ops.wm.mol_simulate_modal()
@@ -84,12 +84,16 @@ class MolSimulate(bpy.types.Operator):
 class MolSetGlobalUV(bpy.types.Operator):
     bl_idname = "object.mol_set_global_uv"
     bl_label = "Mol Set UV"
-
+    
+    objname : bpy.props.StringProperty()
+        
     def execute(self, context):
         scene = context.scene
-        obj = get_object(context, context.object)
+        obj = get_object(context, bpy.data.objects[self.objname])
 
         psys = obj.particle_systems.active
+        psys.settings.use_rotations = True
+        psys.settings.angular_velocity_mode = 'RAND'
         coord = [0, 0, 0] * len(psys.particles)
         psys.particles.foreach_get("location", coord)
         psys.particles.foreach_set("angular_velocity", coord)
@@ -100,19 +104,14 @@ class MolSetGlobalUV(bpy.types.Operator):
 class MolSetActiveUV(bpy.types.Operator):
     bl_idname = "object.mol_set_active_uv"
     bl_label = "Mol Set Active UV"
-
+    
+    objname : bpy.props.StringProperty()
+        
     def execute(self, context):
         scene = context.scene
 
-        #dont use rotation data here from cache, only for render mode
-        psys_orig = context.object.particle_systems.active
-        psys_orig.settings.use_rotations = False
-
-        obj = get_object(context, context.object)
-
-        scene.mol_objuvbake = obj.name
-        scene.mol_psysuvbake = obj.particle_systems.active.name
-
+        obj = get_object(context, bpy.data.objects[self.objname])
+        
         if not obj.data.uv_layers.active:
             return {'FINISHED'}
 
@@ -133,7 +132,7 @@ class MolSetActiveUV(bpy.types.Operator):
 
         context.view_layer.update()
 
-        psys = obj.particle_systems[scene.mol_psysuvbake]
+        psys = obj.particle_systems.active
         par_uv = []
         me = obj2.data
 
@@ -176,16 +175,25 @@ class MolSetActiveUV(bpy.types.Operator):
             ))).length
 
             newuv[2] = dist
-            newuv = newuv.to_tuple()
-            par.angular_velocity = newuv
-            par_uv.append(newuv)
+            
+            par_uv.append(newuv[0])
+            par_uv.append(newuv[1])
+            par_uv.append(newuv[2])
 
         scene.collection.objects.unlink(obj2)
         bpy.data.objects.remove(obj2)
         bpy.data.meshes.remove(obdata)
+        
         print('         uv baked on:', psys.settings.name)
-        context.object["par_uv"] = par_uv
-
+        
+        psys = obj.particle_systems.active
+        psys.settings.use_rotations = True
+        psys.settings.angular_velocity_mode = 'RAND'
+        
+        psys.particles.foreach_set("angular_velocity", par_uv)
+        
+        #jcontext.object["par_uv"] = par_uv
+        
         return {'FINISHED'}
 
 
@@ -216,45 +224,23 @@ class MolSimulateModal(bpy.types.Operator):
     bl_idname = "wm.mol_simulate_modal"
     bl_label = "Simulate Molecular"
     _timer = None
-
-    def check_write_uv_cache(self, context):
-        for ob in bpy.data.objects:
-            obj = get_object(context, ob)
-
-            for psys in obj.particle_systems:
-
-                # prepare object as in "open" the cache for angular velocity data
-                if context.scene.frame_current == context.scene.frame_start:
-                    psys.settings.use_rotations = True
-                    psys.settings.angular_velocity_mode = 'RAND'
-
-                if psys.settings.mol_bakeuv and "par_uv" in ob:
-                    par_uv = ob["par_uv"]
-                    #print(par_uv)
-                    #print("Writing UV data...")
-                    for k, par in enumerate(psys.particles):
-                        par.angular_velocity = par_uv[k]
-
+    
     def check_bake_uv(self, context):
-        # bake the UV in the beginning, and store coordinates in custom property
+        # bake the UV in the beginning
         scene = context.scene
         frame_old = scene.frame_current
-
         for ob in bpy.data.objects:
             obj = get_object(context, ob)
 
             for psys in obj.particle_systems:
                 if psys.settings.mol_bakeuv:
-
-                    scene.mol_objuvbake = obj.name
                     context.view_layer.update()
-
                     scene.frame_set(frame=psys.settings.frame_start)
                     context.view_layer.update()
                     if psys.settings.mol_bakeuv_global:
-                        bpy.ops.object.mol_set_global_uv()
+                        bpy.ops.object.mol_set_global_uv("INVOKE_DEFAULT", objname = obj.name)
                     else:
-                        bpy.ops.object.mol_set_active_uv()
+                        bpy.ops.object.mol_set_active_uv("INVOKE_DEFAULT", objname = obj.name)
 
         scene.frame_set(frame=frame_old)
 
@@ -262,6 +248,7 @@ class MolSimulateModal(bpy.types.Operator):
         scene = context.scene
         frame_end = scene.frame_end
         frame_current = scene.frame_current
+        
         if event.type == 'ESC' or frame_current == frame_end:
             if scene.mol_bake:
                 fake_context = context.copy()
@@ -271,32 +258,30 @@ class MolSimulateModal(bpy.types.Operator):
                         if psys.settings.mol_active and len(psys.particles):
                             fake_context["point_cache"] = psys.point_cache
                             bpy.ops.ptcache.bake_from_cache(fake_context)
+                            
             scene.render.frame_map_new = 1
             scene.frame_end = scene.mol_old_endframe
-            context.view_layer.update()
-
-            # self.check_bake_uv(context)
-
-            if frame_current == frame_end and scene.mol_render:
-                bpy.ops.render.render(animation=True)
-
-            scene.frame_set(frame=scene.frame_start)
-
             core.memfree()
             scene.mol_simrun = False
             mol_exportdata = scene.mol_exportdata
             mol_exportdata.clear()
             print('-' * 50 + 'Molecular Sim end')
-            # total time
-            tt = time() - self.st
-            # total time string
-            tt_s = convert_time_to_string(tt)
-            self.report({'INFO'}, 'Total time: {0}'.format(tt_s))
+            
+            if frame_current == frame_end and scene.mol_render:
+                print("Rendering ..................")
+                bpy.ops.render.render(animation=True)
+
+            scene.frame_set(frame=scene.frame_start)
             return self.cancel(context)
 
         if event.type == 'TIMER':
-            if frame_current == scene.frame_start:
-                scene.mol_stime = clock()
+            
+            mol_substep = scene.mol_substep
+            framesubstep = frame_current / (mol_substep + 1)
+            
+            if framesubstep == int(framesubstep):
+                moltime = clock()
+            
             mol_exportdata = context.scene.mol_exportdata
             mol_exportdata.clear()
             simulate.pack_data(context, False)
@@ -310,9 +295,7 @@ class MolSimulateModal(bpy.types.Operator):
                     if psys.settings.mol_active and len(psys.particles):
                         psys.particles.foreach_set('velocity', mol_importdata[1][i])
                         i += 1
-
-            mol_substep = scene.mol_substep
-            framesubstep = frame_current / (mol_substep + 1)
+                        
             if framesubstep == int(framesubstep):
                 etime = clock()
                 print("    frame " + str(framesubstep + 1) + ":")
@@ -320,26 +303,25 @@ class MolSimulateModal(bpy.types.Operator):
                 if scene.mol_totallink:
                     print("      links broken :", scene.mol_deadlink)
                     print("      total links:", scene.mol_totallink - scene.mol_totaldeadlink ,"/", scene.mol_totallink," (",round((((scene.mol_totallink - scene.mol_totaldeadlink) / scene.mol_totallink) * 100), 2), "%)")
-                print("      Molecular Script: " + str(round(etime - scene.mol_stime, 3)) + " sec")
-                remain = (((etime - scene.mol_stime) * (scene.mol_old_endframe - framesubstep - 1)))
+                print("      Molecular Script: " + str(round((etime - moltime)*mol_substep, 3)) + " sec")
+                remain = (etime - moltime) * mol_substep *(scene.mol_old_endframe - framesubstep - 1)
                 days = int(strftime('%d', gmtime(remain))) - 1
                 scene.mol_timeremain = strftime(str(days) + ' days %H hours %M mins %S secs', gmtime(remain))
                 print("      Remaining estimated:", scene.mol_timeremain)
                 scene.mol_newlink = 0
                 scene.mol_deadlink = 0
-                scene.mol_stime = clock()
                 stime2 = clock()
+                
             scene.mol_newlink += mol_importdata[2]
             scene.mol_deadlink += mol_importdata[3]
             scene.mol_totallink = mol_importdata[4]
             scene.mol_totaldeadlink = mol_importdata[5]
-
-            self.check_write_uv_cache(context)
+          
             scene.frame_set(frame=frame_current + 1)
 
             if framesubstep == int(framesubstep):
                 etime2 = clock()
-                print("      Blender: " + str(round(etime2 - stime2, 3)) + " sec")
+                print("      Blender: " + str(round((etime2 - stime2)*mol_substep, 3)) + " sec")
                 stime2 = clock()
 
         return {'PASS_THROUGH'}
@@ -353,6 +335,14 @@ class MolSimulateModal(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def cancel(self, context):
+        # total time
+        tt = time() - self.st
+        tt_s = convert_time_to_string(tt)
+        
+        print("Total time : " + tt_s + " sec")
+        
+        self.report({'INFO'}, 'Total time: {0}'.format(tt_s))
+        
         context.window_manager.event_timer_remove(self._timer)
         return {'CANCELLED'}
 
@@ -364,9 +354,15 @@ class MolClearCache(bpy.types.Operator):
 
     def execute(self, context):
         bpy.ops.ptcache.free_bake_all()
-        ccache = context.object.particle_systems.active.settings.count
-        context.object.particle_systems.active.settings.count = ccache
+        for ob in context.view_layer.objects:
+            obj = get_object(context, ob)
+            for psys in obj.particle_systems:
+                if psys.settings.mol_active:
+                    step = psys.point_cache.frame_step
+                    psys.point_cache.frame_step = step
+                    
         context.scene.frame_current = 1
+        
         return {'FINISHED'}
 
 class MolResetCache(bpy.types.Operator):
@@ -376,9 +372,7 @@ class MolResetCache(bpy.types.Operator):
 
     def execute(self, context):
         ccache = context.object.particle_systems.active.settings.use_modifier_stack
-        context.object.particle_systems.active.settings.use_modifier_stack = not ccache
-        context.view_layer.update()
         context.object.particle_systems.active.settings.use_modifier_stack = ccache
-        #context.view_layer.update()
         context.scene.frame_current = 1
+        
         return {'FINISHED'}
