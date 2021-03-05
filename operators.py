@@ -96,9 +96,18 @@ class MolSetGlobalUV(bpy.types.Operator):
         psys = obj.particle_systems.active
         psys.settings.use_rotations = True
         psys.settings.angular_velocity_mode = 'RAND'
-        coord = [0, 0, 0] * len(psys.particles)
-        psys.particles.foreach_get("location", coord)
-        psys.particles.foreach_set("angular_velocity", coord)
+        #coord = [0, 0, 0] * len(psys.particles)
+        #psys.particles.foreach_get("location", coord)
+        par_uv = []
+        for par in psys.particles:
+            
+            newuv = (par.location @ obj.matrix_world)
+        
+            par_uv.append(newuv[0])
+            par_uv.append(newuv[1])
+            par_uv.append(newuv[2])
+        
+        psys.particles.foreach_set("angular_velocity", par_uv)
         
         print('         global uv baked on:', psys.settings.name)
 
@@ -112,7 +121,6 @@ class MolSetActiveUV(bpy.types.Operator):
     objname : bpy.props.StringProperty()
         
     def execute(self, context):
-        scene = context.scene
 
         obj = get_object(context, context.view_layer.objects[self.objname])
         
@@ -184,7 +192,7 @@ class MolSetActiveUV(bpy.types.Operator):
             par_uv.append(newuv[1])
             par_uv.append(newuv[2])
 
-        scene.collection.objects.unlink(obj2)
+        context.scene.collection.objects.unlink(obj2)
         bpy.data.objects.remove(obj2)
         bpy.data.meshes.remove(obdata)
         
