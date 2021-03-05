@@ -94,21 +94,17 @@ class MolSetGlobalUV(bpy.types.Operator):
         print('  start bake global uv from:', obj.name)
 
         psys = obj.particle_systems.active
-        psys.settings.use_rotations = True
-        psys.settings.angular_velocity_mode = 'RAND'
-        #coord = [0, 0, 0] * len(psys.particles)
-        #psys.particles.foreach_get("location", coord)
+        
         par_uv = []
         for par in psys.particles:
             
             newuv = (par.location @ obj.matrix_world)
-        
             par_uv.append(newuv[0])
             par_uv.append(newuv[1])
             par_uv.append(newuv[2])
         
-        psys.particles.foreach_set("angular_velocity", par_uv)
         
+        psys.particles.foreach_set("angular_velocity", par_uv)
         print('         global uv baked on:', psys.settings.name)
 
         return {'FINISHED'}
@@ -369,6 +365,8 @@ class MolClearCache(bpy.types.Operator):
                 if psys.settings.mol_active:
                     step = psys.point_cache.frame_step
                     psys.point_cache.frame_step = step
+                    ccache = context.object.particle_systems.active.settings.use_modifier_stack
+                    context.object.particle_systems.active.settings.use_modifier_stack = ccache
                     
         context.scene.frame_current = 1
         
