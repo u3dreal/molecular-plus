@@ -23,7 +23,7 @@ bl_info = {
         "Pavel_Blend, "
         "Martin Felke (scorpion81), "
         "Gregor Quade (u3dreal)",
-    "version": (1, 1, 1),
+    "version": (1, 1, 2),
     "blender": (2, 80, 0),
     "location": "Properties editor > Physics Tab",
     "description":

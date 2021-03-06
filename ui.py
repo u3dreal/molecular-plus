@@ -104,17 +104,39 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
 
             row = box.row()
             row.operator("molecular_operators.molecular_makeemitter", icon = 'MOD_PARTICLE_INSTANCE',text = "Emitter")
-            row = box.row()
+            #row = box.row()
             row.operator("molecular_operators.molecular_makegrid2d", icon = 'GRID',text = "2D Grid")
             row = box.row()
             row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
-            row = box.row()
+            #row = box.row()
             row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
                 #row = box.row
         else:
             if obj and not ('Collision' in obj.modifiers):
                 row = layout.row()
                 row.label(text = "No Mesh selected !")
+        row = layout.separator()
+
+        box = layout.box()
+        row = box.row()
+        box.active = True
+        box.alert = True
+        row.alignment = 'CENTER'
+        row.label(text = "THANKS TO ALL DONATORS !")
+        row = box.row()
+        row.alignment = 'CENTER'
+        row.label(text = "If you want donate to support my work")
+        row = box.row()
+        row.alignment = 'CENTER'
+        row.operator("wm.url_open", text=" click here to Donate ", icon='URL').url = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA"
+        row = box.row()
+        row.alignment = 'CENTER'
+        row.label(text = "or visit: ")
+        row = box.row()
+        row.alignment = 'CENTER'
+        row.operator("wm.url_open", text=" q3de.com ", icon='URL').url = "http://www.q3de.com/research/molecular"
+        #row.label(text = "www.q3de.com")
+        
 
 class MS_PT_MolecularPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
@@ -180,26 +202,32 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         row = layout.row()
 
         ###   Collision   ###
-        row.label(text = "Collisions :")
+        
         box = layout.box()
+        row = box.row()
+        row.label(text = "Collisions :")
         row = box.row()
         row.prop(psys.settings,"mol_selfcollision_active", icon = 'PHYSICS', text = "Self Collision")
         row.prop(psys.settings,"mol_othercollision_active", icon = 'PHYSICS', text = "Collision with Others")
         if psys.settings.mol_othercollision_active:
             box.prop(psys.settings,"mol_collision_group",text = "only with:")
         if psys.settings.mol_selfcollision_active or psys.settings.mol_othercollision_active:
-            box.prop(psys.settings,"mol_friction",text = " Friction:")
-            box.prop(psys.settings,"mol_collision_damp",text = " Damping:")
-
-        row = layout.separator()
-        row = layout.row()
+            row = box.row()
+            row.prop(psys.settings,"mol_friction",text = " Friction:")
+            row.prop(psys.settings,"mol_collision_damp",text = " Damping:")
 
         ###   Links at Birth   ###
-        row.label(text = "Linking :")
+        
         box = layout.box()
+        row = box.row()
+        row.label(text = "Links :")
         row = box.row()
         row.prop(psys.settings,"mol_links_active", icon = 'CONSTRAINT', text = "Link at Birth")
         row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Link with Others at Birth")
+        if psys.settings.mol_other_link_active:
+            row = box.row()
+            row.prop(psys.settings,"mol_relink_group",text = "Only with:")
+
 
         if psys.settings.mol_links_active :
             row = box.row()
@@ -248,18 +276,15 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
 
         box = layout.box()
         row = box.row()
+        row.label(text = "ReLinks :")
         #row.prop(psys.settings,"mol_selfrelink_active", icon = 'CONSTRAINT', text = "Self Relink")
-        row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Relink with Others")
-
-        if psys.settings.mol_other_link_active:
-            row = box.row()
-            row.prop(psys.settings,"mol_relink_group",text = "Only with:")
-
-        if psys.settings.mol_other_link_active:#psys:#.settings.mol_selfrelink_active or psys.settings.mol_otherrelink_active:
-            row = box.row()
-            row.prop(psys.settings,"mol_relink_chance",text = "% linking")
-            row.prop(psys.settings,"mol_relink_chancerand",text = "Rand % linking")
-
+        #row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Relink with Others")
+        #if psys.settings.mol_other_link_active: # or psys.settings.mol_selfrelink_active:# or psys.settings.mol_otherrelink_active:
+        row = box.row()
+        row.prop(psys.settings,"mol_relink_chance",text = "% linking")
+        row.prop(psys.settings,"mol_relink_chancerand",text = "Rand % linking")
+        
+        if psys.settings.mol_relink_chance > 0.0:
             row = box.row()
             row.prop(psys.settings,"mol_relink_max",text = "Max links")
             row = box.row()
@@ -303,29 +328,6 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         row = box.row()
         row.active = psys.settings.mol_bakeuv
         row.prop(psys.settings,"mol_bakeuv_global",text = "Global")
-
-        row = layout.separator()
-
-        """
-        box = layout.box()
-        row = box.row()
-        box.active = False
-        box.alert = False
-        row.alignment = 'CENTER'
-        row.label(text = "THANKS TO ALL DONATORS !")
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.label(text = "If you want donate to support my work")
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.operator("wm.url_open", text=" click here to Donate ", icon='URL').url = "www.pyroevil.com/donate/"
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.label(text = "or visit: ")
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.label(text = "www.pyroevil.com/donate/")
-        """
 
 class MolecularAdd(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_add"

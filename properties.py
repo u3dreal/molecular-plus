@@ -179,7 +179,7 @@ def define_props():
         name='Only links with:',
         default=1, min=1, description=descriptions.RELINK_GROUP
     )
-
+    
 #    item = []
 #    for i in range(1,12):
 #        item.append((str(i),"Relink Group " + str(i),"Relink only with group " + str(i) ))
@@ -361,7 +361,7 @@ def define_props():
     bpy.types.Scene.mol_voxel_size = bpy.props.FloatProperty(
         name = "mol_voxel_size",
         description = "Voxel Size for Grid",
-        min = 0.001, precision = 4, 
+        min = 0.001, max=1.0,precision = 6, step=0.0001,
         default = 0.1
     )
     bpy.types.Scene.mol_hexgrid = bpy.props.BoolProperty(
