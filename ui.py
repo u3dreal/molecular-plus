@@ -11,7 +11,8 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return True #context.object != None and context.object.type == 'MESH'
+        
+        return True #psys.settings.mol_active  #context.object != None and context.object.type == 'MESH'
 
     def draw(self, context):
 
@@ -21,11 +22,11 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
         #psys = obj.particle_systems.active
 
         if context.object != None:
-            psys = get_object(context, obj).particle_systems.active
-
+            #psys = get_object(context, obj).particle_systems.active
+            psys = obj.particle_systems.active
         row = layout.row()
 
-        if obj and psys != None:
+        if obj and psys != None: # and psys.settings.mol_active:
 
             box = layout.box()
             row = box.row()
@@ -117,6 +118,24 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row.label(text = "No Mesh selected !")
         row = layout.separator()
 
+        
+        
+class MS_PT_MolecularDonorPanel(bpy.types.Panel):
+    """Creates a Panel in the Tool properties window"""
+    bl_label = "Donations"
+    bl_idname = "OBJECT_PT_molecular_donations"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Molecular+"
+
+    @classmethod
+    def poll(cls, context):
+        
+        return True #psys.settings.mol_active  #context.object != None and context.object.type == 'MESH'
+
+    def draw(self, context):
+
+        layout = self.layout
         box = layout.box()
         row = box.row()
         box.active = True
@@ -137,7 +156,6 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
         row.operator("wm.url_open", text=" q3de.com ", icon='URL').url = "http://www.q3de.com/research/molecular"
         #row.label(text = "www.q3de.com")
         
-
 class MS_PT_MolecularPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
     bl_label = "Molecular"
@@ -342,9 +360,6 @@ class MolecularAdd(bpy.types.Operator):
     def execute(self, context):
         obj = context.object
         psys = obj.particle_systems.active
-        #for the data
-        psys_eval = get_object(context, obj).particle_systems.active
-
         psys.settings.mol_active = True
 
         return {'FINISHED'}
@@ -359,10 +374,8 @@ class MolecularRemove(bpy.types.Operator):
         obj = context.object
 
         psys = obj.particle_systems.active
-        #for the data
-        psys_eval = get_object(context, obj).particle_systems.active
-
         psys.settings.mol_active = False
+        
         return {'FINISHED'}
 
 
@@ -400,4 +413,4 @@ def append_to_PHYSICS_PT_add_panel(self, context):
                 )
 
 
-panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel)
+panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel, MS_PT_MolecularDonorPanel)

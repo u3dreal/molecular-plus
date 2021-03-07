@@ -31,8 +31,8 @@ class MolecularGrid3d(bpy.types.Operator):
             psys.distribution = 'GRID'
 
             if init:
-                psys.frame_start = 0
-                psys.frame_end = 0
+                psys.frame_start = 1
+                psys.frame_end = 1
                 psys.lifetime = 500
                 psys.grid_random = 0.02
                 psys.use_size_deflect = True
@@ -86,8 +86,8 @@ class MolecularGrid2d(bpy.types.Operator):
             psys.distribution = 'GRID'
 
             if init:
-                psys.frame_start = 0
-                psys.frame_end = 0
+                psys.frame_start = 1
+                psys.frame_end = 1
                 psys.lifetime = 500
                 psys.grid_random = 0.02
                 psys.use_size_deflect = True
