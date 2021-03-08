@@ -31,7 +31,7 @@ bl_info = {
         "and for creating links between particles",
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "http://q3de.com/research/molecular/",
-    "tracker_url": "https://discord.gg/vKUUmDDu" ,
+    "tracker_url": "https://discord.gg/tAwvNEAfA3" ,
     "category": "Physics"
 }
 
@@ -50,6 +50,7 @@ def register():
     bpy.utils.register_class(operators.MolSet_Substeps)
     bpy.utils.register_class(operators.MolClearCache)
     bpy.utils.register_class(operators.MolResetCache)
+    bpy.utils.register_class(operators.MolRemoveCollider)
     for panel in ui.panel_classes:
         bpy.utils.register_class(panel)
     for panel in creators.create_classes:
@@ -73,6 +74,7 @@ def unregister():
     bpy.utils.unregister_class(operators.MolSet_Substeps)
     bpy.utils.unregister_class(operators.MolClearCache)
     bpy.utils.unregister_class(operators.MolResetCache)
+    bpy.utils.unregister_class(operators.MolRemoveCollider)
     for panel in reversed(ui.panel_classes):
         bpy.utils.unregister_class(panel)
     for panel in reversed(creators.create_classes):

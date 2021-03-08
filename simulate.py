@@ -1,6 +1,9 @@
 import bpy
 import math
 from .utils import get_object
+from time import time
+
+import concurrent.futures
 
 def pack_data(context, initiate):
     psyslen = 0
@@ -13,35 +16,30 @@ def pack_data(context, initiate):
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
+            
+            parlen = len(psys.particles)
+            
+            if psys.settings.mol_active and parlen:
                 
-            if psys.settings.mol_active and len(psys.particles):
-                parlen = len(psys.particles)
                 par_loc = [0, 0, 0] * parlen
                 par_vel = [0, 0, 0] * parlen
                 par_size = [0] * parlen
-                par_alive = []
+                par_alive = [0] * parlen
+                parnum += parlen
                 
-                for par in psys.particles:
-                    parnum += 1
-                    if par.alive_state == "UNBORN":
-                        par_alive.append(2)
-                    if par.alive_state == "ALIVE":
-                        par_alive.append(0)
-                    if par.alive_state == "DEAD":
-                        par_alive.append(3)
-                
+                psys.particles.foreach_get('alive_state', par_alive)
                 psys.particles.foreach_get('location', par_loc)
                 psys.particles.foreach_get('velocity', par_vel)
                 
                 if initiate:
                     par_mass = []
+                    psys.particles.foreach_get('size', par_size)
 
                     if psys.settings.mol_density_active:
-                        for par in psys.particles:
-                            par_mass.append(psys.settings.mol_density * (4 / 3 * math.pi * ((par.size / 2) ** 3)))
+                        for i in range(len(par_size)):
+                            par_mass.append(psys.settings.mol_density * (4 / 3 * 3.141592653589793 * ((par_size[i] / 2) ** 3)))
                     else:
-                        for par in psys.particles:
-                            par_mass.append(psys.settings.mass)
+                        par_mass = [psys.settings.mass] * len(psys.particles)
 
                     """
                     if scene.mol_timescale_active == True:
@@ -52,7 +50,7 @@ def pack_data(context, initiate):
 
                     psyslen += 1
                     
-                    psys.particles.foreach_get('size', par_size)
+                    
                     
                     if bpy.context.scene.mol_minsize > min(par_size):
                         bpy.context.scene.mol_minsize = min(par_size)
@@ -127,7 +125,7 @@ def pack_data(context, initiate):
                     params[42] = psys.settings.mol_relink_ebroken
                     params[43] = psys.settings.mol_relink_ebrokenrand
                     params[44] = psys.settings.mol_link_friction  
-                    params[45] = psys.settings.mol_link_group 
+                    params[45] = psys.settings.mol_link_group   
                     params[46] = psys.settings.mol_other_link_active 
 
                 mol_exportdata = bpy.context.scene.mol_exportdata

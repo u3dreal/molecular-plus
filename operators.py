@@ -11,25 +11,35 @@ from mathutils.geometry import barycentric_transform as barycentric
 from . import simulate, core
 from .utils import get_object, destroy_caches
 
+
+class MolRemoveCollider(bpy.types.Operator):
+    bl_idname = "object.mol_remove_collision"
+    bl_label = "Remove Collision"
+    
+    def execute(self, context):
+        bpy.ops.object.modifier_remove(modifier='Collision')
+        
+        return {'FINISHED'}
+    
 class MolSet_Substeps(bpy.types.Operator):
     bl_idname = "object.mol_set_subs"
     bl_label = 'Set SubSteps'
 
     def execute(self, context):
         parcount = 0
-        scene = context.scene
         for obj in bpy.data.objects:
             if obj.particle_systems.active != None:
                 psys = get_object(context, obj).particle_systems.active
                 parcount += len(psys.particles)
-
-        diff = (psys.settings.mol_var3 / psys.settings.mol_var1)
-        factor = (parcount**(1/3) / psys.settings.mol_var1**(1/3))
-        newsubstep = int(round(factor * psys.settings.mol_var2))
-        if scene.mol_autosubsteps:
-            scene.mol_substep = newsubstep
-        scene.mol_parnum = parcount
-
+                
+        context.scene.mol_parnum = parcount
+                
+        if context.scene.mol_autosubsteps:
+            diff = (psys.settings.mol_var3 / psys.settings.mol_var1)
+            factor = (parcount**(1/3) / psys.settings.mol_var1**(1/3))
+            newsubstep = int(round(factor * psys.settings.mol_var2))
+            context.scene.mol_substep = newsubstep
+            
         return {'FINISHED'}
 
 
@@ -239,9 +249,9 @@ class MolSimulateModal(bpy.types.Operator):
 
             for psys in obj.particle_systems:
                 if psys.settings.mol_bakeuv:
-                    context.view_layer.update()
+                    #context.view_layer.update()
                     scene.frame_set(frame=psys.settings.frame_start)
-                    context.view_layer.update()
+                    #context.view_layer.update()
                     if psys.settings.mol_bakeuv_global:
                         bpy.ops.object.mol_set_global_uv("INVOKE_DEFAULT", objname = obj.name)
                     else:
@@ -291,7 +301,8 @@ class MolSimulateModal(bpy.types.Operator):
             mol_exportdata.clear()
             simulate.pack_data(context, False)
             mol_importdata = core.simulate(mol_exportdata)
-
+            if framesubstep == int(framesubstep):
+                etime = clock()
             i = 0
             for ob in bpy.data.objects:
                 obj = get_object(context, ob)
@@ -302,7 +313,6 @@ class MolSimulateModal(bpy.types.Operator):
                         i += 1
                         
             if framesubstep == int(framesubstep):
-                etime = clock()
                 print("    frame " + str(framesubstep + 1) + ":")
                 print("      links created:", scene.mol_newlink)
                 if scene.mol_totallink:
@@ -315,7 +325,6 @@ class MolSimulateModal(bpy.types.Operator):
                 print("      Remaining estimated:", scene.mol_timeremain)
                 scene.mol_newlink = 0
                 scene.mol_deadlink = 0
-                stime2 = clock()
                 
             scene.mol_newlink += mol_importdata[2]
             scene.mol_deadlink += mol_importdata[3]
@@ -326,8 +335,7 @@ class MolSimulateModal(bpy.types.Operator):
 
             if framesubstep == int(framesubstep):
                 etime2 = clock()
-                print("      Blender: " + str(round((etime2 - stime2)*mol_substep, 3)) + " sec")
-                stime2 = clock()
+                print("      Blender: " + str(round((etime2 - etime)*mol_substep, 3)) + " sec")
 
         return {'PASS_THROUGH'}
 

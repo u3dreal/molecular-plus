@@ -44,7 +44,7 @@ cdef Particle *parlist = NULL
 cdef SParticle *parlistcopy = NULL
 cdef ParSys *psys = NULL
 cdef KDTree *kdtree = NULL
-print("cmolcore imported with success! v1.12")
+print("cmolcore imported with success! v1.13")
 
 
 cpdef init(importdata):
@@ -691,8 +691,9 @@ cdef void collide(Particle *par)nogil:
     cdef float force1 = 0
     cdef float force2 = 0
     cdef float mathtmp = 0
-
-    if  par.state >= 2:
+    
+    #print(par.state)
+    if  par.state < 2:
         return
     if par.sys.selfcollision_active == False \
             and par.sys.othercollision_active == False:
@@ -727,7 +728,7 @@ cdef void collide(Particle *par)nogil:
             target = (par.size + par2.size) * 0.999
             sqtarget = target * target
 
-            if check == 0 and par2.state <= 1 and \
+            if check == 0 and par2.state > 1 and \
                     arraysearch(
                         par2.id, par.link_with, par.link_withnum
                     ) == -1 and \
@@ -909,7 +910,7 @@ cdef void solve_link(Particle *par)nogil:
     cdef float *ypar2_vel = [0, 0, 0]
     cdef float *xpar2_vel = [0, 0, 0]
     # broken_links = []
-    if  par.state >= 2:
+    if  par.state < 2:
         return
     for i in xrange(par.links_num):
         if par.links[i].start != -1:
@@ -958,10 +959,10 @@ cdef void solve_link(Particle *par)nogil:
                 ratio1 = (par2.mass/(par1.mass + par2.mass))
                 ratio2 = (par1.mass/(par1.mass + par2.mass))
 
-                if par1.state == 3: #dead particle, correct velocity ratio of alive partner
+                if par1.state == 0: #dead particle, correct velocity ratio of alive partner
                     ratio1 = 0
                     ratio2 = 1
-                elif par2.state == 3:
+                elif par2.state == 0:
                     ratio1 = 1
                     ratio2 = 0
 
@@ -1083,7 +1084,7 @@ cdef void update(data):
                     # free(psys[i].particles[ii].neighbours)
                     psys[i].particles[ii].neighboursnum = 0
 
-            elif psys[i].particles[ii].state == 1 and data[i][2][ii] == 0:
+            elif psys[i].particles[ii].state == 1 and data[i][2][ii] == 2:
                 psys[i].particles[ii].state = 1
 
             else:
@@ -1374,11 +1375,11 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
     fakepar = <Particle *>malloc(1 * cython.sizeof(Particle))
     par = &parlist[par_id]
 
-    if  par.state >= 2:
+    if  par.state < 2:
         return
     if par.links_activnum >= max_link:
         return
-    if par.sys.links_active == 0:
+    if par.sys.relink_chance == 0 and par.sys.links_active == 0:
         return
 
     if parothers_id == -1:
@@ -1404,7 +1405,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
             # arraysearch(par2.id, par.link_with, par.link_withnum)
 
             if arraysearch(par.id,par2.link_with,par2.link_withnum) == -1 and \
-                    par2.state <= 1 and par.state <= 1:
+                    par2.state > 1 and par.state > 1:
 
             #if par not in par2.link_with and par2.state <= 1 \
             #   and par.state <= 1:

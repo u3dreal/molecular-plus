@@ -361,7 +361,7 @@ def define_props():
     bpy.types.Scene.mol_voxel_size = bpy.props.FloatProperty(
         name = "mol_voxel_size",
         description = "Voxel Size for Grid",
-        min = 0.001, max=1.0,precision = 6, step=0.0001,
+        min = 0.0001, max=1.0,precision = 4, step=0.001,
         default = 0.1
     )
     bpy.types.Scene.mol_hexgrid = bpy.props.BoolProperty(

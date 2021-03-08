@@ -29,6 +29,7 @@ class MolecularGrid3d(bpy.types.Operator):
             psys.hexagonal_grid = context.scene.mol_hexgrid
             psys.emit_from = 'VOLUME'
             psys.distribution = 'GRID'
+            psys.normal_factor = 0.0
 
             if init:
                 psys.frame_start = 1
@@ -49,8 +50,7 @@ class MolecularGrid3d(bpy.types.Operator):
             #update
             bpy.ops.object.reset_pcache()
 
-            if context.scene.mol_autosubsteps:
-                bpy.ops.object.mol_set_subs()
+            bpy.ops.object.mol_set_subs()
 
         return {'FINISHED'}
 
@@ -84,6 +84,8 @@ class MolecularGrid2d(bpy.types.Operator):
             psys.hexagonal_grid = context.scene.mol_hexgrid
             psys.emit_from = 'FACE'
             psys.distribution = 'GRID'
+            psys.normal_factor = 0.0
+            
 
             if init:
                 psys.frame_start = 1
@@ -106,8 +108,7 @@ class MolecularGrid2d(bpy.types.Operator):
             #update
             bpy.ops.object.reset_pcache()
 
-            if context.scene.mol_autosubsteps:
-                bpy.ops.object.mol_set_subs()
+            bpy.ops.object.mol_set_subs()
 
         return {'FINISHED'}
 
@@ -139,6 +140,7 @@ class MolecularEmitter(bpy.types.Operator):
             psys.hexagonal_grid = context.scene.mol_hexgrid
             psys.emit_from = 'FACE'
             psys.distribution = 'RAND'
+            psys.normal_factor = 2.0
 
             if init:
                 psys.lifetime = 500
@@ -161,8 +163,7 @@ class MolecularEmitter(bpy.types.Operator):
             #update
             bpy.ops.object.reset_pcache()
 
-            if context.scene.mol_autosubsteps:
-                bpy.ops.object.mol_set_subs()
+            bpy.ops.object.mol_set_subs()
 
             return {'FINISHED'}
 

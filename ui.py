@@ -8,130 +8,153 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Molecular+"
+    bl_options = {'DRAW_BOX'}
 
     @classmethod
     def poll(cls, context):
         
-        return True #psys.settings.mol_active  #context.object != None and context.object.type == 'MESH'
+        return True #context.object != None #psys.settings.mol_active  #context.object != None and context.object.type == 'MESH'
 
     def draw(self, context):
 
         layout = self.layout
         scn = context.scene
         obj = context.object
-        #psys = obj.particle_systems.active
-
-        if context.object != None:
-            #psys = get_object(context, obj).particle_systems.active
-            psys = obj.particle_systems.active
+        
         row = layout.row()
-
-        if obj and psys != None: # and psys.settings.mol_active:
-
-            box = layout.box()
-            row = box.row()
+        box = layout.box()
+        row = box.row()
+        
+        if obj != None:
+            
             row.label(text = "Molecular Object : " + obj.name)
-            row = box.row()
-            row.label(text = "System particles : " + str(scn.mol_parnum))
-            row.operator("object.mol_set_subs", text = "", icon = "FILE_REFRESH")
 
-            box = layout.box()
-            row = box.row()
-            if scn.mol_simrun == False and psys.point_cache.is_baked == False:
-                row.enabled = True
-                row.operator("object.mol_simulate", icon = 'RADIOBUT_ON',text = "Start Simulation")
+            if context.object.particle_systems.active:
+
+                psys = get_object(context, obj).particle_systems.active
+                parcount = len(psys.particles)
                 row = box.row()
-                row.enabled = False
-                row.operator("object.clear_pcache", text="Free All Bakes")
-
-
-            if psys.point_cache.is_baked == True and scn.mol_simrun == False:
-                row.enabled = False
-                row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Simulation baked")
+                row.label(text = "System particles : " + str(parcount))
                 row = box.row()
-                row.enabled = True
-                row.operator("object.clear_pcache", text="Free All Bakes")
-            if scn.mol_simrun == True:
-                row.enabled = False
-                row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Process: " + scn.mol_timeremain + " left")
+                row.label(text = "Total particles : " + str(scn.mol_parnum))
+                row.operator("object.mol_set_subs", text = "", icon = "FILE_REFRESH")
+
+                box = layout.box()
                 row = box.row()
-                row.enabled = False
-                row.operator("object.clear_pcache", text="Free All Bakes")
-
-            #row.prop(scn,"frame_start",text = "start")
-            #row.prop(scn,"frame_end",text = "end")
-            #row = layout.row()
-            #row.prop(scn,"mol_timescale_active",text = "Activate TimeScaling")
-            #row = layout.row()
-            #row.enabled = scn.mol_timescale_active
-            #row.prop(scn,"timescale",text = "TimeScale")
-            #row.label(text = "")
-            #row = box.row()
-
-            row = box.row()
-            row.prop(scn,"mol_bake",text = "Bake Solve")
-            row.prop(scn,"mol_render",text = "Render")
-            #row = layout.row()
-            col = layout.column()
-            row = col.row()
-            row.active = not scn.mol_autosubsteps
-            row.prop(scn,"mol_substep", text = "Steps")#, enabled = !scn.mol_autosubsteps)
-            row.prop(scn,"mol_autosubsteps", text = "auto")
-            col.prop(scn,"mol_cpu",text = "CPUs")
+                if scn.mol_simrun == False and psys.point_cache.is_baked == False:
+                    row.enabled = True
+                    row.operator("object.mol_simulate", icon = 'RADIOBUT_ON',text = "Start Simulation")
+                    row = box.row()
+                    row.enabled = False
+                    row.operator("object.clear_pcache", text="Free All Bakes")
 
 
-        if obj and ('Collision' in obj.modifiers) and not psys:
-            box = layout.box()
-            row = box.row()
-            row.label(text = "Collision: " + obj.name)
-            row = box.row()
-            row.prop(obj.collision, "damping_factor", text = "Damping")
-            row = box.row()
-            row.prop(obj.collision, "friction_factor", text = "Friction")
-            row = box.row()
-            row.prop(obj.collision, "stickiness", text = "Stickiness", slider=True)
+                if psys.point_cache.is_baked == True and scn.mol_simrun == False:
+                    row.enabled = False
+                    row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Simulation baked")
+                    row = box.row()
+                    row.enabled = True
+                    row.operator("object.clear_pcache", text="Free All Bakes")
+                if scn.mol_simrun == True:
+                    row.enabled = False
+                    row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Process: " + scn.mol_timeremain + " left")
+                    row = box.row()
+                    row.enabled = False
+                    row.operator("object.clear_pcache", text="Free All Bakes")
 
-        if obj and obj.type == 'MESH' and not ('Collision' in obj.modifiers):
-            box = layout.box()
-            row = box.row()
-            row.label(text = "Create :")
-            row = box.row()
-            row.prop(scn,"mol_voxel_size",text = "Voxel Size")
-            row.alignment=('RIGHT')
-            row.prop(scn,"mol_hexgrid", text = "hexa")
+                #row.prop(scn,"frame_start",text = "start")
+                #row.prop(scn,"frame_end",text = "end")
+                #row = layout.row()
+                #row.prop(scn,"mol_timescale_active",text = "Activate TimeScaling")
+                #row = layout.row()
+                #row.enabled = scn.mol_timescale_active
+                #row.prop(scn,"timescale",text = "TimeScale")
+                #row.label(text = "")
+                #row = box.row()
 
-
-            #box=layout.box()
-
-            row = box.row()
-            row.operator("molecular_operators.molecular_makeemitter", icon = 'MOD_PARTICLE_INSTANCE',text = "Emitter")
-            #row = box.row()
-            row.operator("molecular_operators.molecular_makegrid2d", icon = 'GRID',text = "2D Grid")
-            row = box.row()
-            row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
-            #row = box.row()
-            row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
-                #row = box.row
-        else:
-            if obj and not ('Collision' in obj.modifiers):
+                row = box.row()
+                row.prop(scn,"mol_bake",text = "Bake")
+                row.prop(scn,"mol_render",text = "Render")
                 row = layout.row()
-                row.label(text = "No Mesh selected !")
-        row = layout.separator()
+                col = row.column()
+                row = col.row()
+                row.active = not scn.mol_autosubsteps
+                row.prop(scn,"mol_substep", text = "Steps")#, enabled = !scn.mol_autosubsteps)
+                row.prop(scn,"mol_autosubsteps", text = "auto")
+                col.prop(scn,"mol_cpu",text = "Threads")
+        else:
+            row.label(text="No Object selected")
 
+            
+class MS_PT_MolecularInspectPanel(bpy.types.Panel):
+    """Creates a Panel in the Tool properties window"""
+    bl_label = "Inspect"
+    bl_idname = "OBJECT_PT_molecular_inspect"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Molecular+"
+    bl_options = {'DRAW_BOX'}
+    
+    @classmethod
+    def poll(cls, context):
+        return context.object and ('Collision' in context.object.modifiers)
+    
+    def draw(self, context):
+        layout = self.layout
+        obj = context.object
+        
+        row = layout.row()
+        row.label(text = "Collision: " + obj.name)
+        row.operator("object.mol_remove_collision",text="", icon='X')
+        row = layout.row()
+        row.prop(obj.collision, "damping_factor", text = "Damping")
+        row = layout.row()
+        row.prop(obj.collision, "friction_factor", text = "Friction")
+        row = layout.row()
+        row.prop(obj.collision, "stickiness", text = "Stickiness", slider=True)
+
+            
+class MS_PT_MolecularCreatePanel(bpy.types.Panel):
+    """Creates a Panel in the Tool properties window"""
+    bl_label = "Create"
+    bl_idname = "OBJECT_PT_molecular_create"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Molecular+"
+    bl_options = {'DRAW_BOX'}
+    
+    @classmethod
+    def poll(cls, context):
+        return context.object != None and context.object.type == 'MESH' and not ('Collision' in context.object.modifiers)
+    
+    def draw(self,context):
+        
+        layout = self.layout
+        scn = context.scene
+        obj = context.object
+
+        row = layout.row()
+        row.alignment = 'RIGHT'
+        row.prop(scn,"mol_voxel_size", text = "Size")
+        row.prop(scn,"mol_hexgrid", text = "hexa")
+        row = layout.separator()
+        row = layout.row()
+        row.operator("molecular_operators.molecular_makeemitter", icon = 'MOD_PARTICLE_INSTANCE',text = "Emitter")
+        row.operator("molecular_operators.molecular_makegrid2d", icon = 'GRID',text = "2D Grid")
+        row = layout.row()
+        row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
+        row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
+    
         
         
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
-    bl_label = "Donations"
+    bl_label = "q3De"
     bl_idname = "OBJECT_PT_molecular_donations"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Molecular+"
-
-    @classmethod
-    def poll(cls, context):
-        
-        return True #psys.settings.mol_active  #context.object != None and context.object.type == 'MESH'
+    bl_options = {'DEFAULT_CLOSED','DRAW_BOX'}
 
     def draw(self, context):
 
@@ -139,18 +162,20 @@ class MS_PT_MolecularDonorPanel(bpy.types.Panel):
         box = layout.box()
         row = box.row()
         box.active = True
-        box.alert = True
+        #box.alert = True
         row.alignment = 'CENTER'
         row.label(text = "THANKS TO ALL DONATORS !")
         row = box.row()
         row.alignment = 'CENTER'
-        row.label(text = "If you want donate to support my work")
+        row.label(text = "If you want to ")
+        row = box.row()
+        row.label(text = "Support the Development")
         row = box.row()
         row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" click here to Donate ", icon='URL').url = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA"
         row = box.row()
         row.alignment = 'CENTER'
-        row.label(text = "or visit: ")
+        row.label(text = "or visit:")
         row = box.row()
         row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" q3de.com ", icon='URL').url = "http://www.q3de.com/research/molecular"
@@ -413,4 +438,4 @@ def append_to_PHYSICS_PT_add_panel(self, context):
                 )
 
 
-panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel, MS_PT_MolecularDonorPanel)
+panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel, MS_PT_MolecularCreatePanel, MS_PT_MolecularInspectPanel, MS_PT_MolecularDonorPanel)
