@@ -46,7 +46,7 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
     "__init__.py", "_version.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
     "simulate.py", "ui.py", "utils.py", "core.cpython*.so", "core.cpython*.pyd", 'core.cpython-{}-darwin.so'.format(v), 'core.cp{}-win_amd64.pyd'.format(v), 'core.cpython-{}-x86_64-linux-gnu.so'.format(v))
 
-    with ZipFile('molecular+_{}_'.format(version) + 'Python_{}_'.format(v) + name + '.zip', 'w') as z:
+    with ZipFile('molecular-plus_{}_'.format(version) + '{}_'.format(v) + name + '.zip', 'w') as z:
         for root, _, files in walk('molecular'):
             for file in files:
                 if file not in molfiles:
