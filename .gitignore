@@ -1,12 +1,5 @@
 
-__pycache__/__init__.cpython-37.pyc
-__pycache__/creators.cpython-37.pyc
-__pycache__/descriptions.cpython-37.pyc
-__pycache__/operators.cpython-37.pyc
-__pycache__/properties.cpython-37.pyc
-__pycache__/simulate.cpython-37.pyc
-__pycache__/ui.cpython-37.pyc
-__pycache__/utils.cpython-37.pyc
+__pycache__/*
 
 core.cython*.so
 c_sources/build/temp.macosx-10.13-x86_64-3.7/core.o
