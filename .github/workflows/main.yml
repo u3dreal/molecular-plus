@@ -37,8 +37,8 @@ jobs:
     - name: Upload windows zip
       uses: actions/upload-artifact@v2
       with:
-          name: molecular+_${{steps.build.outputs.version}}_Python_3.7m_win.zip
-          path: molecular+_${{steps.build.outputs.version}}_Python_3.7m_win.zip
+          name: molecular+_${{steps.build.outputs.version}}_Python_37m_win.zip
+          path: molecular+_${{steps.build.outputs.version}}_Python_37m_win.zip
              
   build_linux:
 
@@ -66,8 +66,8 @@ jobs:
     - name: Upload linux zip
       uses: actions/upload-artifact@v2
       with:
-          name: molecular+_${{steps.build.outputs.version}}_Python_3.7m_linux.zip
-          path: molecular+_${{steps.build.outputs.version}}_Python_3.7m_linux.zip
+          name: molecular+_${{steps.build.outputs.version}}_Python_37m_linux.zip
+          path: molecular+_${{steps.build.outputs.version}}_Python_37m_linux.zip
   
   build_macos:
 
@@ -95,5 +95,5 @@ jobs:
     - name: Upload mac zip
       uses: actions/upload-artifact@v2
       with:
-          name: molecular+_${{steps.build.outputs.version}}_Python_3.7m_macos.zip
-          path: molecular+_${{steps.build.outputs.version}}_Python_3.7m_macos.zip
+          name: molecular+_${{steps.build.outputs.version}}_Python_37m_macos.zip
+          path: molecular+_${{steps.build.outputs.version}}_Python_37m_macos.zip
