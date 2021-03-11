@@ -26,7 +26,6 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
         row = box.row()
         
         if obj != None:
-            
             row.label(text = "Molecular Object : " + obj.name)
 
             if context.object.particle_systems.active:
@@ -162,20 +161,20 @@ class MS_PT_MolecularDonorPanel(bpy.types.Panel):
         box = layout.box()
         row = box.row()
         box.active = True
-        #box.alert = True
         row.alignment = 'CENTER'
         row.label(text = "THANKS TO ALL DONATORS !")
         row = box.row()
         row.alignment = 'CENTER'
         row.label(text = "If you want to ")
         row = box.row()
+        row.alignment = 'CENTER'
         row.label(text = "Support the Development")
         row = box.row()
         row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" click here to Donate ", icon='URL').url = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA"
         row = box.row()
         row.alignment = 'CENTER'
-        row.label(text = "or visit:")
+        row.label(text = "or visit")
         row = box.row()
         row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" q3de.com ", icon='URL').url = "http://www.q3de.com/research/molecular"

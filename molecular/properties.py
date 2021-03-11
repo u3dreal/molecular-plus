@@ -369,6 +369,11 @@ def define_props():
         description = "Create Hexagonal Grid",
         default = False
     )
+    bpy.types.Scene.mol_progress = bpy.props.StringProperty(
+        name = "mol_progress",
+        description = "ProgressBar",
+        default = ""
+    )
 
     bpy.types.Scene.mol_exportdata = []
     bpy.types.Scene.mol_minsize = bpy.props.FloatProperty()
@@ -379,5 +384,3 @@ def define_props():
     bpy.types.Scene.mol_deadlink = bpy.props.IntProperty()
     bpy.types.Scene.mol_totallink = bpy.props.IntProperty()
     bpy.types.Scene.mol_totaldeadlink = bpy.props.IntProperty()
-    #bpy.types.Scene.mol_objuvbake = bpy.props.StringProperty()
-    #bpy.types.Scene.mol_psysuvbake = bpy.props.StringProperty()

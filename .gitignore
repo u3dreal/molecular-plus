@@ -12,6 +12,5 @@ core.cython*.so
 c_sources/build/temp.macosx-10.13-x86_64-3.7/core.o
 c_sources/core.c
 c_sources/core.html
-core.cpython-37m-darwin.so
-*.so
 c_sources/.DS_Store
+/c_sources/openmp/*

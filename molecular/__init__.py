@@ -15,7 +15,6 @@
 #  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 #======================= END GPL LICENSE BLOCK ========================
-
 bl_info = {
     "name": "Molecular+",
     "author":
@@ -23,7 +22,7 @@ bl_info = {
         "Pavel_Blend, "
         "Martin Felke (scorpion81), "
         "Gregor Quade (u3dreal)",
-    "version": (1, 1, 2),
+    "version": (1,1,3),
     "blender": (2, 80, 0),
     "location": "Properties editor > Physics Tab",
     "description":

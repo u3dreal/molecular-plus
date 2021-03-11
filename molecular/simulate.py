@@ -3,6 +3,7 @@ import math
 from .utils import get_object
 from time import time
 
+
 import concurrent.futures
 
 def pack_data(context, initiate):
@@ -26,18 +27,18 @@ def pack_data(context, initiate):
                 par_size = [0] * parlen
                 par_alive = [0] * parlen
                 parnum += parlen
-                
-                psys.particles.foreach_get('alive_state', par_alive)
+
                 psys.particles.foreach_get('location', par_loc)
                 psys.particles.foreach_get('velocity', par_vel)
-                
+                psys.particles.foreach_get('alive_state', par_alive)
+
                 if initiate:
-                    par_mass = []
+                    par_mass = [0] * parlen
                     psys.particles.foreach_get('size', par_size)
 
                     if psys.settings.mol_density_active:
                         for i in range(len(par_size)):
-                            par_mass.append(psys.settings.mol_density * (4 / 3 * 3.141592653589793 * ((par_size[i] / 2) ** 3)))
+                            par_mass[i] = psys.settings.mol_density * (4 / 3 * 3.141592653589793 * ((par_size[i] / 2) ** 3))
                     else:
                         par_mass = [psys.settings.mass] * len(psys.particles)
 
@@ -49,8 +50,6 @@ def pack_data(context, initiate):
                     """
 
                     psyslen += 1
-                    
-                    
                     
                     if bpy.context.scene.mol_minsize > min(par_size):
                         bpy.context.scene.mol_minsize = min(par_size)

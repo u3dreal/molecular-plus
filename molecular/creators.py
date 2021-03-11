@@ -49,7 +49,6 @@ class MolecularGrid3d(bpy.types.Operator):
                 psys.mol_link_length = 3.5
             #update
             bpy.ops.object.reset_pcache()
-
             bpy.ops.object.mol_set_subs()
 
         return {'FINISHED'}

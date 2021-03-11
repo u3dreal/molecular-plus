@@ -2,14 +2,17 @@ try:
     from time import process_time as clock
 except ImportError:
     from time import clock
+
 from time import sleep, strftime, gmtime, time
+import sys
 
 import bpy
+import blf
 from mathutils import Vector
 from mathutils.geometry import barycentric_transform as barycentric
 
 from . import simulate, core
-from .utils import get_object, destroy_caches
+from .utils import get_object, destroy_caches, update_progress
 
 
 class MolRemoveCollider(bpy.types.Operator):
@@ -52,7 +55,7 @@ class MolSimulate(bpy.types.Operator):
             destroy_caches(ob)
 
         print('Molecular Sim Start' + '-' * 50)
-        mol_stime = clock()
+        mol_stime = time()
         scene = context.scene
         scene.mol_simrun = True
         scene.mol_minsize = 1000000000.0
@@ -77,19 +80,18 @@ class MolSimulate(bpy.types.Operator):
         mol_exportdata = context.scene.mol_exportdata
         mol_exportdata.clear()
         mol_exportdata.append([fps, mol_substep, 0, 0, cpu])
-        mol_stime = clock()
+        mol_stime = time()
         simulate.pack_data(context, True)
-        etime = clock()
+        etime = time()
         print("  PackData took " + str(round(etime - mol_stime, 3)) + "sec")
-        mol_stime = clock()
+        mol_stime = time()
         mol_report = core.init(mol_exportdata)
-        etime = clock()
+        etime = time()
         print("  Export time took " + str(round(etime - mol_stime, 3)) + "sec")
         print("  total numbers of particles: " + str(mol_report))
         print("  start processing:")
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
-
 
 class MolSetGlobalUV(bpy.types.Operator):
     bl_idname = "object.mol_set_global_uv"
@@ -233,12 +235,22 @@ def convert_time_to_string(total_time):
         time_string = '{0} seconds'.format(seconds)
     return time_string
 
+def draw_callback_px(self, context):
+        """Draw on the viewports"""
+        # BLF drawing routine
+        font_id = 0
+        blf.position(font_id, 50, 80, 0)
+        blf.size(font_id, 40, 50)
+        blf.draw(font_id, bpy.context.scene.mol_progress)
+        #print("workng bgl") 
 
+        
 class MolSimulateModal(bpy.types.Operator):
     """Operator which runs its self from a timer"""
     bl_idname = "wm.mol_simulate_modal"
     bl_label = "Simulate Molecular"
     _timer = None
+    _draw_handler = None
     
     def check_bake_uv(self, context):
         # bake the UV in the beginning
@@ -249,9 +261,7 @@ class MolSimulateModal(bpy.types.Operator):
 
             for psys in obj.particle_systems:
                 if psys.settings.mol_bakeuv:
-                    #context.view_layer.update()
                     scene.frame_set(frame=psys.settings.frame_start)
-                    #context.view_layer.update()
                     if psys.settings.mol_bakeuv_global:
                         bpy.ops.object.mol_set_global_uv("INVOKE_DEFAULT", objname = obj.name)
                     else:
@@ -264,6 +274,11 @@ class MolSimulateModal(bpy.types.Operator):
         frame_end = scene.frame_end
         frame_current = scene.frame_current
         
+        if frame_current == frame_end-1:
+            update_progress("finished", 1)
+            
+        
+        ###### ESC END #######
         if event.type == 'ESC' or frame_current == frame_end:
             if scene.mol_bake:
                 fake_context = context.copy()
@@ -273,6 +288,7 @@ class MolSimulateModal(bpy.types.Operator):
                         if psys.settings.mol_active and len(psys.particles):
                             fake_context["point_cache"] = psys.point_cache
                             bpy.ops.ptcache.bake_from_cache(fake_context)
+                            
                             
             scene.render.frame_map_new = 1
             scene.frame_end = scene.mol_old_endframe
@@ -287,26 +303,34 @@ class MolSimulateModal(bpy.types.Operator):
                 bpy.ops.render.render(animation=True)
 
             scene.frame_set(frame=scene.frame_start)
+            sleep(2.4)
             return self.cancel(context)
-
+        
+        ###### TIMER #######
         if event.type == 'TIMER':
             
             mol_substep = scene.mol_substep
             framesubstep = frame_current / (mol_substep + 1)
             
             if framesubstep == int(framesubstep):
-                moltime = clock()
-            
-            mol_exportdata = context.scene.mol_exportdata
-            mol_exportdata.clear()
+                update_progress("Simulating", frame_current/frame_end)
+                stime = time()
+                
+            context.scene.mol_exportdata.clear()
             simulate.pack_data(context, False)
-            mol_importdata = core.simulate(mol_exportdata)
             if framesubstep == int(framesubstep):
-                etime = clock()
+                etime = time()
+                packtime = etime - stime
+                stime2 = time()
+                
+            mol_importdata = core.simulate(context.scene.mol_exportdata)
+            if framesubstep == int(framesubstep):
+                etime2 = time()
+                moltime = (etime2-stime2)
+                stime3 = time()
             i = 0
             for ob in bpy.data.objects:
                 obj = get_object(context, ob)
-
                 for psys in obj.particle_systems:
                     if psys.settings.mol_active and len(psys.particles):
                         psys.particles.foreach_set('velocity', mol_importdata[1][i])
@@ -318,25 +342,27 @@ class MolSimulateModal(bpy.types.Operator):
                 if scene.mol_totallink:
                     print("      links broken :", scene.mol_deadlink)
                     print("      total links:", scene.mol_totallink - scene.mol_totaldeadlink ,"/", scene.mol_totallink," (",round((((scene.mol_totallink - scene.mol_totaldeadlink) / scene.mol_totallink) * 100), 2), "%)")
-                print("      Molecular Script: " + str(round((etime - moltime)*mol_substep, 3)) + " sec")
-                remain = (etime - moltime) * mol_substep *(scene.mol_old_endframe - framesubstep - 1)
+#
+                etime3 = time()
+                blendertime = etime3 - stime3
+                print("      Pack             : " + str(round(packtime * mol_substep, 3)) + " sec")
+                print("      Molecular        : " + str(round(moltime * mol_substep, 3)) + " sec")
+                print("      Blender          : " + str(round((blendertime + packtime) * mol_substep, 3)) + " sec")
+                print("      Total Frame      : " + str(round((blendertime + packtime + moltime) * mol_substep, 3)) + " sec")
+
+                remain = (blendertime + packtime + moltime) * mol_substep * float((scene.mol_old_endframe - framesubstep))
                 days = int(strftime('%d', gmtime(remain))) - 1
                 scene.mol_timeremain = strftime(str(days) + ' days %H hours %M mins %S secs', gmtime(remain))
                 print("      Remaining estimated:", scene.mol_timeremain)
-                scene.mol_newlink = 0
-                scene.mol_deadlink = 0
+            scene.mol_newlink = 0
+            scene.mol_deadlink = 0
                 
             scene.mol_newlink += mol_importdata[2]
             scene.mol_deadlink += mol_importdata[3]
             scene.mol_totallink = mol_importdata[4]
             scene.mol_totaldeadlink = mol_importdata[5]
-          
             scene.frame_set(frame=frame_current + 1)
-
-            if framesubstep == int(framesubstep):
-                etime2 = clock()
-                print("      Blender: " + str(round((etime2 - etime)*mol_substep, 3)) + " sec")
-
+            
         return {'PASS_THROUGH'}
 
     def execute(self, context):
@@ -344,6 +370,11 @@ class MolSimulateModal(bpy.types.Operator):
         self.st = time()
         self.check_bake_uv(context)
         self._timer = context.window_manager.event_timer_add(0.000000001, window=context.window)
+        update_progress("Initializing", 0.0001)
+        
+        if context.area.type == 'VIEW_3D':
+            self._handler = bpy.types.SpaceView3D.draw_handler_add(draw_callback_px, (self, context), "WINDOW", "POST_PIXEL")
+
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
@@ -351,11 +382,11 @@ class MolSimulateModal(bpy.types.Operator):
         # total time
         tt = time() - self.st
         tt_s = convert_time_to_string(tt)
-        
+        update_progress("Finished", 1)
         print("Total time : " + tt_s + " sec")
         
         self.report({'INFO'}, 'Total time: {0}'.format(tt_s))
-        
+        bpy.types.SpaceView3D.draw_handler_remove(self._handler, 'WINDOW')
         context.window_manager.event_timer_remove(self._timer)
         return {'CANCELLED'}
 

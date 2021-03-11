@@ -1,6 +1,7 @@
 #cython: profile=False
 #cython: boundscheck=False
 #cython: cdivision=True
+#cython: language_level=3
 
 # NOTE: order of slow fonction to be optimize/multithreaded:
 # kdtreesearching, kdtreecreating, linksolving
