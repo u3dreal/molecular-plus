@@ -17,7 +17,7 @@ if hasattr(sys, 'abiflags'):
 
 v = str(sys.version_info.major) + str(sys.version_info.minor) + abiflags
 
-name = 'MacOS'
+name = 'macos'
 if is_linux:
     name = 'linux'
 elif is_windows:

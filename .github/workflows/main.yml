@@ -95,5 +95,5 @@ jobs:
     - name: Upload mac zip
       uses: actions/upload-artifact@v2
       with:
-          name: molecular_${{steps.build.outputs.version}}_Python_3.7m_mac.zip
-          path: molecular_${{steps.build.outputs.version}}_Python_3.7m_mac.zip
+          name: molecular_${{steps.build.outputs.version}}_Python_3.7m_macos.zip
+          path: molecular_${{steps.build.outputs.version}}_Python_3.7m_macos.zip

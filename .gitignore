@@ -7,3 +7,5 @@ c_sources/core.c
 c_sources/core.html
 c_sources/.DS_Store
 /c_sources/openmp/*
+*.pyc
+*.so
