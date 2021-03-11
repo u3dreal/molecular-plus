@@ -1,4 +1,4 @@
-[![Molecular+ Addon for Blender](https://github.com/u3dreal/molecular-plus/actions/workflows/main.yml/badge.svg)](https://github.com/u3dreal/molecular-plus/actions/workflows/main.yml)
+[![Molecular+](https://github.com/u3dreal/molecular-plus/actions/workflows/main.yml/badge.svg)](https://github.com/u3dreal/molecular-plus/actions/workflows/main.yml)
 # molecular-plus
 particle solver for Blender 2.8+
 
