@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Molecular+ Addon for Blender
+name: Molecular+
 
 on:
   push:
@@ -66,8 +66,8 @@ jobs:
     - name: Upload linux zip
       uses: actions/upload-artifact@v2
       with:
-          name: molecular_${{steps.build.outputs.version}}_Python_3.7m_linux.zip
-          path: molecular_${{steps.build.outputs.version}}_Python_3.7m_linux.zip
+          name: molecular+_${{steps.build.outputs.version}}_Python_3.7m_linux.zip
+          path: molecular+_${{steps.build.outputs.version}}_Python_3.7m_linux.zip
   
   build_macos:
 
@@ -95,5 +95,5 @@ jobs:
     - name: Upload mac zip
       uses: actions/upload-artifact@v2
       with:
-          name: molecular_${{steps.build.outputs.version}}_Python_3.7m_macos.zip
-          path: molecular_${{steps.build.outputs.version}}_Python_3.7m_macos.zip
+          name: molecular+_${{steps.build.outputs.version}}_Python_3.7m_macos.zip
+          path: molecular+_${{steps.build.outputs.version}}_Python_3.7m_macos.zip
