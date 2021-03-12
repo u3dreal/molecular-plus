@@ -101,10 +101,10 @@ jobs:
   upload_release:
 
     runs-on: macos-latest
+    needs: [build_windows, build_linux, build_macos]
 
     steps:
     - name: Make Release
-      needs: [build_windows, build_linux, build_macos]
       uses: actions/create-release@v1
       id: create_release
       with:
