@@ -99,42 +99,46 @@ jobs:
           path: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
 
   upload_release:
+
+    runs-on: macos-latest
+
+    steps:
     - needs: build_windows,build_linux,build_macos
     - name: Make Release
       uses: actions/create-release@v1
       id: create_release
       with:
-        draft: True
-        prerelease: True
-        release_name: ${{ steps.version.outputs.version }}
-        tag_name: ${{ github.ref }}
-        body_path: CHANGELOG.md
+          draft: True
+          prerelease: True
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref }}
+          body_path: CHANGELOG.md
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
     - name: upload linux artifact
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: molecular-plus_${{steps.build.outputs.version}}_37m_linux.zip
-        asset_name: molecular-plus_${{steps.build.outputs.version}}_37m_linux.zip
-        asset_content_type: application/gzip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: molecular-plus_${{steps.build.outputs.version}}_37m_linux.zip
+          asset_name: molecular-plus_${{steps.build.outputs.version}}_37m_linux.zip
+          asset_content_type: application/gzip
     - name: upload darwin artifact
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
-        asset_name: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
-        asset_content_type: application/gzip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
+          asset_name: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
+          asset_content_type: application/gzip
     - name: upload windows artifact
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: molecular-plus_${{steps.build.outputs.version}}_37_win.zip
-        asset_name: molecular-plus_${{steps.build.outputs.version}}_37_win.zip
-        asset_content_type: application/zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: molecular-plus_${{steps.build.outputs.version}}_37_win.zip
+          asset_name: molecular-plus_${{steps.build.outputs.version}}_37_win.zip
+          asset_content_type: application/zip
