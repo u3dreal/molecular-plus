@@ -103,8 +103,8 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - needs: build_windows,build_linux,build_macos
     - name: Make Release
+      needs: build_windows,build_linux,build_macos
       uses: actions/create-release@v1
       id: create_release
       with:
