@@ -97,6 +97,9 @@ jobs:
       with:
           name: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
           path: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
+
+  upload_release:
+    - needs: build_windows,build_linux,build_macos
     - name: Make Release
       uses: actions/create-release@v1
       id: create_release
