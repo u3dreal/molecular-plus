@@ -110,7 +110,7 @@ jobs:
       with:
           draft: True
           prerelease: True
-          release_name: ${{ steps.build.outputs.version }}
+          release_name: molecular-plus_${{needs.build_macos.build.outputs.version}}
           tag_name: ${{ github.ref }}
       env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -120,8 +120,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: molecular-plus_${{steps.build.outputs.version}}_37m_linux.zip
-          asset_name: molecular-plus_${{steps.build.outputs.version}}_37m_linux.zip
+          asset_path: molecular-plus_${{needs.build_macos.build.outputs.version}}_37m_linux.zip
+          asset_name: molecular-plus_${{needs.build_macos.build.outputs.version}}_37m_linux.zip
           asset_content_type: application/gzip
     - name: upload darwin artifact
       uses: actions/upload-release-asset@v1
@@ -129,8 +129,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
-          asset_name: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
+          asset_path: molecular-plus_${{needs.build_macos.build.outputs.version}}_37m_macos.zip
+          asset_name: molecular-plus_${{needs.build_macos.build.outputs.version}}_37m_macos.zip
           asset_content_type: application/gzip
     - name: upload windows artifact
       uses: actions/upload-release-asset@v1
@@ -138,6 +138,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: molecular-plus_${{steps.build.outputs.version}}_37_win.zip
-          asset_name: molecular-plus_${{steps.build.outputs.version}}_37_win.zip
+          asset_path: molecular-plus_${{needs.build_macos.build.outputs.version}}_37_win.zip
+          asset_name: molecular-plus_${{needs.build_macos.build.outputs.version}}_37_win.zip
           asset_content_type: application/zip
