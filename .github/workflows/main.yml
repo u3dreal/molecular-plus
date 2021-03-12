@@ -38,7 +38,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           name: molecular-plus_${{steps.build.outputs.version}}_37_win.zip
-          path: molecular-plus_${{steps.build.outputs.version}}_37_win.zip
+          path: ./molecular-plus_${{steps.build.outputs.version}}_37_win.zip
              
   build_linux:
 
@@ -67,7 +67,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           name: molecular-plus_${{steps.build.outputs.version}}_37m_linux.zip
-          path: molecular-plus_${{steps.build.outputs.version}}_37m_linux.zip
+          path: ./molecular-plus_${{steps.build.outputs.version}}_37m_linux.zip
   
   build_macos:
 
@@ -98,7 +98,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           name: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
-          path: molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
+          path: ./molecular-plus_${{steps.build.outputs.version}}_37m_macos.zip
 
   upload_release:
 
@@ -124,7 +124,7 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./molecular-plus_${{needs.build_macos.outputs.version}}_37m_linux.zip
           asset_name: molecular-plus_${{needs.build_macos.outputs.version}}_37m_linux.zip
-          asset_content_type: application/gzip
+          asset_content_type: application/zip
     - name: upload darwin artifact
       uses: actions/upload-release-asset@v1
       env:
@@ -133,7 +133,7 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./molecular-plus_${{needs.build_macos.outputs.version}}_37m_macos.zip
           asset_name: molecular-plus_${{needs.build_macos.outputs.version}}_37m_macos.zip
-          asset_content_type: application/gzip
+          asset_content_type: application/zip
     - name: upload windows artifact
       uses: actions/upload-release-asset@v1
       env:
