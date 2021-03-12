@@ -29,8 +29,8 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
             row.label(text = "Molecular Object : " + obj.name)
 
             if context.object.particle_systems.active:
-
-                parcount = len(get_object(context, obj).particle_systems.active.particles)
+                psys = get_object(context, obj).particle_systems.active
+                parcount = len(psys.particles)
                 row = box.row()
                 row.label(text = "System particles : " + str(parcount))
                 row = box.row()
