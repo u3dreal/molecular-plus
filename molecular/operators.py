@@ -32,8 +32,9 @@ class MolSet_Substeps(bpy.types.Operator):
         parcount = 0
         for obj in bpy.data.objects:
             if obj.particle_systems.active != None:
-                psys = get_object(context, obj).particle_systems.active
-                parcount += len(psys.particles)
+                for psys in get_object(context, obj).particle_systems:
+                    print(psys.name)
+                    parcount += len(psys.particles)
                 
         context.scene.mol_parnum = parcount
                 
