@@ -54,6 +54,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest cython
+        sudo apt install libexpat1-dev zlib1g-dev libc6-dev
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names

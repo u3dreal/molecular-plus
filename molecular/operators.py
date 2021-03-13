@@ -240,9 +240,12 @@ def draw_callback_px(self, context):
         """Draw on the viewports"""
         # BLF drawing routine
         font_id = 0
-        blf.position(font_id, 50, 80, 0)
-        blf.size(font_id, 40, 50)
-        blf.draw(font_id, bpy.context.scene.mol_progress)
+        texts = bpy.context.scene.mol_progress.split('\n')
+
+        for i, text in enumerate(texts):
+            blf.position(font_id, 50, 50*(i+1) , 0)
+            blf.size(font_id, 40, 50)
+            blf.draw(font_id, text)
         #print("workng bgl") 
 
         
@@ -405,8 +408,8 @@ class MolClearCache(bpy.types.Operator):
                 if psys.settings.mol_active:
                     step = psys.point_cache.frame_step
                     psys.point_cache.frame_step = step
-                    ccache = context.object.particle_systems.active.settings.use_modifier_stack
-                    context.object.particle_systems.active.settings.use_modifier_stack = ccache
+                    ccache = psys.settings.use_modifier_stack
+                    psys.settings.use_modifier_stack = ccache
                     
         context.scene.frame_current = 1
         
@@ -418,8 +421,12 @@ class MolResetCache(bpy.types.Operator):
     bl_label = "Clear Particle Cache"
 
     def execute(self, context):
-        ccache = context.object.particle_systems.active.settings.use_modifier_stack
-        context.object.particle_systems.active.settings.use_modifier_stack = ccache
-        context.scene.frame_current = 1
+        for ob in bpy.data.objects:
+            obj = get_object(context, ob)
+            for psys in obj.particle_systems:
+                if psys.settings.mol_active:
+                    ccache = psys.settings.use_modifier_stack
+                    psys.settings.use_modifier_stack = ccache
+                    context.scene.frame_current = 1
         
         return {'FINISHED'}

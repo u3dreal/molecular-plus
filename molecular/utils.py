@@ -16,8 +16,7 @@ def destroy_caches(obj):
             
             
 def update_progress(job_title, progress):
+    mol = bpy.context.scene
     length = 50 # modify this to change the length
     block = int(round(length*progress))
-    msg = "\r{0}: [{1}] {2}%".format(job_title, "*"*block + "-"*(length-block), round(progress*100, 2))
-    bpy.context.scene.mol_progress = msg[1:]
-    #sys.stdout.write(msg)
+    mol.mol_progress = ("#"*block) + ("_"*(length-block)) + str(round(progress*100, 2)) + "%" + "\n" + "Total links : " + str(mol.mol_totallink) + "\n" + "Dead links : " + str(mol.mol_deadlink) + "\n" + "New links : " + str(mol.mol_newlink) + "\n" + "Total dead links : " + str(mol.mol_totaldeadlink) + "\n" + "Status : " + job_title
