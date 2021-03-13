@@ -28,15 +28,15 @@ elif os_name == "linux":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['-O3', '-msse4.2', '-ffast-math', '-fno-builtin'],
-        extra_link_args=['-lm']
+        extra_compile_args=['-O3', '-msse4.2', '-ffast-math', '-fno-builtin','-fopenmp'],
+        extra_link_args=['-lm','-fopenmp']
     )]
 else:
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['-march=x86-64','-msse4.2', '-O3','-ffast-math','-Xpreprocessor','-fopenmp', '-I./openmp/include'],
-        extra_link_args=['-lm', '-Xpreprocessor','-fopenmp', '-L./openmp/lib']
+        extra_compile_args=['-march=x86-64','-msse4.2', '-O3','-ffast-math','-fopenmp'],
+        extra_link_args=['-lm','-fopenmp']
     )]
 
 setup(

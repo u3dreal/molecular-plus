@@ -84,6 +84,7 @@ jobs:
         python-version: 3.7
     - name: Install dependencies
       run: |
+        brew install gcc
         python -m pip install --upgrade pip
         pip install flake8 pytest cython
     - name: Lint with flake8
