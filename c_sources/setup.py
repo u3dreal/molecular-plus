@@ -8,8 +8,8 @@ from Cython.Build import cythonize
 
 os_name = platform.architecture()[1]
 
-is_linux = os_name == "ELF" or platform.system() == "Linux"
-is_windows = os_name == "WindowsPE" or platform.system() == "Windows"
+is_linux = os_name == "ELF" or platform.system()[1] == "Linux"
+is_windows = os_name == "WindowsPE" or platform.system()[1] == "Windows"
 
 name = 'MacOS'
 if is_linux:
@@ -34,7 +34,7 @@ elif os_name == "linux":
         extra_compile_args=['-O3', '-msse4.2', '-ffast-math', '-fno-builtin','-fopenmp','-static','-fpic'],
         extra_link_args=['-lm','-fopenmp','-static','-fpic']
     )]
-else:
+elif os_name == "MacOS":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
