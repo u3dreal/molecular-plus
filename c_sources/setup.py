@@ -1,8 +1,10 @@
 import platform
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
+from setuptools import Extension, setup
+#from distutils.core import setup
+#from distutils.extension import Extension
+#from Cython.Distutils import build_ext
 import Cython.Compiler.Options
+from Cython.Build import cythonize
 
 is_linux = platform.architecture()[1] == "ELF" or platform.system() == "Linux"
 is_windows = platform.architecture()[1] == "WindowsPE" or platform.system() == "Windows"
@@ -35,12 +37,13 @@ else:
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['-march=x86-64','-msse4.2', '-O3','-ffast-math','-fopenmp'],
-        extra_link_args=['-lm','-fopenmp']
+        extra_compile_args=['-march=x86-64','-msse4.2', '-O3','-ffast-math','-fopenmp','-static'],
+        extra_link_args=['-lm','-fopenmp','-static']
     )]
 
 setup(
     name = 'Molecular script',
-    cmdclass = {'build_ext': build_ext},
-    ext_modules = ext_modules
+#    cmdclass = {'build_ext': build_ext},
+#    ext_modules = ext_modules
+    ext_modules=cythonize(ext_modules)
 )
