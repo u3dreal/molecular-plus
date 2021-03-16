@@ -6,35 +6,26 @@ from setuptools import Extension, setup
 import Cython.Compiler.Options
 from Cython.Build import cythonize
 
-os_name = platform.architecture()[1]
-
-is_linux = os_name == "ELF" or platform.system()[1] == "Linux"
-is_windows = os_name == "WindowsPE" or platform.system()[1] == "Windows"
-
-name = 'MacOS'
-if is_linux:
-    name = 'linux'
-elif is_windows:
-    name = 'win'
+os_name = platform.system()
 
 Cython.Compiler.Options.annotate = True
 module_name = 'core'
 
-if os_name == "win":
+if os_name == "Windows":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
         extra_compile_args=['/Ox','/openmp','/GT','/arch:SSE2','/fp:fast']
     )]
 
-elif os_name == "linux":
+elif os_name == "Linux":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
         extra_compile_args=['-O3', '-msse4.2', '-ffast-math', '-fno-builtin','-fopenmp','-static','-fpic'],
         extra_link_args=['-lm','-fopenmp','-static','-fpic']
     )]
-elif os_name == "MacOS":
+elif os_name == "Darwin":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
