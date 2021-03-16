@@ -6,8 +6,11 @@ from setuptools import Extension, setup
 import Cython.Compiler.Options
 from Cython.Build import cythonize
 
-is_linux = platform.architecture()[1] == "ELF" or platform.system() == "Linux"
-is_windows = platform.architecture()[1] == "WindowsPE" or platform.system() == "Windows"
+os_name = platform.architecture()[1]
+print(os_name)
+
+is_linux = os_name == "ELF" or platform.system() == "Linux"
+is_windows = os_name == "WindowsPE" or platform.system() == "Windows"
 
 name = 'MacOS'
 if is_linux:
