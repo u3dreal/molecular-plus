@@ -31,7 +31,7 @@ elif os_name == "linux":
         module_name,
         ['core' + '.pyx'],
         extra_compile_args=['-O3', '-msse4.2', '-ffast-math', '-fno-builtin','-fopenmp','-static'],
-        extra_link_args=['-lm','-fopenmp','static']
+        extra_link_args=['-lm','-fopenmp','-static']
     )]
 else:
     ext_modules = [Extension(
