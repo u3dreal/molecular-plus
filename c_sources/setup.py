@@ -7,7 +7,6 @@ import Cython.Compiler.Options
 from Cython.Build import cythonize
 
 os_name = platform.architecture()[1]
-print(os_name)
 
 is_linux = os_name == "ELF" or platform.system() == "Linux"
 is_windows = os_name == "WindowsPE" or platform.system() == "Windows"
@@ -18,7 +17,6 @@ if is_linux:
 elif is_windows:
     name = 'win'
 
-os_name = platform.architecture()[1]
 Cython.Compiler.Options.annotate = True
 module_name = 'core'
 
