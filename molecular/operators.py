@@ -406,10 +406,8 @@ class MolClearCache(bpy.types.Operator):
             obj = get_object(context, ob)
             for psys in obj.particle_systems:
                 if psys.settings.mol_active:
-                    step = psys.point_cache.frame_step
-                    psys.point_cache.frame_step = step
-                    ccache = psys.settings.use_modifier_stack
-                    psys.settings.use_modifier_stack = ccache
+                    ccache = context.object.particle_systems.active.settings.use_modifier_stack
+                    context.object.particle_systems.active.settings.use_modifier_stack = ccache
                     
         context.scene.frame_current = 1
         
@@ -425,8 +423,8 @@ class MolResetCache(bpy.types.Operator):
             obj = get_object(context, ob)
             for psys in obj.particle_systems:
                 if psys.settings.mol_active:
-                    ccache = psys.settings.use_modifier_stack
-                    psys.settings.use_modifier_stack = ccache
+                    ccache = context.object.particle_systems.active.settings.use_modifier_stack
+                    context.object.particle_systems.active.settings.use_modifier_stack = ccache
                     context.scene.frame_current = 1
         
         return {'FINISHED'}

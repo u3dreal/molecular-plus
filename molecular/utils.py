@@ -13,10 +13,9 @@ def destroy_caches(obj):
         if psys.settings.mol_active:
             step = psys.point_cache.frame_step
             psys.point_cache.frame_step = step
-            
-            
+
 def update_progress(job_title, progress):
     mol = bpy.context.scene
     length = 50 # modify this to change the length
     block = int(round(length*progress))
-    mol.mol_progress = ("#"*block) + ("_"*(length-block)) + str(round(progress*100, 2)) + "%" + "\n" + "Total links : " + str(mol.mol_totallink) + "\n" + "Dead links : " + str(mol.mol_deadlink) + "\n" + "New links : " + str(mol.mol_newlink) + "\n" + "Total dead links : " + str(mol.mol_totaldeadlink) + "\n" + "Status : " + job_title
+    mol.mol_progress = "|" + (">"*block) + ("--"*(length-block)) + str(round(progress*100, 2)) + "%" + "|" + "\n" + "Total links : " + str(mol.mol_totallink) + "\n" + "Dead links : " + str(mol.mol_deadlink) + "\n" + "New links : " + str(mol.mol_newlink) + "\n" + "Total dead links : " + str(mol.mol_totaldeadlink) + "\n" + "Status : " + job_title
