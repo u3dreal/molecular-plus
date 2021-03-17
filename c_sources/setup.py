@@ -22,15 +22,15 @@ elif os_name == "Linux":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['-O3', '-msse4.2', '-ffast-math', '-fno-builtin','-fopenmp','-static','-fpic'],
-        extra_link_args=['-lm','-fopenmp','-static','-fpic']
+        extra_compile_args=['-O3', '-msse4.2', '-ffast-math', '-fno-builtin','-fopenmp'],
+        extra_link_args=['-lm','-fopenmp']
     )]
 elif os_name == "Darwin":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['-march=x86-64','-msse4.2', '-O3','-ffast-math','-fopenmp','-static'],
-        extra_link_args=['-lm','-fopenmp','-static']
+        extra_compile_args=['-march=x86-64','-msse4.2', '-O3','-ffast-math','-fopenmp'],
+        extra_link_args=['-lm','-fopenmp']
     )]
 
 setup(
