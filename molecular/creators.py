@@ -1,5 +1,6 @@
 import bpy
 
+
 class MolecularGrid3d(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_makegrid3d"
     bl_label = "Create Molecular 3d grid"
@@ -20,7 +21,7 @@ class MolecularGrid3d(bpy.types.Operator):
 
             psys = obj.particle_systems.active.settings
 
-        #ParticlsSystemSettings
+        # ParticlsSystemSettings
             max_dim = max(obj.dimensions)
 
             psys.grid_resolution = max_dim/voxel_size
@@ -39,15 +40,15 @@ class MolecularGrid3d(bpy.types.Operator):
                 psys.use_size_deflect = True
                 psys.use_modifier_stack = True
 
-            #Granular_Settings
-                if psys.mol_active == False:
+            # Granular_Settings
+                if not psys.mol_active:
                     psys.mol_active = True
 
                 psys.mol_selfcollision_active = True
                 psys.mol_friction = 0.15
                 psys.mol_collision_damp = 0.25
                 psys.mol_link_length = 3.5
-            #update
+            # update
             bpy.ops.object.reset_pcache()
             bpy.ops.object.mol_set_subs()
 
@@ -70,10 +71,9 @@ class MolecularGrid2d(bpy.types.Operator):
                 init = True
                 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
                 bpy.context.view_layer.objects.active = obj
-                #for _ in range(5):
                 bpy.ops.object.particle_system_add()
 
-        #ParctilsSystemSettings
+        # ParctilsSystemSettings
             i = 1
             for parsys in obj.particle_systems:
                 parsys.name = "stack : " + str(i)
@@ -97,7 +97,7 @@ class MolecularGrid2d(bpy.types.Operator):
                     psys.use_size_deflect = True
                     psys.use_modifier_stack = True
 
-                #Granular_Settings
+                # Granular_Settings
                     if psys.mol_active == False:
                         psys.mol_active = True
 
@@ -108,7 +108,7 @@ class MolecularGrid2d(bpy.types.Operator):
                     psys.mol_link_length = 2.1
 
                     i += 20
-            #update
+            # update
             bpy.ops.object.reset_pcache()
 
             bpy.ops.object.mol_set_subs()
@@ -134,7 +134,7 @@ class MolecularEmitter(bpy.types.Operator):
 
             psys = obj.particle_systems.active.settings
 
-        #ParctilsSystemSettings
+        # ParctilsSystemSettings
             max_dim = max(obj.dimensions)
 
             psys.grid_resolution = max_dim/voxel_size
@@ -153,7 +153,7 @@ class MolecularEmitter(bpy.types.Operator):
                 psys.use_modifier_stack = True
                 psys.use_emit_random = True
 
-            #Granular_Settings
+            # Granular_Settings
                 if psys.mol_active == False:
                     psys.mol_active = True
 
@@ -163,12 +163,13 @@ class MolecularEmitter(bpy.types.Operator):
                 psys.mol_collision_damp = 0.5
                 psys.mol_link_length = 2.1
 
-            #update
+            # update
             bpy.ops.object.reset_pcache()
 
             bpy.ops.object.mol_set_subs()
 
             return {'FINISHED'}
+
 
 class MolecularCollider(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_makecollider"

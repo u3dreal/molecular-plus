@@ -1,4 +1,4 @@
-#====================== BEGIN GPL LICENSE BLOCK ======================
+# ====================== BEGIN GPL LICENSE BLOCK ======================
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -14,7 +14,7 @@
 #  along with this program; if not, write to the Free Software Foundation,
 #  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-#======================= END GPL LICENSE BLOCK ========================
+# ======================= END GPL LICENSE BLOCK ========================
 bl_info = {
     "name": "Molecular+",
     "author":
@@ -22,7 +22,7 @@ bl_info = {
         "Pavel_Blend, "
         "Martin Felke (scorpion81), "
         "Gregor Quade (u3dreal)",
-    "version": (1,1,3),
+    "version": (1, 1, 3),
     "blender": (2, 80, 0),
     "location": "Properties editor > Physics Tab",
     "description":
@@ -30,7 +30,7 @@ bl_info = {
         "and for creating links between particles",
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "http://q3de.com/research/molecular/",
-    "tracker_url": "https://discord.gg/tAwvNEAfA3" ,
+    "tracker_url": "https://discord.gg/tAwvNEAfA3",
     "category": "Physics"
 }
 
