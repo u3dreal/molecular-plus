@@ -1,6 +1,5 @@
 [![Molecular+](https://github.com/u3dreal/molecular-plus/actions/workflows/main.yml/badge.svg)](https://github.com/u3dreal/molecular-plus/actions/workflows/main.yml)
-# molecular-plus
-Particle Solver for Blender 2.8+ and 2.9+
+# molecular-plus : Particle Solver for Blender 2.8+ and 2.9+
 
 Originally based on molecular addon from pyroevil. https://github.com/Pyroevil/Blender-Molecular-Script
 and the efforts of PavelBlend and Scorpion81 for maintaining compatibility with Blender 2.8+. https://github.com/scorpion81/Blender-Molecular-Script
