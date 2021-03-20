@@ -57,8 +57,9 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                     row.enabled = False
                     row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Process: " + scn.mol_timeremain + " left")
                     row = box.row()
-                    row.enabled = False
-                    row.operator("object.clear_pcache", text="Free All Bakes")
+                    row.operator("object.cancel_sim", icon = 'CANCEL', text = "Cancel")
+                    #row.enabled = False
+                    #row.operator("object.clear_pcache", text="Free All Bakes")
 
                 #row.prop(scn,"frame_start",text = "start")
                 #row.prop(scn,"frame_end",text = "end")

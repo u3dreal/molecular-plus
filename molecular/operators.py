@@ -246,7 +246,6 @@ def draw_callback_px(self, context):
             blf.position(font_id, 50, 50*(i+1) , 0)
             blf.size(font_id, 40, 50)
             blf.draw(font_id, text)
-        #print("workng bgl") 
 
         
 class MolSimulateModal(bpy.types.Operator):
@@ -283,7 +282,7 @@ class MolSimulateModal(bpy.types.Operator):
             
         
         ###### ESC END #######
-        if event.type == 'ESC' or frame_current == frame_end:
+        if event.type == 'ESC' or frame_current == frame_end or scene.mol_cancel:
             if scene.mol_bake:
                 fake_context = context.copy()
                 for ob in bpy.data.objects:
@@ -307,7 +306,7 @@ class MolSimulateModal(bpy.types.Operator):
                 bpy.ops.render.render(animation=True)
 
             scene.frame_set(frame=scene.frame_start)
-            sleep(2.4)
+            sleep(0.1)
             return self.cancel(context)
         
         ###### TIMER #######
@@ -392,6 +391,7 @@ class MolSimulateModal(bpy.types.Operator):
         self.report({'INFO'}, 'Total time: {0}'.format(tt_s))
         bpy.types.SpaceView3D.draw_handler_remove(self._handler, 'WINDOW')
         context.window_manager.event_timer_remove(self._timer)
+        bpy.context.scene.mol_cancel = False
         return {'CANCELLED'}
 
 
@@ -428,3 +428,15 @@ class MolResetCache(bpy.types.Operator):
                     context.scene.frame_current = 1
         
         return {'FINISHED'}
+
+class MolCancelSim(bpy.types.Operator):
+    """Cancel Particle Simulation"""
+    bl_idname = "object.cancel_sim"
+    bl_label = "Cancel Particle Simulation"
+
+    def execute(self, context):
+        context.scene.mol_cancel = True
+
+        return {'FINISHED'}
+
+operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim)

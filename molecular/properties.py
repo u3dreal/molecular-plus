@@ -384,3 +384,4 @@ def define_props():
     bpy.types.Scene.mol_deadlink = bpy.props.IntProperty()
     bpy.types.Scene.mol_totallink = bpy.props.IntProperty()
     bpy.types.Scene.mol_totaldeadlink = bpy.props.IntProperty()
+    bpy.types.Scene.mol_cancel = bpy.props.BoolProperty(default=False)
