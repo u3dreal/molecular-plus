@@ -13,9 +13,9 @@ Added a n-panel to get fast access to setup / recalculation.
 
 More info on my website. http://q3de.com/research/molecular/
 
-Join my discord https://discord.gg/zUfwAcq
+Join my discord https://discord.com/invite/tAwvNEAfA3
 
-If you find this helpful please consider supporting me. Thanks !
+If you find this helpful and want to support future development please consider supporting me. Thanks !
 
 [![paypal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA)
 
