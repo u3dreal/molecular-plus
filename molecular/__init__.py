@@ -22,7 +22,7 @@ bl_info = {
         "Pavel_Blend, "
         "Martin Felke (scorpion81), "
         "Gregor Quade (u3dreal)",
-    "version": (1, 1, 3),
+    "version": (1, 1, 4),
     "blender": (2, 80, 0),
     "location": "Properties editor > Physics Tab",
     "description":
@@ -38,20 +38,16 @@ bl_info = {
 def register():
 
     import bpy
-
     from . import properties, ui, operators, creators
 
     properties.define_props()
-    bpy.utils.register_class(operators.MolSimulateModal)
-    bpy.utils.register_class(operators.MolSimulate)
-    bpy.utils.register_class(operators.MolSetGlobalUV)
-    bpy.utils.register_class(operators.MolSetActiveUV)
-    bpy.utils.register_class(operators.MolSet_Substeps)
-    bpy.utils.register_class(operators.MolClearCache)
-    bpy.utils.register_class(operators.MolResetCache)
-    bpy.utils.register_class(operators.MolRemoveCollider)
+
+    for operator in operators.operator_classes:
+        bpy.utils.register_class(operator)
+
     for panel in ui.panel_classes:
         bpy.utils.register_class(panel)
+
     for panel in creators.create_classes:
         bpy.utils.register_class(panel)
 
@@ -61,21 +57,16 @@ def register():
 def unregister():
 
     import bpy
-
     from . import properties, ui, operators, creators
 
     bpy.types.PHYSICS_PT_add.remove(ui.append_to_PHYSICS_PT_add_panel)
 
-    bpy.utils.unregister_class(operators.MolSimulateModal)
-    bpy.utils.unregister_class(operators.MolSimulate)
-    bpy.utils.unregister_class(operators.MolSetGlobalUV)
-    bpy.utils.unregister_class(operators.MolSetActiveUV)
-    bpy.utils.unregister_class(operators.MolSet_Substeps)
-    bpy.utils.unregister_class(operators.MolClearCache)
-    bpy.utils.unregister_class(operators.MolResetCache)
-    bpy.utils.unregister_class(operators.MolRemoveCollider)
+    for operator in reversed(operators.operator_classes):
+        bpy.utils.unregister_class(operator)
+
     for panel in reversed(ui.panel_classes):
         bpy.utils.unregister_class(panel)
+
     for panel in reversed(creators.create_classes):
         bpy.utils.unregister_class(panel)
 
