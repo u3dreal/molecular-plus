@@ -10,7 +10,7 @@ This is my extended version of the addon adding a create panel to be able to fas
 
 I cleaned up the code and moved the molecular+ panel to the physics section of blender, where it belongs.
 
-Added a n-panel to get fast access to setup / recalculation.
+Added an N-panel to get fast access to setup / simulation.
 
 More info on my website. http://q3de.com/research/molecular/
 
