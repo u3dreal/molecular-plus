@@ -25,12 +25,22 @@ def pack_data(context, initiate):
                 par_loc = [0, 0, 0] * parlen
                 par_vel = [0, 0, 0] * parlen
                 par_size = [0] * parlen
-                par_alive = [0] * parlen
-                parnum += parlen
+                #par_alive = [0] * parlen
+                #parnum += parlen
 
                 psys.particles.foreach_get('location', par_loc)
                 psys.particles.foreach_get('velocity', par_vel)
-                psys.particles.foreach_get('alive_state', par_alive)
+                #psys.particles.foreach_get('alive_state', par_alive)
+
+                par_alive = []
+                for par in psys.particles:
+                    parnum += 1
+                    if par.alive_state == "UNBORN":
+                        par_alive.append(2)
+                    if par.alive_state == "ALIVE":
+                        par_alive.append(0)
+                    if par.alive_state == "DEAD":
+                        par_alive.append(3)
 
                 if initiate:
                     par_mass = [0] * parlen
