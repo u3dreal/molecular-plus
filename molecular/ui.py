@@ -17,23 +17,24 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
 
     def draw(self, context):
 
-        layout = self.layout
         scn = context.scene
         obj = context.object
-        
-        row = layout.row()
+        layout = self.layout
         box = layout.box()
         row = box.row()
         
         if obj != None:
+            row.scale_y = 0.5
             row.label(text = "Molecular Object : " + obj.name)
 
             if context.object.particle_systems.active:
                 psys = get_object(context, obj).particle_systems.active
                 parcount = len(psys.particles)
                 row = box.row()
+                row.scale_y = 0.5
                 row.label(text = "System particles : " + str(parcount))
                 row = box.row()
+                row.scale_y = 0.5
                 row.label(text = "Total particles : " + str(scn.mol_parnum))
                 row.operator("object.mol_set_subs", text = "", icon = "FILE_REFRESH")
 
@@ -74,13 +75,10 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row = box.row()
                 row.prop(scn,"mol_bake",text = "Bake")
                 row.prop(scn,"mol_render",text = "Render")
-                row = layout.row()
-                col = row.column()
-                row = col.row()
-                row.active = not scn.mol_autosubsteps
-                row.prop(scn,"mol_substep", text = "Steps")#, enabled = !scn.mol_autosubsteps)
-                row.prop(scn,"mol_autosubsteps", text = "auto")
-                col.prop(scn,"mol_cpu",text = "Threads")
+                row.prop(scn, "mol_autosubsteps", text="auto")
+                row = box.row()
+                row.prop(scn,"mol_substep", text = "Steps")
+                row.prop(scn,"mol_cpu",text = "Threads")
         else:
             row.label(text="No Object selected")
 
