@@ -52,12 +52,12 @@ def pack_data(context, initiate):
                     else:
                         par_mass = [psys.settings.mass] * len(psys.particles)
 
-                    """
+
                     if scene.mol_timescale_active == True:
                         psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
                     else:
                         psys.settings.timestep = 1 / scene.render.fps 
-                    """
+
 
                     psyslen += 1
                     

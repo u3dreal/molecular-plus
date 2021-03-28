@@ -59,18 +59,18 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                     row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Process: " + scn.mol_timeremain + " left")
                     row = box.row()
                     row.operator("object.cancel_sim", icon = 'CANCEL', text = "Cancel")
-                    #row.enabled = False
-                    #row.operator("object.clear_pcache", text="Free All Bakes")
 
-                #row.prop(scn,"frame_start",text = "start")
-                #row.prop(scn,"frame_end",text = "end")
-                #row = layout.row()
-                #row.prop(scn,"mol_timescale_active",text = "Activate TimeScaling")
-                #row = layout.row()
-                #row.enabled = scn.mol_timescale_active
-                #row.prop(scn,"timescale",text = "TimeScale")
-                #row.label(text = "")
+                row = box.row()
+                row.prop(scn,"frame_start",text = "start")
+                row.prop(scn,"frame_end",text = "end")
+                row = box.row()
+                row.alignment = 'RIGHT'
+                row.prop(scn,"mol_timescale_active",text = "TimeScaling")
                 #row = box.row()
+                #row.enabled = scn.mol_timescale_active
+                row.prop(scn,"timescale",text = "")
+                row.label(text = "")
+                row = box.row()
 
                 row = box.row()
                 row.prop(scn,"mol_bake",text = "Bake")

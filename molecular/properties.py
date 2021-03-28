@@ -351,7 +351,7 @@ def define_props():
         name="CPU",
         description=descriptions.CPU,
         default=multiprocessing.cpu_count(),
-        min=1, max =multiprocessing.cpu_count()
+        min=1, max =64
     )
     bpy.types.Scene.mol_parnum = bpy.props.IntProperty(
         name="Particle Number",
