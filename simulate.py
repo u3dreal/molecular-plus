@@ -70,7 +70,6 @@ def pack_data(context, initiate):
                     else:
                         psys.settings.timestep = 1 / scene.render.fps 
 
-
                     psyslen += 1
                     
                     if bpy.context.scene.mol_minsize > min(par_size):
