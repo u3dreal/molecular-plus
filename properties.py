@@ -316,6 +316,11 @@ def define_props():
         description="make global uv",
         default=False
     )
+    parset.mol_bake_weak_map = bpy.props.BoolProperty(
+        name="mol_bake_weak_map",
+        description="bake weak_map",
+        default=False
+    )
 
     bpy.types.Scene.mol_timescale_active = bpy.props.BoolProperty(
         name="mol_timescale_active",

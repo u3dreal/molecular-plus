@@ -1,4 +1,3 @@
-import sys
 import bpy
 import blf
 
@@ -106,11 +105,10 @@ class MolSetGlobalUV(bpy.types.Operator):
         par_uv = []
         for par in psys.particles:
 
-            newuv = (par.location @ obj.matrix_world)
+            newuv = (par.location @ obj.matrix_world) - obj.location
             par_uv.append(newuv[0])
             par_uv.append(newuv[1])
             par_uv.append(newuv[2])
-
 
         psys.particles.foreach_set("angular_velocity", par_uv)
         print('         global uv baked on:', psys.settings.name)

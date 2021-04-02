@@ -368,6 +368,16 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         row = box.row()
         row.active = psys.settings.mol_bakeuv
         row.prop(psys.settings,"mol_bakeuv_global",text = "Global")
+        row = box.row()
+
+        if "weak_map" in psys.settings.texture_slots:
+            row.active = True
+            row.enabled = True
+        else:
+            row.active = False
+            row.enabled = False
+            row.label(text = "No weak_map found in Particle textures")
+        row.prop(psys.settings, "mol_bake_weak_map", text="WeakMap")
 
 class MolecularAdd(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_add"

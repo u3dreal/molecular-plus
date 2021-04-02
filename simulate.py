@@ -6,6 +6,20 @@ from time import time
 
 import concurrent.futures
 
+def get_weak_map(obj, psys):
+    print('start bake weak map from:', obj.name)
+
+    par_weak = []
+    tex = psys.settings.texture_slots['weak_map'].texture
+    for par in psys.particles:
+        newuv = par.location @ obj.matrix_world  # - obj.location
+        par_weak.append(tex.evaluate(newuv).w)
+
+    #print(par_weak)
+    print('Weak Map baked on:', psys.settings.name)
+
+    return par_weak
+
 def pack_data(context, initiate):
     psyslen = 0
     parnum = 0
@@ -45,13 +59,16 @@ def pack_data(context, initiate):
                 if initiate:
                     par_mass = [0] * parlen
                     psys.particles.foreach_get('size', par_size)
+                    if psys.settings.mol_bake_weak_map:
+                        par_weak = get_weak_map(obj, psys)
+                    else:
+                        par_weak = [0] * parlen
 
                     if psys.settings.mol_density_active:
                         for i in range(len(par_size)):
                             par_mass[i] = psys.settings.mol_density * (4 / 3 * 3.141592653589793 * ((par_size[i] / 2) ** 3))
                     else:
                         par_mass = [psys.settings.mass] * len(psys.particles)
-
 
                     if scene.mol_timescale_active == True:
                         psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
@@ -149,7 +166,8 @@ def pack_data(context, initiate):
                         par_size,
                         par_mass,
                         par_alive,
-                        params
+                        params,
+                        par_weak
                     ))
                 else:
                     mol_exportdata.append((par_loc, par_vel, par_alive))

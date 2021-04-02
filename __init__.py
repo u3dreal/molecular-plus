@@ -57,7 +57,7 @@ def register():
 def unregister():
 
     import bpy
-    from . import properties, ui, operators, creators
+    from . import ui, operators, creators
 
     bpy.types.PHYSICS_PT_add.remove(ui.append_to_PHYSICS_PT_add_panel)
 
@@ -69,7 +69,6 @@ def unregister():
 
     for panel in reversed(creators.create_classes):
         bpy.utils.unregister_class(panel)
-
 
 if __name__ == "__main__":
     register()
