@@ -1,7 +1,6 @@
 import sys
-from molecular import bl_info
 from zipfile import ZipFile, ZIP_DEFLATED
-from os import path, walk, remove, chdir, getcwd
+from os import path, walk, remove, rmdir, chdir, getcwd, mkdir
 import shutil
 import platform
 from subprocess import Popen, PIPE
@@ -23,6 +22,17 @@ if is_linux:
 elif is_windows:
     name = 'win'
 
+mkdir(".//molecularplus")
+
+pyfiles = (
+    "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
+    "simulate.py", "ui.py", "utils.py")
+
+for file in pyfiles:
+    shutil.copy(file, ".//molecularplus//" + file)
+
+from molecularplus import bl_info
+
 chdir(getcwd() + "//c_sources")
 
 # TODO, blenders (or a compatible) python bin needs to be in $PATH, and if you use blender's you need to copy the python includes from SVN
@@ -35,36 +45,36 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
 
     if is_linux:  # TODO, test
         shutil.move("core.cpython-{}-x86_64-linux-gnu.so".format(v),
-                    "..//molecular//core.cpython-{}-x86_64-linux-gnu.so".format(v))
+                    "..//molecularplus//core.cpython-{}-x86_64-linux-gnu.so".format(v))
     elif is_windows:
-        shutil.move("core.cp{}-win_amd64.pyd".format(v), "..//molecular//core.cp{}-win_amd64.pyd".format(v))
+        shutil.move("core.cp{}-win_amd64.pyd".format(v), "..//molecularplus//core.cp{}-win_amd64.pyd".format(v))
     else:
-        shutil.move("core.cpython-{}-darwin.so".format(v), "..//molecular//core.cpython-{}-darwin.so".format(v))
+        shutil.move("core.cpython-{}-darwin.so".format(v), "..//molecularplus//core.cpython-{}-darwin.so".format(v))
 
     chdir("..")
 
     molfiles = (
-    "__init__.py", "_version.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
-    "simulate.py", "ui.py", "utils.py", "core.cpython*.so", "core.cpython*.pyd", 'core.cpython-{}-darwin.so'.format(v), 'core.cp{}-win_amd64.pyd'.format(v), 'core.cpython-{}-x86_64-linux-gnu.so'.format(v))
+    "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
+    "simulate.py", "ui.py", "utils.py", 'core.cpython-{}-darwin.so'.format(v), 'core.cp{}-win_amd64.pyd'.format(v), 'core.cpython-{}-x86_64-linux-gnu.so'.format(v))
 
     with ZipFile('molecular-plus_{}_'.format(version) + '{}_'.format(v) + name + '.zip', 'w') as z:
-        for root, _, files in walk('molecular'):
+        for root, _, files in walk('molecularplus'):
             for file in files:
                 if file not in molfiles:
                     continue
                 z.write(path.join(root, file), compress_type=ZIP_DEFLATED)
+
     # cleanup
-    chdir(getcwd() + "//molecular")
-    try:
-        if is_linux:
-            remove("core.cpython-{}-x86_64-linux-gnu.so".format(v))
-        elif is_windows:
-            remove("core.cp{}-win_amd64.pyd".format(v))
-        else:
-            remove("core.cpython-{}-darwin.so".format(v))
-    except:
-        pass
-    chdir("..")
+
+    shutil.rmtree(".//molecularplus")
+
+    # chdir(getcwd() + "//molecularplus")
+    # try:
+    #     remove("*.*")
+    # except:
+    #     pass
+    # chdir("..")
+    
     chdir(getcwd() + "//c_sources")
 
     try:
