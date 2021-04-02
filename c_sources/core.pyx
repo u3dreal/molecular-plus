@@ -88,6 +88,55 @@ cpdef init(importdata):
         psys[i].particles = <Particle *>malloc(psys[i].parnum * \
             cython.sizeof(Particle))
         psys[i].particles = &parlist[jj]
+
+        psys[i].selfcollision_active = importdata[i + 1][6][0]
+        psys[i].othercollision_active = importdata[i + 1][6][1]
+        psys[i].collision_group = importdata[i + 1][6][2]
+        psys[i].friction = importdata[i + 1][6][3]
+        psys[i].collision_damp = importdata[i + 1][6][4]
+        psys[i].links_active = importdata[i + 1][6][5]
+        psys[i].link_length = importdata[i + 1][6][6]
+        psys[i].link_max = importdata[i + 1][6][7]
+        psys[i].link_tension = importdata[i + 1][6][8]
+        psys[i].link_tensionrand = importdata[i + 1][6][9]
+        psys[i].link_stiff = importdata[i + 1][6][10] * 0.5
+        psys[i].link_stiffrand = importdata[i + 1][6][11]
+        psys[i].link_stiffexp = importdata[i + 1][6][12]
+        psys[i].link_damp = importdata[i + 1][6][13]
+        psys[i].link_damprand = importdata[i + 1][6][14]
+        psys[i].link_broken = importdata[i + 1][6][15]
+        psys[i].link_brokenrand = importdata[i + 1][6][16]
+        psys[i].link_estiff = importdata[i + 1][6][17] * 0.5
+        psys[i].link_estiffrand = importdata[i + 1][6][18]
+        psys[i].link_estiffexp = importdata[i + 1][6][19]
+        psys[i].link_edamp = importdata[i + 1][6][20]
+        psys[i].link_edamprand = importdata[i + 1][6][21]
+        psys[i].link_ebroken = importdata[i + 1][6][22]
+        psys[i].link_ebrokenrand = importdata[i + 1][6][23]
+        psys[i].relink_group = importdata[i + 1][6][24]
+        psys[i].relink_chance = importdata[i + 1][6][25]
+        psys[i].relink_chancerand = importdata[i + 1][6][26]
+        psys[i].relink_max = importdata[i + 1][6][27]
+        psys[i].relink_tension = importdata[i + 1][6][28]
+        psys[i].relink_tensionrand = importdata[i + 1][6][29]
+        psys[i].relink_stiff = importdata[i + 1][6][30] * 0.5
+        psys[i].relink_stiffexp = importdata[i + 1][6][31]
+        psys[i].relink_stiffrand = importdata[i + 1][6][32]
+        psys[i].relink_damp = importdata[i + 1][6][33]
+        psys[i].relink_damprand = importdata[i + 1][6][34]
+        psys[i].relink_broken = importdata[i + 1][6][35]
+        psys[i].relink_brokenrand = importdata[i + 1][6][36]
+        psys[i].relink_estiff = importdata[i + 1][6][37] * 0.5
+        psys[i].relink_estiffexp = importdata[i + 1][6][38]
+        psys[i].relink_estiffrand = importdata[i + 1][6][39]
+        psys[i].relink_edamp = importdata[i + 1][6][40]
+        psys[i].relink_edamprand = importdata[i + 1][6][41]
+        psys[i].relink_ebroken = importdata[i + 1][6][42]
+        psys[i].relink_ebrokenrand = importdata[i + 1][6][43]
+        psys[i].link_friction = importdata[i + 1][6][44]
+        psys[i].link_group = importdata[i + 1][6][45]
+        psys[i].other_link_active = importdata[i + 1][6][46]
+
         for ii in xrange(psys[i].parnum):
             parlist[jj].id = jj
             parlist[jj].loc[0] = importdata[i + 1][1][(ii * 3)]
@@ -99,53 +148,7 @@ cpdef init(importdata):
             parlist[jj].size = importdata[i + 1][3][ii]
             parlist[jj].mass = importdata[i + 1][4][ii]
             parlist[jj].state = importdata[i + 1][5][ii]
-            psys[i].selfcollision_active = importdata[i + 1][6][0]
-            psys[i].othercollision_active = importdata[i + 1][6][1]
-            psys[i].collision_group = importdata[i + 1][6][2]
-            psys[i].friction = importdata[i + 1][6][3]
-            psys[i].collision_damp = importdata[i + 1][6][4]
-            psys[i].links_active = importdata[i + 1][6][5]
-            psys[i].link_length = importdata[i + 1][6][6]
-            psys[i].link_max = importdata[i + 1][6][7]
-            psys[i].link_tension = importdata[i + 1][6][8]
-            psys[i].link_tensionrand = importdata[i + 1][6][9]
-            psys[i].link_stiff = importdata[i + 1][6][10] * 0.5
-            psys[i].link_stiffrand = importdata[i + 1][6][11]
-            psys[i].link_stiffexp = importdata[i + 1][6][12]
-            psys[i].link_damp = importdata[i + 1][6][13]
-            psys[i].link_damprand = importdata[i + 1][6][14]
-            psys[i].link_broken = importdata[i + 1][6][15]
-            psys[i].link_brokenrand = importdata[i + 1][6][16]
-            psys[i].link_estiff = importdata[i + 1][6][17] * 0.5
-            psys[i].link_estiffrand = importdata[i + 1][6][18]
-            psys[i].link_estiffexp = importdata[i + 1][6][19]
-            psys[i].link_edamp = importdata[i + 1][6][20]
-            psys[i].link_edamprand = importdata[i + 1][6][21]
-            psys[i].link_ebroken = importdata[i + 1][6][22]
-            psys[i].link_ebrokenrand = importdata[i + 1][6][23]
-            psys[i].relink_group = importdata[i + 1][6][24]
-            psys[i].relink_chance = importdata[i + 1][6][25]
-            psys[i].relink_chancerand = importdata[i + 1][6][26]
-            psys[i].relink_max = importdata[i + 1][6][27]
-            psys[i].relink_tension = importdata[i + 1][6][28]
-            psys[i].relink_tensionrand = importdata[i + 1][6][29]
-            psys[i].relink_stiff = importdata[i + 1][6][30] * 0.5
-            psys[i].relink_stiffexp = importdata[i + 1][6][31]
-            psys[i].relink_stiffrand = importdata[i + 1][6][32]
-            psys[i].relink_damp = importdata[i + 1][6][33]
-            psys[i].relink_damprand = importdata[i + 1][6][34]
-            psys[i].relink_broken = importdata[i + 1][6][35]
-            psys[i].relink_brokenrand = importdata[i + 1][6][36]
-            psys[i].relink_estiff = importdata[i + 1][6][37] * 0.5
-            psys[i].relink_estiffexp = importdata[i + 1][6][38]
-            psys[i].relink_estiffrand = importdata[i + 1][6][39]
-            psys[i].relink_edamp = importdata[i + 1][6][40]
-            psys[i].relink_edamprand = importdata[i + 1][6][41]
-            psys[i].relink_ebroken = importdata[i + 1][6][42]
-            psys[i].relink_ebrokenrand = importdata[i + 1][6][43]
-            psys[i].link_friction = importdata[i + 1][6][44]
-            psys[i].link_group = importdata[i + 1][6][45]
-            psys[i].other_link_active = importdata[i + 1][6][46]
+            parlist[jj].weak = importdata[i + 1][7][ii]
 
             parlist[jj].sys = &psys[i]
             parlist[jj].collided_with = <int *>malloc(1 * cython.sizeof(int))
@@ -1332,9 +1335,10 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
                         link.edamping = ((par.sys.link_edamp + par2.sys.link_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
                         brokrandom = ((par.sys.link_brokenrand + par2.sys.link_brokenrand) / 2) * 2
                         srand(6)
-                        link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        #link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.broken = ((par.weak + par2.weak) / 2) * ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         srand(7)
-                        link.ebroken = ((par.sys.link_ebroken + par2.sys.link_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.ebroken = ((par.weak + par2.weak) / 2) * ((par.sys.link_ebroken + par2.sys.link_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         par.links[par.links_num] = link[0]
                         par.links_num += 1
                         par.links_activnum += 1
@@ -1504,6 +1508,7 @@ cdef struct Particle:
     float size
     float mass
     int state
+    float weak
     ParSys *sys
     int *collided_with
     int collided_num
