@@ -1,10 +1,5 @@
 import bpy
-import math
 from .utils import get_object
-from time import time
-
-
-import concurrent.futures
 
 def get_weak_map(obj, psys):
     print('start bake weak map from:', obj.name)
@@ -15,7 +10,6 @@ def get_weak_map(obj, psys):
         newuv = par.location @ obj.matrix_world  # - obj.location
         par_weak.append(tex.evaluate(newuv).w)
 
-    #print(par_weak)
     print('Weak Map baked on:', psys.settings.name)
 
     return par_weak
@@ -59,10 +53,11 @@ def pack_data(context, initiate):
                 if initiate:
                     par_mass = [0] * parlen
                     psys.particles.foreach_get('size', par_size)
+
                     if psys.settings.mol_bake_weak_map:
                         par_weak = get_weak_map(obj, psys)
                     else:
-                        par_weak = [0] * parlen
+                        par_weak = [1.0] * parlen
 
                     if psys.settings.mol_density_active:
                         for i in range(len(par_size)):

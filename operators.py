@@ -98,7 +98,7 @@ class MolSetGlobalUV(bpy.types.Operator):
         scene = context.scene
         obj = get_object(context, context.view_layer.objects[self.objname])
 
-        print('  start bake global uv from:', obj.name)
+        print('start bake global uv from:', obj.name)
 
         psys = obj.particle_systems.active
 
@@ -110,8 +110,11 @@ class MolSetGlobalUV(bpy.types.Operator):
             par_uv.append(newuv[1])
             par_uv.append(newuv[2])
 
+        psys.settings.use_rotations = True
+        psys.settings.angular_velocity_mode = 'RAND'
+
         psys.particles.foreach_set("angular_velocity", par_uv)
-        print('         global uv baked on:', psys.settings.name)
+        print('global uv baked on:', psys.settings.name)
 
         return {'FINISHED'}
 
