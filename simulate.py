@@ -5,11 +5,11 @@ def get_weak_map(obj, psys):
     print('start bake weak map from:', obj.name)
 
     par_weak = []
-    tex = psys.settings.texture_slots['weak_map'].texture
-    texm_offset = psys.settings.texture_slots['weak_map'].offset
-    texm_scale = psys.settings.texture_slots['weak_map'].scale
+    tex = psys.settings.texture_slots[0].texture
+    texm_offset = psys.settings.texture_slots[0].offset
+    texm_scale = psys.settings.texture_slots[0].scale
     for par in psys.particles:
-        newuv = (par.location + texm_offset) @ obj.matrix_world   * texm_scale
+        newuv = (par.location + texm_offset) @ obj.matrix_world * texm_scale
         par_weak.append(tex.evaluate(newuv).w)
 
     print('Weak Map baked on:', psys.settings.name)
