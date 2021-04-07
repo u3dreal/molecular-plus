@@ -36,40 +36,40 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row = box.row()
                 row.scale_y = 0.5
                 row.label(text = "Total particles : " + str(scn.mol_parnum))
-                row.operator("object.mol_set_subs", text = "", icon = "FILE_REFRESH")
+                row.operator("object.mol_set_subs", text="", icon="FILE_REFRESH")
 
                 box = layout.box()
                 row = box.row()
-                if scn.mol_simrun == False and psys.point_cache.is_baked == False:
+                if not scn.mol_simrun and not psys.point_cache.is_baked:
                     row.enabled = True
-                    row.operator("object.mol_simulate", icon = 'RADIOBUT_ON',text = "Start Simulation")
+                    row.operator("object.mol_simulate", icon='RADIOBUT_ON', text="Start Simulation")
                     row = box.row()
                     row.enabled = False
                     row.operator("object.clear_pcache", text="Free All Bakes")
 
 
-                if psys.point_cache.is_baked == True and scn.mol_simrun == False:
+                if psys.point_cache.is_baked and not scn.mol_simrun:
                     row.enabled = False
-                    row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Simulation baked")
+                    row.operator("object.mol_simulate", icon='RADIOBUT_ON', text="Simulation baked")
                     row = box.row()
                     row.enabled = True
                     row.operator("object.clear_pcache", text="Free All Bakes")
-                if scn.mol_simrun == True:
+                if scn.mol_simrun:
                     row.enabled = False
-                    row.operator("object.mol_simulate",icon = 'RADIOBUT_ON',text = "Process: " + scn.mol_timeremain + " left")
+                    row.operator("object.mol_simulate", icon='RADIOBUT_ON', text="Process: " + scn.mol_timeremain + " left")
                     row = box.row()
-                    row.operator("object.cancel_sim", icon = 'CANCEL', text = "Cancel")
+                    row.operator("object.cancel_sim", icon='CANCEL', text="Cancel")
 
                 row = box.row()
-                row.prop(scn,"frame_start",text = "start")
-                row.prop(scn,"frame_end",text = "end")
+                row.prop(scn, "frame_start", text="start")
+                row.prop(scn, "frame_end", text="end")
                 row = box.row()
                 row.alignment = 'RIGHT'
-                row.prop(scn,"mol_timescale_active",text = "TimeScaling")
+                row.prop(scn, "mol_timescale_active", text="TimeScaling")
                 #row = box.row()
                 #row.enabled = scn.mol_timescale_active
-                row.prop(scn,"timescale",text = "")
-                row.label(text = "")
+                row.prop(scn, "timescale", text="")
+                row.label(text="")
                 row = box.row()
 
                 row = box.row()
@@ -295,7 +295,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row.prop(psys.settings,"mol_link_brokenrand",text = "Rand Broken")
             row = box.row()
             row = box.row()
-            row.prop(psys.settings,"mol_link_samevalue", text = "Same values for compression/expansion")
+            row.prop(psys.settings,"mol_link_samevalue", text="Same values for compression/expansion")
             row = box.row()
 
             if not psys.settings.mol_link_samevalue:
