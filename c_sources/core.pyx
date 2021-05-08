@@ -1127,12 +1127,14 @@ cdef Node KDTree_create_tree(
     return kdtree.nodes[index]
 
 
-cdef int KDTree_rnn_query(
+cdef void KDTree_rnn_query(
         KDTree *kdtree,
         Particle *par,
         float point[3],
         float dist
         )nogil:
+    if  par.state >= 2:
+        return
 
     global parlist
     cdef float sqdist  = 0
@@ -1144,7 +1146,7 @@ cdef int KDTree_rnn_query(
     if kdtree.root_node[0].index != kdtree.nodes[0].index:
         par.neighbours[0] = -1
         par.neighboursnum = 0
-        return -1
+        return
     else:
         sqdist = dist * dist
         KDTree_rnn_search(
