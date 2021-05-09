@@ -334,9 +334,16 @@ class MolSimulateModal(bpy.types.Operator):
                         psys.particles.foreach_set('velocity', mol_importdata[1][i])
                         i += 1
 
-            if framesubstep == int(framesubstep):
+            scene.mol_newlink = 0
+            scene.mol_deadlink = 0
 
-                mol_substep *= 2.5
+            scene.mol_newlink += mol_importdata[2]
+            scene.mol_deadlink += mol_importdata[3]
+            scene.mol_totallink = mol_importdata[4]
+            scene.mol_totaldeadlink = mol_importdata[5]
+            scene.frame_set(frame=frame_current + 1)
+
+            if framesubstep == int(framesubstep):
                 print("    frame " + str(int(framesubstep) + 1) + ":")
                 print("      links created:", scene.mol_newlink)
                 if scene.mol_totallink:
@@ -347,7 +354,7 @@ class MolSimulateModal(bpy.types.Operator):
                 blendertime = etime3 - stime3
                 print("      Pack             : " + str(round(packtime * (mol_substep + 1), 3)) + " sec")
                 print("      Molecular        : " + str(round(moltime * (mol_substep + 1), 3)) + " sec")
-                print("      Blender          : " + str(round((blendertime + packtime) * (mol_substep + 1), 3)) + " sec")
+                print("      Blender          : " + str(round(blendertime * (mol_substep + 1), 3)) + " sec")
                 print("      Total Frame      : " + str(round((blendertime + packtime + moltime) * (mol_substep + 1), 3)) + " sec")
 
                 remain = (blendertime + packtime + moltime) * (mol_substep + 1) * (float(scene.mol_old_endframe) - (framesubstep + 1.0))
@@ -355,14 +362,6 @@ class MolSimulateModal(bpy.types.Operator):
                 days = int(strftime('%d', gmtime(remain))) - 1
                 scene.mol_timeremain = strftime(str(days) + ' days %H hours %M mins %S secs', gmtime(remain))
                 print("      Remaining estimated:", scene.mol_timeremain)
-            scene.mol_newlink = 0
-            scene.mol_deadlink = 0
-
-            scene.mol_newlink += mol_importdata[2]
-            scene.mol_deadlink += mol_importdata[3]
-            scene.mol_totallink = mol_importdata[4]
-            scene.mol_totaldeadlink = mol_importdata[5]
-            scene.frame_set(frame=frame_current + 1)
 
         return {'PASS_THROUGH'}
 
