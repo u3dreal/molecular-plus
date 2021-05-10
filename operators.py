@@ -436,4 +436,4 @@ class MolCancelSim(bpy.types.Operator):
 
         return {'FINISHED'}
 
-operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim)
+operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolRemoveCollider)
