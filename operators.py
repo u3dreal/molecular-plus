@@ -8,7 +8,6 @@ from time import sleep, strftime, gmtime, time
 from . import simulate, core
 from .utils import get_object, destroy_caches, update_progress
 
-
 class MolRemoveCollider(bpy.types.Operator):
     bl_idname = "object.mol_remove_collision"
     bl_label = "Remove Collision"
@@ -235,14 +234,15 @@ def convert_time_to_string(total_time):
 def draw_callback_px(self, context):
         """Draw on the viewports"""
         # BLF drawing routine
+
         font_id = 0
         texts = bpy.context.scene.mol_progress.split('\n')
+        size = bpy.context.preferences.addons[__package__].preferences.log_size
 
         for i, text in enumerate(texts):
-            blf.position(font_id, 50, 50*(i+1) , 0)
-            blf.size(font_id, 40, 50)
+            blf.position(font_id, size, size*(i+1) , 0)
+            blf.size(font_id, size - 10, 50)
             blf.draw(font_id, text)
-
 
 class MolSimulateModal(bpy.types.Operator):
     """Operator which runs its self from a timer"""
