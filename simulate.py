@@ -42,21 +42,7 @@ def pack_data(context, initiate):
                 psys.particles.foreach_get('velocity', par_vel)
                 psys.particles.foreach_get('alive_state', par_alive)
 
-                # par_alive_old = []
-                # for par in psys.particles:
-                #     #parnum += 1
-                #     if par.alive_state == "UNBORN":
-                #         par_alive_old.append(2)
-                #     if par.alive_state == "ALIVE":
-                #         par_alive_old.append(0)
-                #     if par.alive_state == "DEAD":
-                #         par_alive_old.append(3)
-                #
-                # print(par_alive_old)
-                # print(par_alive)
-
                 if initiate:
-
                     par_mass = [0] * parlen
                     psys.particles.foreach_get('size', par_size)
 

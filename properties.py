@@ -1,9 +1,6 @@
 import multiprocessing
-
 import bpy
-
 from . import descriptions
-
 
 def define_props():
     parset = bpy.types.ParticleSettings

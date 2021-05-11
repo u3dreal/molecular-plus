@@ -153,7 +153,7 @@ class MolecularEmitter(bpy.types.Operator):
                 psys.use_modifier_stack = True
                 psys.use_emit_random = True
 
-            # Granular_Settings
+            # Molecularular_Settings
                 if psys.mol_active == False:
                     psys.mol_active = True
 
@@ -165,7 +165,6 @@ class MolecularEmitter(bpy.types.Operator):
 
             # update
             bpy.ops.object.reset_pcache()
-
             bpy.ops.object.mol_set_subs()
 
             return {'FINISHED'}
