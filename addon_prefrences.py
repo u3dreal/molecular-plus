@@ -7,7 +7,7 @@ class MolecularAddonPreferences(AddonPreferences):
     bl_idname = __package__
 
     log_size: IntProperty(
-        name = "Onscreen status size",
+        name = 'Onscreen status size',
         default = 50,
         min = 1,
         max = 200
