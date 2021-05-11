@@ -45,7 +45,7 @@ cdef Particle *parlist = NULL
 cdef SParticle *parlistcopy = NULL
 cdef ParSys *psys = NULL
 cdef KDTree *kdtree = NULL
-print("cmolcore imported with success! v1.14")
+print("cmolcore imported with success! v1.15")
 
 
 cpdef init(importdata):
@@ -621,7 +621,7 @@ cdef void collide(Particle *par)nogil:
     cdef float force2 = 0
     cdef float mathtmp = 0
 
-    if  par.state >= 2:
+    if  par.state < 3:
         return
     if par.sys.selfcollision_active == False \
             and par.sys.othercollision_active == False:
@@ -655,7 +655,7 @@ cdef void collide(Particle *par)nogil:
             target = (par.size + par2.size) * 0.999
             sqtarget = target * target
 
-            if check == 0 and par2.state <= 1 and \
+            if check == 0 and par2.state >= 3 and \
                     arraysearch(
                         par2.id, par.link_with, par.link_withnum
                     ) == -1 and \
@@ -809,7 +809,7 @@ cdef void solve_link(Particle *par)nogil:
     cdef float *ypar2_vel = [0, 0, 0]
     cdef float *xpar2_vel = [0, 0, 0]
     # broken_links = []
-    if  par.state >= 2:
+    if  par.state < 3:
         return
     for i in xrange(par.links_num):
         if par.links[i].start != -1:
@@ -858,10 +858,10 @@ cdef void solve_link(Particle *par)nogil:
                 ratio1 = (par2.mass/(par1.mass + par2.mass))
                 ratio2 = (par1.mass/(par1.mass + par2.mass))
 
-                if par1.state == 3: #dead particle, correct velocity ratio of alive partner
+                if par1.state == 1: #dead particle, correct velocity ratio of alive partner
                     ratio1 = 0
                     ratio2 = 1
-                elif par2.state == 3:
+                elif par2.state == 1:
                     ratio1 = 1
                     ratio2 = 0
 
@@ -970,7 +970,7 @@ cdef void update(data):
             psys[i].particles[ii].vel[1] = data[i][1][(ii * 3) + 1]
             psys[i].particles[ii].vel[2] = data[i][1][(ii * 3) + 2]
 
-            if psys[i].particles[ii].state == 0 and data[i][2][ii] == 0:
+            if psys[i].particles[ii].state == 3 and data[i][2][ii] == 3:
                 psys[i].particles[ii].state = data[i][2][ii] + 1
                 if psys[i].links_active == 1:
                     KDTree_rnn_query(
@@ -983,8 +983,8 @@ cdef void update(data):
                     # free(psys[i].particles[ii].neighbours)
                     psys[i].particles[ii].neighboursnum = 0
 
-            elif psys[i].particles[ii].state == 1 and data[i][2][ii] == 0:
-                psys[i].particles[ii].state = 1
+            elif psys[i].particles[ii].state == 4 and data[i][2][ii] == 3:
+                psys[i].particles[ii].state = 4
 
             else:
                 psys[i].particles[ii].state = data[i][2][ii]
@@ -1133,7 +1133,7 @@ cdef void KDTree_rnn_query(
         float point[3],
         float dist
         )nogil:
-    if  par.state >= 2:
+    if  par.state < 3:
         return
 
     global parlist
@@ -1268,7 +1268,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
     fakepar = <Particle *>malloc(1 * cython.sizeof(Particle))
     par = &parlist[par_id]
 
-    if  par.state >= 2:
+    if  par.state < 3:
         return
     if par.links_activnum >= max_link:
         return
@@ -1298,7 +1298,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
             # arraysearch(par2.id, par.link_with, par.link_withnum)
 
             if arraysearch(par.id,par2.link_with,par2.link_withnum) == -1 and \
-                    par2.state <= 1 and par.state <= 1:
+                    par2.state >= 3 and par.state >= 3:
 
             #if par not in par2.link_with and par2.state <= 1 \
             #   and par.state <= 1:
