@@ -7,10 +7,10 @@ class MolecularAddonPreferences(AddonPreferences):
     bl_idname = __package__
 
     log_size: IntProperty(
-        name="Size of onscreen status",
-        default=50,
-        min=1,
-        max=200
+        name = "Onscreen status size",
+        default = 50,
+        min = 1,
+        max = 200
     )
 
     def draw(self, context):
