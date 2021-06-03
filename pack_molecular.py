@@ -54,7 +54,7 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
     chdir("..")
 
     molfiles = (
-    "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
+    "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py", "addon_prefrences.py",
     "simulate.py", "ui.py", "utils.py", 'core.cpython-{}-darwin.so'.format(v), 'core.cp{}-win_amd64.pyd'.format(v), 'core.cpython-{}-x86_64-linux-gnu.so'.format(v))
 
     with ZipFile('molecular-plus_{}_'.format(version) + '{}_'.format(v) + name + '.zip', 'w') as z:
