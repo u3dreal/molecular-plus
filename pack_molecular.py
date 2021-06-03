@@ -26,7 +26,7 @@ mkdir(".//molecularplus")
 
 pyfiles = (
     "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
-    "simulate.py", "ui.py", "utils.py")
+    "simulate.py", "ui.py", "utils.py", "addon_prefrences.py")
 
 for file in pyfiles:
     shutil.copy(file, ".//molecularplus//" + file)
