@@ -30,7 +30,7 @@ elif os_name == "Darwin":
         module_name,
         ['core' + '.pyx'],
         extra_compile_args=['-march=x86-64','-msse4.2', '-O3','-ffast-math','-fopenmp'],
-        extra_link_args=['-lm','-fopenmp']
+        extra_link_args=['-static','-lm','-fopenmp']
     )]
 
 setup(
