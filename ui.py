@@ -61,24 +61,25 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                     row.operator("object.cancel_sim", icon='CANCEL', text="Cancel")
 
                 row = box.row()
-                row.prop(scn, "frame_start", text="start")
-                row.prop(scn, "frame_end", text="end")
-                row = box.row()
-                row.alignment = 'RIGHT'
-                row.prop(scn, "mol_timescale_active", text="TimeScaling")
-                #row = box.row()
-                #row.enabled = scn.mol_timescale_active
-                row.prop(scn, "timescale", text="")
-                row.label(text="")
-                row = box.row()
-
-                row = box.row()
                 row.prop(scn,"mol_bake",text = "Bake")
                 row.prop(scn,"mol_render",text = "Render")
                 row.prop(scn, "mol_autosubsteps", text="auto")
                 row = box.row()
                 row.prop(scn,"mol_substep", text = "Steps")
                 row.prop(scn,"mol_cpu",text = "Threads")
+
+                row = box.row()
+                row.prop(scn, "frame_start", text="start")
+                row.prop(scn, "frame_end", text="end")
+                row = box.row()
+                # row = box.row()
+                # row.enabled = scn.mol_timescale_active
+                row.prop(scn, "timescale", text="")
+                #row.alignment = 'RIGHT'
+                row.prop(scn, "mol_timescale_active", text="TimeScaling")
+                #row.label(text="")
+                #row = box.row()
+
         else:
             row.label(text="No Object selected")
 
@@ -179,7 +180,7 @@ class MS_PT_MolecularDonorPanel(bpy.types.Panel):
         #row.label(text = "www.q3de.com")
         
 class MS_PT_MolecularPanel(bpy.types.Panel):
-    """Creates a Panel in the Object properties window"""
+    """Creates a Panel in the Physics properties window"""
     bl_label = "Molecular"
     bl_idname = "OBJECT_PT_molecular"
     bl_space_type = 'PROPERTIES'
@@ -294,6 +295,19 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row.prop(psys.settings,"mol_link_broken",text = "broken")
             row.prop(psys.settings,"mol_link_brokenrand",text = "Rand Broken")
             row = box.row()
+            if psys.settings.texture_slots[0]:
+                row.active = True
+                row.enabled = True
+                row.prop(psys.settings, "mol_bake_weak_map", text="WeakMap")
+                row = box.row()
+                row.label(text="Using Texture " + psys.settings.texture_slots[0].texture.name)
+            else:
+                row.label(text="No Texture found in Particle textures[0]")
+                row = box.row()
+                row.active = False
+                row.enabled = False
+                row.prop(psys.settings, "mol_bake_weak_map", text="WeakMap")
+            box = layout.box()
             row = box.row()
             row.prop(psys.settings,"mol_link_samevalue", text="Same values for compression/expansion")
             row = box.row()
@@ -369,19 +383,6 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         row.active = psys.settings.mol_bakeuv
         row.prop(psys.settings,"mol_bakeuv_global",text = "Global")
         row = box.row()
-
-        if psys.settings.texture_slots[0]:
-            row.active = True
-            row.enabled = True
-            row.prop(psys.settings, "mol_bake_weak_map", text="WeakMap")
-            row = box.row()
-            row.label(text = "Using Texture " + psys.settings.texture_slots[0].texture.name)
-        else:
-            row.label(text = "No weak_map found in Particle textures")
-            row = box.row()
-            row.active = False
-            row.enabled = False
-            row.prop(psys.settings, "mol_bake_weak_map", text="WeakMap")
 
 class MolecularAdd(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_add"

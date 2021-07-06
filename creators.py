@@ -139,7 +139,7 @@ class MolecularEmitter(bpy.types.Operator):
 
             psys.grid_resolution = max_dim/voxel_size
             psys.particle_size = voxel_size/2
-            psys.display_size = voxel_size/4
+            psys.display_size = voxel_size/2
             psys.hexagonal_grid = context.scene.mol_hexgrid
             psys.emit_from = 'FACE'
             psys.distribution = 'RAND'
@@ -160,7 +160,7 @@ class MolecularEmitter(bpy.types.Operator):
                 psys.mol_selfcollision_active = True
                 psys.mol_othercollision_active = True
                 psys.mol_friction = 0.15
-                psys.mol_collision_damp = 0.5
+                psys.mol_collision_damp = 0.7
                 psys.mol_link_length = 2.1
 
             # update
