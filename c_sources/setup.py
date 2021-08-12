@@ -29,7 +29,7 @@ elif os_name == "Darwin":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['-arch x86_64','-msse4.2', '-O3','-ffast-math', '-Xclang', '-fopenmp'],
+        extra_compile_args=['-msse4.2', '-O3','-ffast-math', '-Xclang', '-fopenmp'],
         extra_link_args=['-lomp']
     )]
 
