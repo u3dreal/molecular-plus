@@ -71,7 +71,7 @@ jobs:
   
   build_macos37:
 
-    runs-on: macos-11
+    runs-on: macos-latest
     outputs:
       version: ${{steps.build.outputs.version}}
 
@@ -83,7 +83,6 @@ jobs:
         python-version: 3.7.7
     - name: Install dependencies
       run: |
-        brew install gcc
         python -m pip install --upgrade pip
         pip install flake8 pytest cython
     - name: Lint with flake8
@@ -162,7 +161,7 @@ jobs:
 
   build_macos39:
 
-    runs-on: macos-11
+    runs-on: macos-latest
     outputs:
       version: ${{steps.build.outputs.version}}
 
@@ -174,7 +173,6 @@ jobs:
           python-version: 3.9.2
       - name: Install dependencies
         run: |
-          brew install gcc
           python -m pip install --upgrade pip
           pip install flake8 pytest cython
       - name: Lint with flake8
