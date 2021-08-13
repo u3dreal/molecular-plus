@@ -83,7 +83,7 @@ jobs:
         python-version: 3.7.7
     - name: Install dependencies
       run: |
-        brew install libomp
+        brew install gcc
         python -m pip install --upgrade pip
         pip install flake8 pytest cython
     - name: Lint with flake8
@@ -94,7 +94,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Build with Cython
       id: build
-      run: echo "::set-output name=version::$(python pack_molecular.py)"
+      run: echo "::set-output name=version::$(CC=gcc-10 python pack_molecular.py)"
     - name: Upload mac zip
       uses: actions/upload-artifact@v2
       with:
@@ -174,7 +174,7 @@ jobs:
           python-version: 3.9.2
       - name: Install dependencies
         run: |
-          brew install libomp
+          brew install gcc
           python -m pip install --upgrade pip
           pip install flake8 pytest cython
       - name: Lint with flake8
@@ -185,7 +185,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
-        run: echo "::set-output name=version::$(python pack_molecular.py)"
+        run: echo "::set-output name=version::$(CC=gcc-10 python pack_molecular.py)"
       - name: Upload mac zip
         uses: actions/upload-artifact@v2
         with:
