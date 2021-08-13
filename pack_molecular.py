@@ -40,9 +40,6 @@ chdir(getcwd() + "//c_sources")
 
 version = '.'.join(map(str, bl_info['version']))
 
-if name == "macos":
-    rename("/usr/local/lib/libomp.dylib", "/usr/local/lib/liboooomp.dylib")
-
 with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
     proc.stdout.read()
 
@@ -84,8 +81,6 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
         remove("core.html")
         remove("core.c")
         shutil.rmtree("build")
-        if name == "macos":
-            rename("/usr/local/lib/liboooomp.dylib", "/usr/local/lib/libomp.dylib")
     except:
         pass
 
