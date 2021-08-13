@@ -71,7 +71,7 @@ jobs:
   
   build_macos37:
 
-    runs-on: macos-latest
+    runs-on: macos-11
     outputs:
       version: ${{steps.build.outputs.version}}
 
@@ -94,7 +94,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Build with Cython
       id: build
-      run: echo "::set-output name=version::$(CC=gcc-10 python pack_molecular.py)"
+      run: echo "::set-output name=version::$(CC=gcc-11 python pack_molecular.py)"
     - name: Upload mac zip
       uses: actions/upload-artifact@v2
       with:
@@ -162,7 +162,7 @@ jobs:
 
   build_macos39:
 
-    runs-on: macos-latest
+    runs-on: macos-11
     outputs:
       version: ${{steps.build.outputs.version}}
 
@@ -185,7 +185,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
-        run: echo "::set-output name=version::$(CC=gcc-10 python pack_molecular.py)"
+        run: echo "::set-output name=version::$(CC=gcc-11 python pack_molecular.py)"
       - name: Upload mac zip
         uses: actions/upload-artifact@v2
         with:
