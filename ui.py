@@ -8,7 +8,6 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Molecular+"
-    bl_options = {'DRAW_BOX'}
 
     @classmethod
     def poll(cls, context):
@@ -91,7 +90,6 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Molecular+"
-    bl_options = {'DRAW_BOX'}
     
     @classmethod
     def poll(cls, context):
@@ -119,7 +117,6 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Molecular+"
-    bl_options = {'DRAW_BOX'}
     
     @classmethod
     def poll(cls, context):
@@ -152,7 +149,7 @@ class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Molecular+"
-    bl_options = {'DEFAULT_CLOSED','DRAW_BOX'}
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
 
