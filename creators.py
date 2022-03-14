@@ -24,7 +24,7 @@ class MolecularGrid3d(bpy.types.Operator):
         # ParticlsSystemSettings
             max_dim = max(obj.dimensions)
 
-            psys.grid_resolution = max_dim/voxel_size
+            psys.grid_resolution = int(max_dim/voxel_size)
             psys.particle_size = max_dim/psys.grid_resolution/2
             psys.display_size = psys.particle_size/2
             psys.hexagonal_grid = context.scene.mol_hexgrid
@@ -184,5 +184,5 @@ class MolecularCollider(bpy.types.Operator):
             obj.collision.friction_factor = 0.5
 
         return {'FINISHED'}
-    
+
 create_classes = (MolecularEmitter, MolecularCollider, MolecularGrid2d, MolecularGrid3d)
