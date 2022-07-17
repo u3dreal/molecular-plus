@@ -768,3 +768,9 @@ c_sources/openmp/openmp-13.0.1.src/www/index.html
 c_sources/openmp/openmp-13.0.1.src/www/menu.css
 c_sources/openmp/openmp-13.0.1.src/www/README.txt
 c_sources/openmp/openmp-13.0.1.src/www/Reference.pdf
+c_sources/openmp/openmp-13.0.1.src/install/include/omp-tools.h
+c_sources/openmp/openmp-13.0.1.src/install/include/omp.h
+c_sources/openmp/openmp-13.0.1.src/install/include/ompt.h
+c_sources/openmp/openmp-13.0.1.src/install/lib/libgomp.a
+c_sources/openmp/openmp-13.0.1.src/install/lib/libiomp5.a
+c_sources/openmp/openmp-13.0.1.src/install/lib/libomp.a
