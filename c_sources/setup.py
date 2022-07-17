@@ -26,8 +26,8 @@ elif os_name == "Darwin":
     ext_modules = [Extension(
         module_name,
         ['core' + '.pyx'],
-        extra_compile_args=['-march=x86-64', '-msse4.2', '-O3', '-ffast-math', '-fopenmp'],
-        extra_link_args=['-fopenmp', '-static', '-lm']
+        extra_compile_args=['-msse4.2', '-O3', '-ffast-math', '-fno-builtin','-arch','arm64e','-arch','x86_64', '-Xclang', '-fopenmp', '-I./openmp/include'],
+        extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch','arm64e','-arch','x86_64']
     )]
 
 setup(
