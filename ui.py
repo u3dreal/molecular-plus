@@ -1,9 +1,10 @@
 import bpy
 from .utils import get_object
+from . import bl_info
 
 class MS_PT_MolecularHelperPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
-    bl_label = "Molecular+"
+    bl_label = "Molecular+     "  + str(bl_info['version']).replace('(','').replace(')','').replace(',','.')
     bl_idname = "OBJECT_PT_molecular_helper"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -11,7 +12,6 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        
         return True #context.object != None #psys.settings.mol_active  #context.object != None and context.object.type == 'MESH'
 
     def draw(self, context):
@@ -144,7 +144,7 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
-    bl_label = "q3De"
+    bl_label = "q3de"
     bl_idname = "OBJECT_PT_molecular_donations"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -158,10 +158,7 @@ class MS_PT_MolecularDonorPanel(bpy.types.Panel):
         row = box.row()
         box.active = True
         row.alignment = 'CENTER'
-        row.label(text = "THANKS TO ALL DONATORS !")
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.label(text = "If you want to ")
+        row.label(text = "If you like it")
         row = box.row()
         row.alignment = 'CENTER'
         row.label(text = "Support the Development")
@@ -377,7 +374,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             if row.active == False:
                 row.prop(psys.settings,"mol_bakeuv",text = "Bake UV (current: None)" )
         row = box.row()
-        row.active = psys.settings.mol_bakeuv
+        row.active = False #psys.settings.mol_bakeuv
         row.prop(psys.settings,"mol_bakeuv_global",text = "Global")
         row = box.row()
 
