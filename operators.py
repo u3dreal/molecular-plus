@@ -260,7 +260,7 @@ class MolSimulateModal(bpy.types.Operator):
 
             for psys in obj.particle_systems:
                 if psys.settings.mol_bakeuv:
-                    scene.frame_set(frame=psys.settings.frame_start)
+                    scene.frame_set(frame=int(psys.settings.frame_start))
                     if psys.settings.mol_bakeuv_global:
                         bpy.ops.object.mol_set_global_uv("INVOKE_DEFAULT", objname = obj.name)
                     else:
