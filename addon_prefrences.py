@@ -9,7 +9,7 @@ class MolecularAddonPreferences(AddonPreferences):
 
     log_size: IntProperty(
         name='Onscreen status size',
-        default=50,
+        default=25,
         min=1,
         max=200
     )
