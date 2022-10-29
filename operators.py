@@ -133,7 +133,7 @@ class MolSetActiveUV(bpy.types.Operator):
 
         print('  start bake uv from:', obj.name)
 
-        obdata = obj.data.copy()
+        obdata = context.object.data.copy()
         obj2 = bpy.data.objects.new(name="mol_uv_temp", object_data=obdata)
         obj2.matrix_world = obj.matrix_world
 
@@ -238,7 +238,7 @@ def draw_callback_px(self, context):
         font_id = 0
         texts = bpy.context.scene.mol_progress.split('\n')
         size = bpy.context.preferences.addons[__package__].preferences.log_size
-
+        blf.color(font_id, 1.0, 1.0, 1.0, 0.5)
         for i, text in enumerate(texts):
             blf.position(font_id, size, size*(i+1) , 0)
             blf.size(font_id, size - 10, 50)
