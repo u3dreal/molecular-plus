@@ -9,7 +9,6 @@ c_sources/.DS_Store
 *.so
 *.zip
 c_sources/openmp/openmp-13.0.1.src/www/content.css
-build_molecular.py
 c_sources/openmp/.DS_Store
 c_sources/openmp/openmp-13.0.1.src.tar.xz
 c_sources/openmp/openmp-13.0.1.src/cmake/config-ix.cmake
