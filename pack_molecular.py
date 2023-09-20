@@ -22,7 +22,7 @@ if is_linux:
 elif is_windows:
     name = 'win'
 
-mkdir(".//molecularplus")
+mkdir(".//molecularplus" + name)
 
 pyfiles = (
     "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
