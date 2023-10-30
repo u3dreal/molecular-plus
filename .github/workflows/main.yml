@@ -71,7 +71,7 @@ jobs:
 
   build_macos37:
 
-    runs-on: macos-latest
+    runs-on: macos-11
     outputs:
       version: ${{steps.build.outputs.version}}
 
@@ -161,7 +161,7 @@ jobs:
 
   build_macos39:
 
-    runs-on: macos-latest
+    runs-on: macos-11
     outputs:
       version: ${{steps.build.outputs.version}}
 
@@ -252,7 +252,7 @@ jobs:
 
   build_macos310:
 
-    runs-on: macos-latest
+    runs-on: macos-11
     outputs:
       version: ${{steps.build.outputs.version}}
 
