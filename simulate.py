@@ -20,18 +20,18 @@ def pack_data(context, initiate):
     psyslen = 0
     parnum = 0
     scene = context.scene
-    
+
     for ob in bpy.data.objects:
         obj = get_object(context, ob)
-        
-        for psys in obj.particle_systems:           
+
+        for psys in obj.particle_systems:
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
-            
+
             parlen = len(psys.particles)
-            
+
             if psys.settings.mol_active and parlen:
-                
+
                 par_loc = [0, 0, 0] * parlen
                 par_vel = [0, 0, 0] * parlen
                 par_size = [0] * parlen
@@ -60,10 +60,10 @@ def pack_data(context, initiate):
                     if scene.mol_timescale_active == True:
                         psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
                     else:
-                        psys.settings.timestep = 1 / scene.render.fps 
+                        psys.settings.timestep = 1 / scene.render.fps
 
                     psyslen += 1
-                    
+
                     if bpy.context.scene.mol_minsize > min(par_size):
                         bpy.context.scene.mol_minsize = min(par_size)
 
@@ -136,9 +136,9 @@ def pack_data(context, initiate):
                     params[41] = psys.settings.mol_relink_edamprand
                     params[42] = psys.settings.mol_relink_ebroken
                     params[43] = psys.settings.mol_relink_ebrokenrand
-                    params[44] = psys.settings.mol_link_friction  
-                    params[45] = psys.settings.mol_link_group   
-                    params[46] = psys.settings.mol_other_link_active 
+                    params[44] = psys.settings.mol_link_friction
+                    params[45] = psys.settings.mol_link_group
+                    params[46] = psys.settings.mol_other_link_active
 
                 mol_exportdata = bpy.context.scene.mol_exportdata
 
@@ -156,4 +156,5 @@ def pack_data(context, initiate):
                         par_weak
                     ))
                 else:
-                    mol_exportdata.append((par_loc, par_vel, par_alive))
+                    scoll = psys.settings.mol_selfcollision_active
+                    mol_exportdata.append((par_loc, par_vel, par_alive, scoll))
