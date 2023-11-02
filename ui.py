@@ -129,8 +129,9 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         obj = context.object
 
         row = layout.row()
-        row.alignment = 'RIGHT'
-        row.prop(scn,"mol_voxel_size", text = "Size")
+        #row.alignment = 'RIGHT'
+        row.label(text="  Resolution")
+        row.prop(scn,"mol_voxel_size", text="")
         row.prop(scn,"mol_hexgrid", text = "Hexa")
         row = layout.separator()
         row = layout.row()
