@@ -62,14 +62,14 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row = box.row()
                 row.prop(scn,"mol_bake",text = "Bake")
                 row.prop(scn,"mol_render",text = "Render")
-                row.prop(scn, "mol_autosubsteps", text="auto")
+                row.prop(scn, "mol_autosubsteps", text="Auto")
                 row = box.row()
                 row.prop(scn,"mol_substep", text = "Steps")
                 row.prop(scn,"mol_cpu",text = "Threads")
 
                 row = box.row()
-                row.prop(scn, "frame_start", text="start")
-                row.prop(scn, "frame_end", text="end")
+                row.prop(scn, "frame_start", text="Start")
+                row.prop(scn, "frame_end", text="End")
                 row = box.row()
                 # row = box.row()
                 # row.enabled = scn.mol_timescale_active
@@ -131,7 +131,7 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         row = layout.row()
         row.alignment = 'RIGHT'
         row.prop(scn,"mol_voxel_size", text = "Size")
-        row.prop(scn,"mol_hexgrid", text = "hexa")
+        row.prop(scn,"mol_hexgrid", text = "Hexa")
         row = layout.separator()
         row = layout.row()
         row.operator("molecular_operators.molecular_makeemitter", icon = 'MOD_PARTICLE_INSTANCE',text = "Emitter")
