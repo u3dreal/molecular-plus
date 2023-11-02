@@ -436,4 +436,23 @@ class MolCancelSim(bpy.types.Operator):
 
         return {'FINISHED'}
 
-operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolRemoveCollider)
+class MolToolsConvertGeo(bpy.types.Operator):
+    """Convert particles to Particle Instance Mesh"""
+    bl_idname = "object.convert_to_geo"
+    bl_label = "Convert for GeoNodes"
+
+    def execute(self, context):
+        obj = context.object
+        objname = obj.name
+        bpy.ops.mesh.primitive_plane_add(size=2, enter_editmode=False, align='WORLD', location=(0, 0, 0),scale=(1, 1, 1))
+        context.object.name = objname +"_instance"
+        bpy.ops.object.editmode_toggle()
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.merge(type='CENTER')
+        bpy.ops.object.editmode_toggle()
+        bpy.ops.object.modifier_add(type='PARTICLE_INSTANCE')
+        bpy.context.object.modifiers["ParticleInstance"].object = obj
+
+        return {'FINISHED'}
+
+operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolRemoveCollider, MolToolsConvertGeo)

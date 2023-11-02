@@ -140,8 +140,27 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         row = layout.row()
         row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
         row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
-    
-        
+
+class MS_PT_MolecularToolsPanel(bpy.types.Panel):
+    """Creates a Panel in the Tool properties window"""
+    bl_label = "Tools"
+    bl_idname = "OBJECT_PT_molecular_tools"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Molecular+"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+
+        layout = self.layout
+        box = layout.box()
+        row = box.row()
+        box.active = True
+        row.alignment = 'CENTER'
+        row.label(text = "Tools here plz")
+        row = box.row()
+        row.operator("object.convert_to_geo", text="Convert for Geonodes")
+
         
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
@@ -445,4 +464,4 @@ def append_to_PHYSICS_PT_add_panel(self, context):
                 )
 
 
-panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel, MS_PT_MolecularCreatePanel, MS_PT_MolecularInspectPanel, MS_PT_MolecularDonorPanel)
+panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel, MS_PT_MolecularCreatePanel, MS_PT_MolecularInspectPanel, MS_PT_MolecularToolsPanel, MS_PT_MolecularDonorPanel)
