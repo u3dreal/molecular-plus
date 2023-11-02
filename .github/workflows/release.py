@@ -35,6 +35,8 @@ r = requests.post(
 
 if "upload_url" in r.json():
     u = r.json()["upload_url"].split("{")[0]
+else:
+    u = 'https://api.github.com/repos/{owner}/{name}/releases'.split("{")[0]
 
 for f in fi:
     pr = os.path.realpath(p)
@@ -43,7 +45,7 @@ for f in fi:
         r = requests.post(
             headers={'Content-Type': 'application/zip',
                      'Authorization': 'token {token}'.format(token=t)},
-            url='?name={name}'.format(name=f),
+            url=u+'?name={name}'.format(name=f),
             data=data.read()
         )
 
