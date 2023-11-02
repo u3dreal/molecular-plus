@@ -19,10 +19,8 @@ bl_info = {
     "name": "Molecular+",
     "author":
         "Jean-Francois Gallant (PyroEvil), "
-        "Pavel_Blend, "
-        "Martin Felke (scorpion81), "
         "Gregor Quade (u3dreal)",
-    "version": (1, 1, 11),
+    "version": (1, 12, 1),
     "blender": (2, 80, 0),
     "location": "Properties editor > Physics Tab",
     "description":
