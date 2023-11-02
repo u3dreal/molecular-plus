@@ -46,7 +46,7 @@ cdef Particle *parlist = NULL
 cdef SParticle *parlistcopy = NULL
 cdef ParSys *psys = NULL
 cdef KDTree *kdtree = NULL
-print("cmolcore imported  v1.12.1")
+print("cmolcore imported  v1.12.3")
 
 
 cpdef init(importdata):
