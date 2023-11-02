@@ -10,7 +10,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build_windows310:
+  build_windows:
 
     runs-on: windows-latest
 
@@ -37,10 +37,10 @@ jobs:
       - name: Upload windows zip
         uses: actions/upload-artifact@v2
         with:
-          name: molecular-plus_${{needs.build_macos.outputs.version}}_310_win.zip
-          path: ./molecular-plus_${{steps.build.outputs.version}}_310_win.zip
+          name: molecular-plus_${{needs.build_win.outputs.version}}_310_win.zip
+          path: ./molecular-plus_${{steps.build_win.outputs.version}}_310_win.zip
 
-  build_linux310:
+  build_linux:
 
     runs-on: ubuntu-20.04
 
@@ -66,10 +66,10 @@ jobs:
       - name: Upload linux zip
         uses: actions/upload-artifact@v2
         with:
-          name: molecular-plus_${{needs.build_macos.outputs.version}}_310_linux.zip
-          path: ./molecular-plus_${{steps.build.outputs.version}}_310_linux.zip
+          name: molecular-plus_${{needs.build_linux.outputs.version}}_310_linux.zip
+          path: ./molecular-plus_${{steps.build_linux.outputs.version}}_310_linux.zip
 
-  build_macos310:
+  build_macos:
 
     runs-on: macos-11
     outputs:
@@ -98,12 +98,12 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: molecular-plus_${{needs.build_macos.outputs.version}}_310_macos.zip
-          path: ./molecular-plus_${{steps.build.outputs.version}}_310_macos.zip
+          path: ./molecular-plus_${{steps.build_macos.outputs.version}}_310_macos.zip
 
   upload_release:
 
     runs-on: macos-latest
-    needs: [ build_windows310, build_linux310, build_macos310 ]
+    needs: [ build_windows, build_linux, build_macos ]
 
     steps:
       - name: Make Release
@@ -112,7 +112,7 @@ jobs:
         with:
           draft: True
           prerelease: True
-          release_name: molecular-plus_${{needs.build_macos310.outputs.version}}
+          release_name: molecular-plus_${{needs.build_macos.outputs.version}}
           tag_name: ${{ github.ref }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -122,8 +122,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./molecular-plus_${{needs.build_macos310.outputs.version}}_310_linux.zip
-          asset_name: molecular-plus_${{needs.build_macos310.outputs.version}}_310_linux.zip
+          asset_path: ./molecular-plus_${{needs.build_linux.outputs.version}}_310_linux.zip
+          asset_name: molecular-plus_${{needs.build_linux.outputs.version}}_310_linux.zip
           asset_content_type: application/zip
       - name: upload darwin artifact
         uses: actions/upload-release-asset@v1
@@ -140,6 +140,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./molecular-plus_${{needs.build_macos.outputs.version}}_310_win.zip
-          asset_name: molecular-plus_${{needs.build_macos.outputs.version}}_310_win.zip
+          asset_path: ./molecular-plus_${{needs.build_win.outputs.version}}_310_win.zip
+          asset_name: molecular-plus_${{needs.build_win.outputs.version}}_310_win.zip
           asset_content_type: application/zip
