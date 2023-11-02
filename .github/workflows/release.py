@@ -43,7 +43,7 @@ for f in fi:
         r = requests.post(
             headers={'Content-Type': 'application/zip',
                      'Authorization': 'token {token}'.format(token=t)},
-            url=u+'?name={name}'.format(name=f),
+            url='?name={name}'.format(name=f),
             data=data.read()
         )
 
