@@ -218,7 +218,7 @@ jobs:
       - name: Upload windows zip
         uses: actions/upload-artifact@v2
         with:
-          name: molecular-plus_${{steps.build.outputs.version}}_310_win.zip
+          name: molecular-plus_win
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_win.zip
 
   build_linux310:
@@ -247,7 +247,7 @@ jobs:
       - name: Upload linux zip
         uses: actions/upload-artifact@v2
         with:
-          name: molecular-plus_${{steps.build.outputs.version}}_310_linux.zip
+          name: molecular-plus_linux
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_linux.zip
 
   build_macos310:
@@ -278,7 +278,7 @@ jobs:
       - name: Upload mac zip
         uses: actions/upload-artifact@v2
         with:
-          name: molecular-plus_${{steps.build.outputs.version}}_310_macos.zip
+          name: molecular-plus_macos
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_macos.zip
 
   upload_draft:
@@ -292,15 +292,15 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{steps.build.outputs.version}}_310_win.zip
+          name: molecular-plus_win
 
       - uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{steps.build.outputs.version}}_310_linux.zip
+          name: molecular-plus_linux
 
       - uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{steps.build.outputs.version}}_310_macos.zip
+          name: molecular-plus_macos
 
       - name: Uploading
         env:
