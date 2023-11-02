@@ -2,6 +2,7 @@
 #cython: boundscheck=False
 #cython: cdivision=True
 #cython: language_level=3
+#cython: cpow=True
 
 # NOTE: order of slow fonction to be optimize/multithreaded:
 # kdtreesearching, kdtreecreating, linksolving
@@ -28,7 +29,7 @@ cdef extern from "stdlib.h":
         int nmemb,
         int size,
         int(*compar)(const_void *, const_void *)
-    )nogil
+    )noexcept nogil
 
 
 cdef float fps = 0
@@ -578,7 +579,7 @@ cpdef memfree():
 
 
 #@cython.cdivision(True)
-cdef void collide(Particle *par)nogil:
+cdef void collide(Particle *par)noexcept nogil:
     global kdtree
     global deltatime
     global deadlinks
@@ -764,7 +765,7 @@ cdef void collide(Particle *par)nogil:
                         create_link(par.id,par.sys.link_max * 2, par2.id)
 
 
-cdef void solve_link(Particle *par)nogil:
+cdef void solve_link(Particle *par)noexcept nogil:
     global parlist
     global deltatime
     global deadlinks
@@ -999,7 +1000,7 @@ cdef void update(data):
             psys[i].particles[ii].collided_num = 0
 
 
-cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):#nogil:
+cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):#noexcept nogil:
     cdef int i = 0
     i = 2
     while i < parnum:
@@ -1063,7 +1064,7 @@ cdef Node KDTree_create_tree(
         int parent,
         int depth,
         int initiate
-        )nogil:
+        )noexcept nogil:
 
     global parnum
     cdef int index = 0
@@ -1135,7 +1136,7 @@ cdef void KDTree_rnn_query(
         Particle *par,
         float point[3],
         float dist
-        )nogil:
+        )noexcept nogil:
     if  par.state < 3:
         return
 
@@ -1173,7 +1174,7 @@ cdef void KDTree_rnn_search(
         float sqdist,
         int k,
         int depth
-        )nogil:
+        )noexcept nogil:
 
     cdef int axis = 0
     cdef float realsqdist = 0
@@ -1247,7 +1248,7 @@ cdef void KDTree_rnn_search(
             )
 
 
-cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
+cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nogil:
     global kdtree
     global parlist
     global parnum
@@ -1544,7 +1545,7 @@ cdef struct Heap:
     int maxalloc
 
 
-cdef int arraysearch(int element, int *array, int len)nogil:
+cdef int arraysearch(int element, int *array, int len)noexcept nogil:
     cdef int i = 0
     for i in xrange(len):
         if element == array[i]:
@@ -1552,7 +1553,7 @@ cdef int arraysearch(int element, int *array, int len)nogil:
     return -1
 
 
-cdef float fabs(float value)nogil:
+cdef float fabs(float value)noexcept nogil:
     if value >= 0:
         return value
     if value < 0:
@@ -1560,20 +1561,20 @@ cdef float fabs(float value)nogil:
 
 
 #@cython.cdivision(True)
-cdef float square_dist(float point1[3], float point2[3], int k)nogil:
+cdef float square_dist(float point1[3], float point2[3], int k)noexcept nogil:
     cdef float sq_dist = 0
     for i in xrange(k):
         sq_dist += (point1[i] - point2[i]) * (point1[i] - point2[i])
     return sq_dist
 
 
-cdef float dot_product(float u[3],float v[3])nogil:
+cdef float dot_product(float u[3],float v[3])noexcept nogil:
     cdef float dot = 0
     dot = (u[0] * v[0]) + (u[1] * v[1]) + (u[2] * v[2])
     return dot
 
 
-cdef void quick_sort(SParticle *a, int n, int axis)nogil:
+cdef void quick_sort(SParticle *a, int n, int axis)noexcept nogil:
     if (n < 2):
         return
     cdef SParticle t
