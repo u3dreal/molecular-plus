@@ -1,16 +1,19 @@
 import bpy
+import array
 from .utils import get_object
 
 def get_weak_map(obj, psys):
     print('start bake weak map from:', obj.name)
 
-    par_weak = []
+    par_weak = array.array('f',[0]) * len(psys.particles)
     tex = psys.settings.texture_slots[0].texture
     texm_offset = psys.settings.texture_slots[0].offset
     texm_scale = psys.settings.texture_slots[0].scale
-    for par in psys.particles:
-        newuv = (par.location + texm_offset) @ obj.matrix_world * texm_scale
-        par_weak.append(tex.evaluate(newuv).w)
+    parlen = len(psys.particles)
+
+    for i in range(parlen):
+        newuv = (psys.particles[i].location + texm_offset) @ obj.matrix_world * texm_scale
+        par_weak[i] = tex.evaluate(newuv).w
 
     print('Weak Map baked on:', psys.settings.name)
 
@@ -32,10 +35,11 @@ def pack_data(context, initiate):
 
             if psys.settings.mol_active and parlen:
 
-                par_loc = [0, 0, 0] * parlen
-                par_vel = [0, 0, 0] * parlen
-                par_size = [0] * parlen
-                par_alive = [0] * parlen
+                par_loc = array.array('f', [0, 0, 0]) * parlen
+                par_vel = array.array('f', [0, 0, 0]) * parlen
+                par_size = array.array('f', [0]) * parlen
+                par_alive = array.array('f', [0]) * parlen
+
                 parnum += parlen
 
                 psys.particles.foreach_get('location', par_loc)
@@ -43,19 +47,19 @@ def pack_data(context, initiate):
                 psys.particles.foreach_get('alive_state', par_alive)
 
                 if initiate:
-                    par_mass = [0] * parlen
+                    par_mass = array.array('f',[0]) * parlen
                     psys.particles.foreach_get('size', par_size)
 
                     if psys.settings.mol_bake_weak_map:
                         par_weak = get_weak_map(obj, psys)
                     else:
-                        par_weak = [1.0] * parlen
+                        par_weak = array.array('f',[1.0]) * parlen
 
                     if psys.settings.mol_density_active:
-                        for i in range(len(par_size)):
+                        for i in range(parlen):
                             par_mass[i] = psys.settings.mol_density * (4 / 3 * 3.141592653589793 * ((par_size[i] / 2) ** 3))
                     else:
-                        par_mass = [psys.settings.mass] * len(psys.particles)
+                        par_mass = array.array('f',[psys.settings.mass]) * parlen
 
                     if scene.mol_timescale_active == True:
                         psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
@@ -156,5 +160,5 @@ def pack_data(context, initiate):
                         par_weak
                     ))
                 else:
-                    scoll = psys.settings.mol_selfcollision_active
-                    mol_exportdata.append((par_loc, par_vel, par_alive, scoll))
+                    self_coll = psys.settings.mol_selfcollision_active
+                    mol_exportdata.append((par_loc, par_vel, par_alive, self_coll))
