@@ -2,6 +2,15 @@ import multiprocessing
 import bpy
 from . import descriptions
 
+def update_parsys(self, context):
+    obj = context.object
+    psys = obj.particle_systems.active.settings
+    max_dim = max(obj.dimensions)
+    psys.grid_resolution = int(max_dim / psys.mol_voxel_size)
+    psys.particle_size = psys.mol_voxel_size / 2
+    psys.display_size = psys.particle_size / 2
+    bpy.ops.object.clear_pcache()
+
 def define_props():
     parset = bpy.types.ParticleSettings
 
@@ -317,6 +326,15 @@ def define_props():
         name="mol_bake_weak_map",
         description="bake weak_map",
         default=False
+    )
+
+    parset.mol_voxel_size = bpy.props.FloatProperty(
+        name="mol_voxel_size",
+        description="voxel size",
+        default=0.1,
+        step=0.1,
+        precision=3,
+        update=update_parsys
     )
 
     bpy.types.Scene.mol_timescale_active = bpy.props.BoolProperty(

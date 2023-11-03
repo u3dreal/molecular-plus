@@ -1,6 +1,5 @@
 import bpy
 
-
 class MolecularGrid3d(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_makegrid3d"
     bl_label = "Create Molecular 3d grid"
@@ -44,7 +43,6 @@ class MolecularGrid3d(bpy.types.Operator):
             # Granular_Settings
                 if not psys.mol_active:
                     psys.mol_active = True
-
                 psys.mol_selfcollision_active = True
                 psys.mol_friction = 0.15
                 psys.mol_collision_damp = 0.25

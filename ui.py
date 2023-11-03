@@ -93,22 +93,38 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
     
     @classmethod
     def poll(cls, context):
-        return context.object and ('Collision' in context.object.modifiers)
+        obj = context.object
+        if obj and (obj.modifiers or obj.particle_systems.active):
+            return True
+        else:
+            return False
     
     def draw(self, context):
         layout = self.layout
         obj = context.object
-        
-        row = layout.row()
-        row.label(text = "Collision: " + obj.name)
-        row.operator("object.mol_remove_collision",text="", icon='X')
-        row = layout.row()
-        row.prop(obj.collision, "damping_factor", text = "Damping")
-        row = layout.row()
-        row.prop(obj.collision, "friction_factor", text = "Friction")
-        row = layout.row()
-        row.prop(obj.collision, "stickiness", text = "Stickiness", slider=True)
 
+        if 'Collision' in obj.modifiers:
+            row = layout.row()
+            row.label(text="Collision: " + obj.name)
+            row.operator("object.mol_remove_collision",text="", icon='X')
+            row = layout.row()
+            row.prop(obj.collision, "damping_factor", text="Damping")
+            row = layout.row()
+            row.prop(obj.collision, "friction_factor", text="Friction")
+            row = layout.row()
+            row.prop(obj.collision, "stickiness", text="Stickiness", slider=True)
+
+        elif 'mol_active' in obj.particle_systems.active.settings:
+            psys = obj.particle_systems.active.settings
+            row = layout.row()
+            row.label(text="MolObject: " + obj.name)
+            row = layout.row()
+            row.prop(psys, "mol_voxel_size", text="Voxel Size")
+            if psys.distribution == 'GRID':
+                row = layout.row()
+                row.prop(psys, "hexagonal_grid", text="Hexagonal Grid")
+                row = layout.row()
+                row.prop(psys, "grid_random", text="Random")
             
 class MS_PT_MolecularCreatePanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
@@ -120,20 +136,14 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
     
     @classmethod
     def poll(cls, context):
-        return context.object != None and context.object.type == 'MESH' and not ('Collision' in context.object.modifiers)
-    
-    def draw(self,context):
-        
-        layout = self.layout
-        scn = context.scene
         obj = context.object
+        if obj and obj.type == 'MESH' and (obj.modifiers == None or obj.particle_systems.active == None):
+            return True
+        else:
+            return False
 
-        row = layout.row()
-        #row.alignment = 'RIGHT'
-        row.label(text="  Resolution")
-        row.prop(scn,"mol_voxel_size", text="")
-        row.prop(scn,"mol_hexgrid", text = "Hexa")
-        row = layout.separator()
+    def draw(self, context):
+        layout = self.layout
         row = layout.row()
         row.operator("molecular_operators.molecular_makeemitter", icon = 'MOD_PARTICLE_INSTANCE',text = "Emitter")
         row.operator("molecular_operators.molecular_makegrid2d", icon = 'GRID',text = "2D Grid")
@@ -151,10 +161,8 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-
         layout = self.layout
-        box = layout.box()
-        row = box.row()
+        row = layout.row()
         row.operator("object.convert_to_geo", text="Convert for Geonodes", icon='GEOMETRY_NODES')
 
         
