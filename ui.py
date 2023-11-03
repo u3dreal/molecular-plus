@@ -155,11 +155,7 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         row = box.row()
-        box.active = True
-        row.alignment = 'CENTER'
-        row.label(text = "Tools here plz")
-        row = box.row()
-        row.operator("object.convert_to_geo", text="Convert for Geonodes")
+        row.operator("object.convert_to_geo", text="Convert for Geonodes", icon='GEOMETRY_NODES')
 
         
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
