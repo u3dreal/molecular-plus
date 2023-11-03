@@ -38,7 +38,7 @@ def pack_data(context, initiate):
                 par_loc = array.array('f', [0, 0, 0]) * parlen
                 par_vel = array.array('f', [0, 0, 0]) * parlen
                 par_size = array.array('f', [0]) * parlen
-                par_alive = array.array('f', [0]) * parlen
+                par_alive = array.array('h', [0]) * parlen
 
                 parnum += parlen
 
