@@ -16,6 +16,7 @@ class MolecularGrid3d(bpy.types.Operator):
             if obj.particle_systems.active == None:
                 init = True
                 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                obj.display_type = 'WIRE'
                 bpy.context.view_layer.objects.active = obj
                 bpy.ops.object.particle_system_add()
 
@@ -70,6 +71,7 @@ class MolecularGrid2d(bpy.types.Operator):
             if obj.particle_systems.active == None:
                 init = True
                 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                obj.display_type = 'WIRE'
                 bpy.context.view_layer.objects.active = obj
                 bpy.ops.object.particle_system_add()
 
@@ -129,6 +131,7 @@ class MolecularEmitter(bpy.types.Operator):
             if obj.particle_systems.active == None:
                 init = True
                 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                obj.display_type = 'WIRE'
                 bpy.context.view_layer.objects.active = obj
                 bpy.ops.object.particle_system_add()
 
