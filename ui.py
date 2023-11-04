@@ -95,19 +95,15 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
     def poll(cls, context):
         obj = context.object
         if obj:
-            if obj.modifiers:
-                if 'Collision' in obj.modifiers:
-                    return True
-                else:
-                    return False
-            elif obj.particle_systems.active:
-                if 'mol_active' in obj.particle_systems.active.settings:
-                    return True
-                else:
-                    return False
+            if obj.modifiers and 'Collision' in obj.modifiers:
+                return True
+
+            elif obj.particle_systems.active and 'mol_active' in obj.particle_systems.active.settings:
+                return True
+            else:
+                return False
         else:
             return False
-    
     def draw(self, context):
         layout = self.layout
         obj = context.object
@@ -146,8 +142,13 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         obj = context.object
-        if obj and obj.type == 'MESH' and (obj.modifiers == None or obj.particle_systems.active == None):
-            return True
+        if obj and obj.type == 'MESH':
+            if obj.modifiers and 'Collision' in obj.modifiers:
+                return False
+            elif obj.particle_systems.active and 'mol_active' in obj.particle_systems.active.settings:
+                return False
+            else:
+                return True
         else:
             return False
 
