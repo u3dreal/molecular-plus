@@ -234,7 +234,6 @@ def convert_time_to_string(total_time):
 def draw_callback_px(self, context):
         """Draw on the viewports"""
         # BLF drawing routine
-
         font_id = 0
         texts = bpy.context.scene.mol_progress.split('\n')
         size = bpy.context.preferences.addons[__package__].preferences.log_size
@@ -452,6 +451,7 @@ class MolToolsConvertGeo(bpy.types.Operator):
         bpy.ops.object.editmode_toggle()
         bpy.ops.object.modifier_add(type='PARTICLE_INSTANCE')
         bpy.context.object.modifiers["ParticleInstance"].object = obj
+        bpy.ops.node.new_geometry_nodes_modifier()
 
         return {'FINISHED'}
 
