@@ -1,5 +1,6 @@
 import bpy
 import array
+import numpy as np
 from .utils import get_object
 
 def get_weak_map(obj, psys):
@@ -56,8 +57,12 @@ def pack_data(context, initiate):
                         par_weak = array.array('f',[1.0]) * parlen
 
                     if psys.settings.mol_density_active:
-                        for i in range(parlen):
-                            par_mass[i] = psys.settings.mol_density * (4 / 3 * 3.141592653589793 * ((par_size[i] / 2) ** 3))
+                        par_mass_np = np.asarray(par_mass)
+                        par_size_np = np.asarray(par_size)
+                        par_mass_np[:] = psys.settings.mol_density * (
+                                    4 / 3 * 3.141592653589793 * ((par_size_np / 2) ** 3))
+                        par_mass = par_mass_np
+
                     else:
                         par_mass = array.array('f',[psys.settings.mass]) * parlen
 
