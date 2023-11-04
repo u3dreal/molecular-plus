@@ -94,21 +94,16 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         obj = context.object
-        if obj:
-            if obj.modifiers and 'Collision' in obj.modifiers:
-                return True
-
-            elif obj.particle_systems.active and 'mol_active' in obj.particle_systems.active.settings:
-                return True
-            else:
-                return False
+        if obj and 'mol_type' in obj:
+            return True
         else:
             return False
+
     def draw(self, context):
         layout = self.layout
         obj = context.object
 
-        if 'Collision' in obj.modifiers:
+        if obj['mol_type'] == 'COLLIDER':
             row = layout.row()
             row.label(text="Collision: " + obj.name)
             row.operator("object.mol_remove_collision",text="", icon='X')
@@ -119,7 +114,7 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
             row = layout.row()
             row.prop(obj.collision, "stickiness", text="Stickiness", slider=True)
 
-        elif 'mol_active' in obj.particle_systems.active.settings:
+        if obj['mol_type'] == 'EMITTER':
             psys = obj.particle_systems.active.settings
             row = layout.row()
             row.label(text="MolObject: " + obj.name)
@@ -143,9 +138,7 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
     def poll(cls, context):
         obj = context.object
         if obj and obj.type == 'MESH':
-            if obj.modifiers and 'Collision' in obj.modifiers:
-                return False
-            elif obj.particle_systems.active and 'mol_active' in obj.particle_systems.active.settings:
+            if 'mol_type' in obj:
                 return False
             else:
                 return True

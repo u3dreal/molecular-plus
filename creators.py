@@ -16,6 +16,7 @@ class MolecularGrid3d(bpy.types.Operator):
                 init = True
                 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
                 obj.display_type = 'WIRE'
+                obj['mol_type'] = 'EMITTER'
                 bpy.context.view_layer.objects.active = obj
                 bpy.ops.object.particle_system_add()
 
@@ -70,6 +71,7 @@ class MolecularGrid2d(bpy.types.Operator):
                 init = True
                 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
                 obj.display_type = 'WIRE'
+                obj['mol_type'] = 'EMITTER'
                 bpy.context.view_layer.objects.active = obj
                 bpy.ops.object.particle_system_add()
 
@@ -130,6 +132,7 @@ class MolecularEmitter(bpy.types.Operator):
                 init = True
                 bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
                 obj.display_type = 'WIRE'
+                obj['mol_type'] = 'EMITTER'
                 bpy.context.view_layer.objects.active = obj
                 bpy.ops.object.particle_system_add()
 
@@ -183,6 +186,7 @@ class MolecularCollider(bpy.types.Operator):
             bpy.ops.object.modifier_add(type='COLLISION')
             obj.collision.damping_factor = 0.5
             obj.collision.friction_factor = 0.5
+            obj['mol_type'] = 'COLLIDER'
 
         return {'FINISHED'}
 
