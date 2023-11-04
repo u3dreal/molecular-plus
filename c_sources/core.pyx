@@ -86,10 +86,8 @@ cpdef init(importdata):
     for i in xrange(psysnum):
         psys[i].id = i
         psys[i].parnum = importdata[i + 1][0]
-        psys[i].particles = <Particle *>malloc(psys[i].parnum * \
-            cython.sizeof(Particle))
+        psys[i].particles = <Particle *>malloc(psys[i].parnum * cython.sizeof(Particle))
         psys[i].particles = &parlist[jj]
-
         psys[i].selfcollision_active = importdata[i + 1][6][0]
         psys[i].othercollision_active = importdata[i + 1][6][1]
         psys[i].collision_group = importdata[i + 1][6][2]
@@ -160,8 +158,7 @@ cpdef init(importdata):
             parlist[jj].link_with = <int *>malloc(1 * cython.sizeof(int))
             parlist[jj].link_withnum = 0
             parlist[jj].neighboursmax = 10
-            parlist[jj].neighbours = <int *>malloc(parlist[jj].neighboursmax * \
-                cython.sizeof(int))
+            parlist[jj].neighbours = <int *>malloc(parlist[jj].neighboursmax * cython.sizeof(int))
             parlist[jj].neighboursnum = 0
             jj += 1
 
@@ -624,8 +621,7 @@ cdef void collide(Particle *par)noexcept nogil:
 
     if  par.state < 3:
         return
-    if par.sys.selfcollision_active == False \
-            and par.sys.othercollision_active == False:
+    if par.sys.selfcollision_active == False and par.sys.othercollision_active == False:
         return
 
     neighbours = par.neighbours
