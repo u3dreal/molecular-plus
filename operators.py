@@ -8,6 +8,7 @@ from time import sleep, strftime, gmtime, time
 from . import simulate, core
 from .utils import get_object, destroy_caches, update_progress
 
+
 class MolRemoveCollider(bpy.types.Operator):
     bl_idname = "object.mol_remove_collision"
     bl_label = "Remove Collision"
@@ -440,11 +441,23 @@ class MolToolsConvertGeo(bpy.types.Operator):
     bl_idname = "object.convert_to_geo"
     bl_label = "Convert for GeoNodes"
 
+    def add_nodetree(self,context, node_tree):
+        out_node = node_tree.nodes["Group Output"]
+        in_node = node_tree.nodes['Group Input']
+        mesh2points = node_tree.nodes.new(type="GeometryNodeMeshToPoints")
+
+        node_tree.links.new(in_node.outputs['Geometry'], mesh2points.inputs['Mesh'])
+        node_tree.links.new(mesh2points.outputs['Points'], out_node.inputs['Geometry'])
+
     def execute(self, context):
         obj = context.object
-        objname = obj.name
+        psys = obj.particle_systems.active.settings
+        #depobj = get_object(context, obj)
+        #par_size = []
+        #for par in depobj.particle_systems.active.particles:
+        #    par_size.append(par.size)
+
         bpy.ops.mesh.primitive_plane_add(size=2, enter_editmode=False, align='WORLD', location=(0, 0, 0),scale=(1, 1, 1))
-        context.object.name = objname +"_geo_instance"
         bpy.ops.object.editmode_toggle()
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.merge(type='CENTER')
@@ -452,6 +465,19 @@ class MolToolsConvertGeo(bpy.types.Operator):
         bpy.ops.object.modifier_add(type='PARTICLE_INSTANCE')
         bpy.context.object.modifiers["ParticleInstance"].object = obj
         bpy.ops.node.new_geometry_nodes_modifier()
+
+        iobj = context.object
+        nodetree = iobj.modifiers['GeometryNodes'].node_group
+        self.add_nodetree(context,nodetree)
+        nodetree.nodes['Mesh to Points'].inputs['Radius'].default_value = psys.particle_size
+
+        iobj.name = obj.name + "_geo_instance"
+        #iobj.data.attributes.new('size', 'FLOAT', 'POINT')
+        #eiobj = get_object(context, iobj)
+
+        #attr = eiobj.data.attributes['size']
+
+        #attr.data.foreach_set('value', par_size)
 
         return {'FINISHED'}
 
