@@ -467,16 +467,16 @@ class MolToolsConvertGeo(bpy.types.Operator):
 
         iobj = context.object
         iobj.name = obj.name + "_geo_instance"
-        iobj.data.attributes.new('size', 'FLOAT', 'POINT')
+        #iobj.data.attributes.new('size', 'FLOAT', 'POINT')
 
-        eiobj = get_object(context, iobj)
+        #eiobj = get_object(context, iobj)
 
-        attr = eiobj.data.attributes['size']
-        attr.data.foreach_set('value', par_size)
+        #attr = eiobj.data.attributes['size']
+        #attr.data.foreach_set('value', par_size)
 
-        #nodetree = iobj.modifiers['GeometryNodes'].node_group
-        #self.add_nodetree(context,nodetree)
-        #nodetree.nodes['Mesh to Points'].inputs['Radius'].default_value = psys.particle_size
+        nodetree = iobj.modifiers['GeometryNodes'].node_group
+        self.add_nodetree(context,nodetree)
+        nodetree.nodes['Mesh to Points'].inputs['Radius'].default_value = psys.particle_size
 
         return {'FINISHED'}
 
