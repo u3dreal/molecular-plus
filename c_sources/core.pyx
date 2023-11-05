@@ -83,7 +83,7 @@ cpdef init(importdata):
     parlistcopy = <SParticle *>malloc(parnum * cython.sizeof(SParticle))
     cdef int jj = 0
 
-    for i in xrange(psysnum):
+    for i in range(psysnum):
         psys[i].id = i
         psys[i].parnum = importdata[i + 1][0]
         psys[i].particles = <Particle *>malloc(psys[i].parnum * cython.sizeof(Particle))
@@ -136,7 +136,7 @@ cpdef init(importdata):
         psys[i].link_group = importdata[i + 1][6][45]
         psys[i].other_link_active = importdata[i + 1][6][46]
 
-        for ii in xrange(psys[i].parnum):
+        for ii in range(psys[i].parnum):
             parlist[jj].id = jj
             parlist[jj].loc[0] = importdata[i + 1][1][(ii * 3)]
             parlist[jj].loc[1] = importdata[i + 1][1][(ii * 3) + 1]
@@ -181,12 +181,7 @@ cpdef init(importdata):
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1)
 
     with nogil:
-        for i in prange(
-                        kdtree.thread_index,
-                        schedule='dynamic',
-                        chunksize=10,
-                        num_threads=cpunum
-                        ):
+        for i in prange(kdtree.thread_index, schedule='dynamic', chunksize=10,num_threads=cpunum):
             KDTree_create_tree(
                 kdtree,
                 parlistcopy,
@@ -213,7 +208,7 @@ cpdef init(importdata):
                     parlist[i].sys.link_length
                 )
 
-    for i in xrange(parnum):
+    for i in range(parnum):
         create_link(parlist[i].id, parlist[i].sys.link_max)
         if parlist[i].neighboursnum > 1:
             # free(parlist[i].neighbours)
@@ -254,7 +249,7 @@ cpdef simulate(importdata):
     parPool[0].max = 0
 
     newlinks = 0
-    for i in xrange(cpunum):
+    for i in range(cpunum):
         deadlinks[i] = 0
     if profiling == 1:
         print("-->start simulate")
@@ -267,7 +262,7 @@ cpdef simulate(importdata):
         print("-->update time", clock() - stime, "sec")
         stime = clock()
 
-    for i in xrange(parnum):
+    for i in range(parnum):
         parlistcopy[i].id = parlist[i].id
         parlistcopy[i].loc[0] = parlist[i].loc[0]
         # if parlist[i].loc[0] >= FLT_MAX or parlist[i].loc[0] <= -FLT_MAX :
@@ -288,7 +283,7 @@ cpdef simulate(importdata):
             maxZ = parlist[i].loc[2]
         if parlist[i].sys.links_active == 1:
             if parlist[i].links_num > 0:
-                for ii in xrange(parlist[i].links_num):
+                for ii in range(parlist[i].links_num):
                     if parlist[i].links[ii].lenght > maxSize:
                         maxSize = parlist[i].links[ii].lenght
         if (parlist[i].size * 2) > maxSize:
@@ -317,7 +312,7 @@ cpdef simulate(importdata):
     cdef int heaps
     cdef float scale = 1 / ( maxSize * 2.1 )
 
-    for pair in xrange(2):
+    for pair in range(2):
 
         parPool[0].parity[pair].heap = \
             <Heap *>malloc((<int>(parPool[0].max * scale) + 1) * \
@@ -331,7 +326,7 @@ cpdef simulate(importdata):
                 <int *>malloc(parPool[0].parity[pair].heap[heaps].maxalloc * \
                 cython.sizeof(int))
 
-    for i in xrange(parnum):
+    for i in range(parnum):
         pair = <int>(((
             parlist[i].loc[parPool[0].axis] + parPool[0].offset) * scale) % 2
         )
@@ -403,14 +398,14 @@ cpdef simulate(importdata):
         stime = clock()
 
     with nogil:
-        for pair in xrange(2):
+        for pair in range(2):
             for heaps in prange(
                                 <int>(parPool[0].max * scale) + 1,
                                 schedule='dynamic',
                                 chunksize=1,
                                 num_threads=cpunum
                                 ):
-                for i in xrange(parPool[0].parity[pair].heap[heaps].parnum):
+                for i in range(parPool[0].parity[pair].heap[heaps].parnum):
 
                     collide(
                         &parlist[parPool[0].parity[pair].heap[heaps].par[i]]
@@ -440,8 +435,8 @@ cpdef simulate(importdata):
     parloctmp = []
     parveltmp = []
 
-    for i in xrange(psysnum):
-        for ii in xrange(psys[i].parnum):
+    for i in range(psysnum):
+        for ii in range(psys[i].parnum):
             parloctmp.append(psys[i].particles[ii].loc[0])
             parloctmp.append(psys[i].particles[ii].loc[1])
             parloctmp.append(psys[i].particles[ii].loc[2])
@@ -455,7 +450,7 @@ cpdef simulate(importdata):
 
     totallinks += newlinks
     pydeadlinks = 0
-    for i in xrange(cpunum):
+    for i in range(cpunum):
         pydeadlinks += deadlinks[i]
     totaldeadlinks += pydeadlinks
 
@@ -468,7 +463,7 @@ cpdef simulate(importdata):
         totaldeadlinks
     ]
 
-    for pair in xrange(2):
+    for pair in range(2):
         for heaps in range(<int>(parPool[0].max * scale) + 1):
             parPool[0].parity[pair].heap[heaps].parnum = 0
             free(parPool[0].parity[pair].heap[heaps].par)
@@ -504,7 +499,7 @@ cpdef memfree():
     free(deadlinks)
     deadlinks = NULL
 
-    for i in xrange(parnum):
+    for i in range(parnum):
         if parnum >= 1:
             if parlist[i].neighboursnum >= 1:
                 free(parlist[i].neighbours)
@@ -528,7 +523,7 @@ cpdef memfree():
                 parlist[i].neighbours = NULL
                 parlist[i].neighboursnum = 0
 
-    for i in xrange(psysnum):
+    for i in range(psysnum):
         if psysnum >= 1:
             psys[i].particles = NULL
 
@@ -546,7 +541,7 @@ cpdef memfree():
     psysnum = 0
 
     if kdtree.numnodes >= 1:
-        for i in xrange(kdtree.numnodes):
+        for i in range(kdtree.numnodes):
             free(kdtree.nodes[i].particle)
             kdtree.nodes[i].particle = NULL
             free(kdtree.nodes[i].left_child)
@@ -626,8 +621,8 @@ cdef void collide(Particle *par)noexcept nogil:
 
     neighbours = par.neighbours
 
-    # for i in xrange(kdtree.num_result):
-    for i in xrange(par.neighboursnum):
+    # for i in range(kdtree.num_result):
+    for i in range(par.neighboursnum):
         check = 0
         if parlist[i].id == -1:
             check += 1
@@ -808,7 +803,7 @@ cdef void solve_link(Particle *par)noexcept nogil:
     # broken_links = []
     if  par.state < 3:
         return
-    for i in xrange(par.links_num):
+    for i in range(par.links_num):
         if par.links[i].start != -1:
             par1 = &parlist[par.links[i].start]
             par2 = &parlist[par.links[i].end]
@@ -958,11 +953,11 @@ cdef void update(data):
     global psys
     cdef int i = 0
     cdef int ii = 0
-    for i in xrange(psysnum):
+    for i in range(psysnum):
 
         psys[i].selfcollision_active = data[i][3]
         
-        for ii in xrange(psys[i].parnum):
+        for ii in range(psys[i].parnum):
             psys[i].particles[ii].loc[0] = data[i][0][(ii * 3)]
             psys[i].particles[ii].loc[1] = data[i][0][(ii * 3) + 1]
             psys[i].particles[ii].loc[2] = data[i][0][(ii * 3) + 2]
@@ -1005,7 +1000,7 @@ cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):#noexcept nogil:
     kdtree.nodes = <Node *>malloc((kdtree.numnodes + 1) * cython.sizeof(Node))
     kdtree.root_node = <Node *>malloc(1 * cython.sizeof(Node))
 
-    for i in xrange(kdtree.numnodes):
+    for i in range(kdtree.numnodes):
         kdtree.nodes[i].index = i
         kdtree.nodes[i].name = -1
         kdtree.nodes[i].parent = -1
@@ -1045,7 +1040,7 @@ cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):#noexcept nogil:
     kdtree.thread_depth = <int *>malloc(128 * cython.sizeof(int))
     # kdtree.axis = <int *>malloc( 64 * cython.sizeof(int) )
 
-    for i in xrange(64):
+    for i in range(64):
         kdtree.axis[i] = i % 3
 
     return
@@ -1285,7 +1280,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
         neighbours[0] = parothers_id
         neighboursnum = 1
 
-    for ii in xrange(neighboursnum):
+    for ii in range(neighboursnum):
         if par.links_activnum >= max_link:
             break
         if parothers_id == -1:
@@ -1543,7 +1538,7 @@ cdef struct Heap:
 
 cdef int arraysearch(int element, int *array, int len)noexcept nogil:
     cdef int i = 0
-    for i in xrange(len):
+    for i in range(len):
         if element == array[i]:
             return i
     return -1
@@ -1559,7 +1554,7 @@ cdef float fabs(float value)noexcept nogil:
 #@cython.cdivision(True)
 cdef float square_dist(float point1[3], float point2[3], int k)noexcept nogil:
     cdef float sq_dist = 0
-    for i in xrange(k):
+    for i in range(k):
         sq_dist += (point1[i] - point2[i]) * (point1[i] - point2[i])
     return sq_dist
 
