@@ -166,7 +166,9 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-        row.operator("object.convert_to_geo", text="Convert for Geonodes", icon='GEOMETRY_NODES')
+        row.operator("object.convert_to_geo", text="Convert to Geonodes", icon='GEOMETRY_NODES')
+        #row = layout.row()
+        #row.operator("object.uv_to_geo", text="Transfer UVs to Geonodes", icon='GEOMETRY_NODES')
 
         
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):

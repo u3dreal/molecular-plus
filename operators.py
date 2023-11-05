@@ -1,5 +1,6 @@
 import bpy
 import blf
+import numpy as np
 
 from mathutils import Vector
 from mathutils.geometry import barycentric_transform as barycentric
@@ -449,11 +450,7 @@ class MolToolsConvertGeo(bpy.types.Operator):
 
     def execute(self, context):
         obj = context.object
-        psys = obj.particle_systems.active.settings
-        depobj = get_object(context, obj)
-        par_size = []
-        for par in depobj.particle_systems.active.particles:
-            par_size.append(par.size)
+        psyss = obj.particle_systems.active.settings
 
         bpy.ops.mesh.primitive_plane_add(size=2, enter_editmode=False, align='WORLD', location=(0, 0, 0),scale=(1, 1, 1))
         bpy.ops.object.editmode_toggle()
@@ -462,21 +459,59 @@ class MolToolsConvertGeo(bpy.types.Operator):
         bpy.ops.object.editmode_toggle()
         bpy.ops.object.modifier_add(type='PARTICLE_INSTANCE')
         bpy.context.object.modifiers["ParticleInstance"].object = obj
+
         bpy.ops.node.new_geometry_nodes_modifier()
 
         iobj = context.object
         iobj.name = obj.name + "_geo_instance"
-        #iobj.data.attributes.new('size', 'FLOAT', 'POINT')
 
+        #eobj = get_object(context, obj)
+        #particles = eobj.particle_systems.active.particles
+        #par_uvs = np.zeros(len(particles) * 3, dtype=np.float32)
+        #particles.foreach_get('angular_velocity', par_uvs)
+
+        #iobj.data.attributes.new('uvs', 'FLOAT_VECTOR', 'POINT')
         #eiobj = get_object(context, iobj)
+        #attr = eiobj.data.attributes['uvs']
+        #attr.data.foreach_set('vector', par_uvs)
 
+        #par_size = np.zeros(len(particles), dtype=np.float32)
+        #particles.foreach_get('size', par_size)
+        #iobj.data.attributes.new('size', 'FLOAT', 'POINT')
         #attr = eiobj.data.attributes['size']
         #attr.data.foreach_set('value', par_size)
 
+
         nodetree = iobj.modifiers['GeometryNodes'].node_group
         self.add_nodetree(context,nodetree)
-        nodetree.nodes['Mesh to Points'].inputs['Radius'].default_value = psys.particle_size
+        nodetree.nodes['Mesh to Points'].inputs['Radius'].default_value = psyss.particle_size
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
 
         return {'FINISHED'}
 
-operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolRemoveCollider, MolToolsConvertGeo)
+
+class MolToolsUVtoGeo(bpy.types.Operator):
+    """Convert particles to Particle Instance Mesh"""
+    bl_idname = "object.uv_to_geo"
+    bl_label = "Transfer UVs to GeoNodes"
+
+    def execute(self, context):
+        obj = context.object
+        geo_obj = bpy.data.objects[obj.name + "_geo_instance"]
+        egeo_obj = get_object(context, geo_obj)
+
+        depobj = get_object(context, obj)
+        particles = depobj.particle_systems.active.particles
+
+        par_uvs = np.zeros(len(particles) * 3, dtype=np.float32)
+
+        particles.foreach_get('angular_velocity', par_uvs)
+
+        attr = geo_obj.data.attributes.new('uvs', 'FLOAT_VECTOR', 'POINT')
+
+        attr.data.foreach_set('vector', par_uvs)
+
+
+operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolRemoveCollider, MolToolsConvertGeo)#, MolToolsUVtoGeo)
