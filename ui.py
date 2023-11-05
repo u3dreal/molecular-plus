@@ -394,14 +394,11 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         box = layout.box()
         row = box.row()
         if obj.data.uv_layers.active != None:
-            row.active = True
             row.prop(psys.settings,"mol_bakeuv",text = "Bake UV (current: " + str(obj.data.uv_layers.active.name) + ")" )
         else:
-            row.active = False
-            if row.active == False:
-                row.prop(psys.settings,"mol_bakeuv",text = "Bake UV (current: None)" )
+            row.prop(psys.settings,"mol_bakeuv",text = "Bake UV (current: None)" )
         row = box.row()
-        row.active = False #psys.settings.mol_bakeuv
+        row.enabled = psys.settings.mol_bakeuv
         row.prop(psys.settings,"mol_bakeuv_global",text = "Global")
         row = box.row()
 
