@@ -96,7 +96,7 @@ class MolSetGlobalUV(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        obj = get_object(context, context.view_layer.objects[self.objname])
+        obj = get_object(context, context.object)
 
         print('start bake global uv from:', obj.name)
 
@@ -257,7 +257,6 @@ class MolSimulateModal(bpy.types.Operator):
         frame_old = scene.frame_current
         for ob in bpy.data.objects:
             obj = get_object(context, ob)
-
             for psys in obj.particle_systems:
                 if psys.settings.mol_bakeuv:
                     scene.frame_set(frame=int(psys.settings.frame_start))
