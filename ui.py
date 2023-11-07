@@ -42,8 +42,9 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 if not scn.mol_simrun and not psys.point_cache.is_baked:
                     row.enabled = True
                     row.operator("object.mol_simulate", icon='PLAY', text="Start Simulation")
-                    row = box.row()
-                    row.operator('object.resume_sim', icon='LOOP_FORWARDS', text="Resume Simulation")
+                    if not psys.point_cache.info.startswith('1 ') or psys.point_cache.info.startswith('0 '):
+                        row = box.row()
+                        row.operator('object.resume_sim', icon='LOOP_FORWARDS', text="Resume Simulation")
                     row = box.row()
                     row.enabled = False
                     row.operator("object.clear_pcache", text="Free All Bakes")

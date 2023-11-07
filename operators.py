@@ -51,7 +51,7 @@ class MolSimulate(bpy.types.Operator):
     def execute(self, context):
 
         scene = context.scene
-        if scene.frame_start == 1:
+        if not scene.mol_resume:
             for ob in bpy.data.objects:
                 destroy_caches(ob)
 
@@ -65,7 +65,7 @@ class MolSimulate(bpy.types.Operator):
         scene.mol_totallink = 0
         scene.mol_totaldeadlink = 0
         scene.mol_timeremain = "...Simulating..."
-        bpy.types.Scene.mol_old_currentframe = scene.frame_current
+        scene.mol_old_currentframe = scene.frame_current
         scene.mol_old_startframe = scene.frame_start
         scene.mol_old_endframe = scene.frame_end
         mol_substep = scene.mol_substep
@@ -73,10 +73,12 @@ class MolSimulate(bpy.types.Operator):
         scene.render.frame_map_new = mol_substep + 1
 
         scene.frame_end = scene.frame_end * (mol_substep + 1)
-        if scene.mol_old_startframe == 1:
+        if not scene.mol_old_startframe == 1:
             scene.frame_start = 1
             scene.frame_set(frame=1)
         else:
+            if scene.mol_resume:
+                scene.frame_start = scene.frame_current
             scene.frame_start = scene.frame_start * (mol_substep + 1)
             scene.frame_set(frame=scene.frame_start)
 
@@ -292,15 +294,8 @@ class MolSimulateModal(bpy.types.Operator):
 
         ###### ESC END #######
         if event.type == 'ESC' or frame_current == frame_end or scene.mol_cancel:
-            if scene.mol_bake:
-                fake_context = context.copy()
-                for ob in bpy.data.objects:
-                    obj = get_object(context, ob)
-                    for psys in obj.particle_systems:
-                        if psys.settings.mol_active and len(psys.particles):
-                            fake_context["point_cache"] = psys.point_cache
-                            bpy.ops.ptcache.bake_from_cache(fake_context)
-
+            if frame_current == frame_end:
+                bpy.ops.object.bake_sim()
 
             scene.render.frame_map_new = 1
             scene.frame_start = scene.mol_old_startframe
@@ -474,7 +469,7 @@ class MolResumeSim(bpy.types.Operator):
     bl_label = "Resume Particle Simulation from Current frame"
 
     def execute(self, context):
-        context.scene.frame_start = context.scene.frame_current
+        context.scene.mol_resume = True
         bpy.ops.object.mol_simulate()
         return {'FINISHED'}
 
