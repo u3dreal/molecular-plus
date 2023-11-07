@@ -41,23 +41,32 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row = box.row()
                 if not scn.mol_simrun and not psys.point_cache.is_baked:
                     row.enabled = True
-                    row.operator("object.mol_simulate", icon='RADIOBUT_ON', text="Start Simulation")
+                    row.operator("object.mol_simulate", icon='PLAY', text="Start Simulation")
+                    row = box.row()
+                    row.operator('object.resume_sim', icon='LOOP_FORWARDS', text="Resume Simulation")
                     row = box.row()
                     row.enabled = False
                     row.operator("object.clear_pcache", text="Free All Bakes")
+                    row = box.row()
+                    row.enabled = True
+                    row.operator("object.bake_sim", icon='REC', text="Current Cache to Bake")
 
 
                 if psys.point_cache.is_baked and not scn.mol_simrun:
                     row.enabled = False
-                    row.operator("object.mol_simulate", icon='RADIOBUT_ON', text="Simulation baked")
+                    row.operator("object.mol_simulate", icon='PLAY', text="Simulation baked")
                     row = box.row()
                     row.enabled = True
                     row.operator("object.clear_pcache", text="Free All Bakes")
+                    row = box.row()
+                    row.enabled = False
+                    row.operator("ptcache.bake_from_cache", icon='REC', text="Current Cache to Bake")
+
                 if scn.mol_simrun:
                     row.enabled = False
                     row.operator("object.mol_simulate", icon='RADIOBUT_ON', text="Process: " + scn.mol_timeremain + " left")
                     row = box.row()
-                    row.operator("object.cancel_sim", icon='CANCEL', text="Cancel")
+                    row.operator("object.cancel_sim", icon='PAUSE', text="Pause")
 
                 row = box.row()
                 row.prop(scn,"mol_bake",text = "Bake")

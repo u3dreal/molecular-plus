@@ -1,6 +1,7 @@
 import bpy
 import blf
 import numpy as np
+import math
 
 from mathutils import Vector
 from mathutils.geometry import barycentric_transform as barycentric
@@ -45,14 +46,18 @@ class MolSet_Substeps(bpy.types.Operator):
 class MolSimulate(bpy.types.Operator):
     bl_idname = "object.mol_simulate"
     bl_label = 'Simulate'
+    resume = True
 
     def execute(self, context):
-        for ob in bpy.data.objects:
-            destroy_caches(ob)
+
+        scene = context.scene
+        if scene.frame_start == 1:
+            for ob in bpy.data.objects:
+                destroy_caches(ob)
 
         print('Molecular Sim Start' + '-' * 50)
         mol_stime = time()
-        scene = context.scene
+
         scene.mol_simrun = True
         scene.mol_minsize = 1000000000.0
         scene.mol_newlink = 0
@@ -60,12 +65,20 @@ class MolSimulate(bpy.types.Operator):
         scene.mol_totallink = 0
         scene.mol_totaldeadlink = 0
         scene.mol_timeremain = "...Simulating..."
-        scene.frame_set(frame=scene.frame_start)
+        bpy.types.Scene.mol_old_currentframe = scene.frame_current
+        scene.mol_old_startframe = scene.frame_start
         scene.mol_old_endframe = scene.frame_end
         mol_substep = scene.mol_substep
         scene.render.frame_map_old = 1
         scene.render.frame_map_new = mol_substep + 1
-        scene.frame_end *= mol_substep + 1
+
+        scene.frame_end = scene.frame_end * (mol_substep + 1)
+        if scene.mol_old_startframe == 1:
+            scene.frame_start = 1
+            scene.frame_set(frame=1)
+        else:
+            scene.frame_start = scene.frame_start * (mol_substep + 1)
+            scene.frame_set(frame=scene.frame_start)
 
         if scene.mol_timescale_active == True:
             fps = scene.render.fps * scene.timescale
@@ -251,6 +264,7 @@ class MolSimulateModal(bpy.types.Operator):
     bl_label = "Simulate Molecular"
     _timer = None
     _draw_handler = None
+    _profiling = False
 
     def check_bake_uv(self, context):
         # bake the UV in the beginning
@@ -289,6 +303,7 @@ class MolSimulateModal(bpy.types.Operator):
 
 
             scene.render.frame_map_new = 1
+            scene.frame_start = scene.mol_old_startframe
             scene.frame_end = scene.mol_old_endframe
             core.memfree()
             scene.mol_simrun = False
@@ -300,7 +315,7 @@ class MolSimulateModal(bpy.types.Operator):
                 print("Rendering ..................")
                 bpy.ops.render.render(animation=True)
 
-            scene.frame_set(frame=scene.frame_start)
+            scene.frame_set(frame=int(math.floor((scene.frame_current/(scene.mol_substep + 1)))))
             sleep(0.1)
             return self.cancel(context)
 
@@ -389,6 +404,7 @@ class MolSimulateModal(bpy.types.Operator):
         bpy.types.SpaceView3D.draw_handler_remove(self._handler, 'WINDOW')
         context.window_manager.event_timer_remove(self._timer)
         bpy.context.scene.mol_cancel = False
+        obj = get_object(context, context.object)
         return {'CANCELLED'}
 
 
@@ -434,6 +450,32 @@ class MolCancelSim(bpy.types.Operator):
     def execute(self, context):
         context.scene.mol_cancel = True
 
+        return {'FINISHED'}
+
+class MolBakeCache(bpy.types.Operator):
+    """Bake Cache"""
+    bl_idname = "object.bake_sim"
+    bl_label = "Bake Particle Simulation"
+
+    def execute(self, context):
+
+        fake_context = context.copy()
+        for ob in bpy.data.objects:
+            obj = get_object(context, ob)
+            for psys in obj.particle_systems:
+                if psys.settings.mol_active and len(psys.particles):
+                    fake_context["point_cache"] = psys.point_cache
+                    bpy.ops.ptcache.bake_from_cache(fake_context)
+        return {'FINISHED'}
+
+class MolResumeSim(bpy.types.Operator):
+    """Cancel Particle Simulation"""
+    bl_idname = "object.resume_sim"
+    bl_label = "Resume Particle Simulation from Current frame"
+
+    def execute(self, context):
+        context.scene.frame_start = context.scene.frame_current
+        bpy.ops.object.mol_simulate()
         return {'FINISHED'}
 
 class MolToolsConvertGeo(bpy.types.Operator):
@@ -492,26 +534,4 @@ class MolToolsConvertGeo(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MolToolsUVtoGeo(bpy.types.Operator):
-    """Convert particles to Particle Instance Mesh"""
-    bl_idname = "object.uv_to_geo"
-    bl_label = "Transfer UVs to GeoNodes"
-
-    def execute(self, context):
-        obj = context.object
-        geo_obj = bpy.data.objects[obj.name + "_geo_instance"]
-        egeo_obj = get_object(context, geo_obj)
-
-        depobj = get_object(context, obj)
-        particles = depobj.particle_systems.active.particles
-
-        par_uvs = np.zeros(len(particles) * 3, dtype=np.float32)
-
-        particles.foreach_get('angular_velocity', par_uvs)
-
-        attr = geo_obj.data.attributes.new('uvs', 'FLOAT_VECTOR', 'POINT')
-
-        attr.data.foreach_set('vector', par_uvs)
-
-
-operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolRemoveCollider, MolToolsConvertGeo)#, MolToolsUVtoGeo)
+operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolBakeCache, MolResumeSim, MolRemoveCollider, MolToolsConvertGeo)
