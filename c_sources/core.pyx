@@ -232,6 +232,7 @@ cpdef simulate(importdata):
     global totaldeadlinks
     global deadlinks
 
+
     cdef int i = 0
     cdef int ii = 0
     cdef int profiling = 0
