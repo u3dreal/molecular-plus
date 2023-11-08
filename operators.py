@@ -46,12 +46,16 @@ class MolSet_Substeps(bpy.types.Operator):
 class MolSimulate(bpy.types.Operator):
     bl_idname = "object.mol_simulate"
     bl_label = 'Simulate'
-    resume = True
+    resume:  bpy.props.BoolProperty(
+                name="Resume bake",
+                description="Resume Sim",
+                default=False
+                )
 
     def execute(self, context):
 
         scene = context.scene
-        if not scene.mol_resume:
+        if not self.resume:
             for ob in bpy.data.objects:
                 destroy_caches(ob)
 
@@ -72,7 +76,7 @@ class MolSimulate(bpy.types.Operator):
         scene.render.frame_map_old = 1
         scene.render.frame_map_new = mol_substep + 1
 
-        if scene.mol_resume:
+        if self.resume:
             scene.frame_start = scene.frame_current
         if scene.frame_start != 1:
             scene.frame_start = scene.frame_start * (mol_substep + 1)
@@ -293,7 +297,7 @@ class MolSimulateModal(bpy.types.Operator):
 
         ###### ESC END #######
         if event.type == 'ESC' or frame_current == frame_end or scene.mol_cancel:
-            if frame_current == frame_end:
+            if frame_current == frame_end and scene.mol_bake:
                 bpy.ops.object.bake_sim()
 
             scene.render.frame_map_new = 1
@@ -452,7 +456,6 @@ class MolBakeCache(bpy.types.Operator):
     bl_label = "Bake Particle Simulation"
 
     def execute(self, context):
-
         fake_context = context.copy()
         for ob in bpy.data.objects:
             obj = get_object(context, ob)
@@ -468,8 +471,7 @@ class MolResumeSim(bpy.types.Operator):
     bl_label = "Resume Particle Simulation from Current frame"
 
     def execute(self, context):
-        context.scene.mol_resume = True
-        bpy.ops.object.mol_simulate()
+        bpy.ops.object.mol_simulate(resume=True)
         return {'FINISHED'}
 
 class MolToolsConvertGeo(bpy.types.Operator):
