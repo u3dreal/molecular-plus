@@ -72,15 +72,14 @@ class MolSimulate(bpy.types.Operator):
         scene.render.frame_map_old = 1
         scene.render.frame_map_new = mol_substep + 1
 
-        scene.frame_end = scene.frame_end * (mol_substep + 1)
-        if not scene.mol_old_startframe == 1:
-            scene.frame_start = 1
-            scene.frame_set(frame=1)
-        else:
-            if scene.mol_resume:
-                scene.frame_start = scene.frame_current
+        if scene.mol_resume:
+            scene.frame_start = scene.frame_current
+        if scene.frame_start != 1:
             scene.frame_start = scene.frame_start * (mol_substep + 1)
-            scene.frame_set(frame=scene.frame_start)
+
+        scene.frame_end = scene.frame_end * (mol_substep + 1)
+
+        scene.frame_set(frame=scene.frame_start)
 
         if scene.mol_timescale_active == True:
             fps = scene.render.fps * scene.timescale
