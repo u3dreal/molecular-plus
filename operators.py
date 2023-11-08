@@ -104,7 +104,7 @@ class MolSimulate(bpy.types.Operator):
         print("  Export time took " + str(round(etime - mol_stime, 3)) + "sec")
         print("  total numbers of particles: " + str(mol_report))
         print("  start processing:")
-        bpy.ops.wm.mol_simulate_modal()
+        bpy.ops.wm.mol_simulate_modal(resume=self.resume)
         return {'FINISHED'}
 
 class MolSetGlobalUV(bpy.types.Operator):
@@ -270,6 +270,7 @@ class MolSimulateModal(bpy.types.Operator):
     _timer = None
     _draw_handler = None
     _profiling = False
+    resume : bpy.props.BoolProperty()
 
     def check_bake_uv(self, context):
         # bake the UV in the beginning
@@ -381,7 +382,8 @@ class MolSimulateModal(bpy.types.Operator):
     def execute(self, context):
         # start time
         self.st = time()
-        self.check_bake_uv(context)
+        if not self.resume:
+            self.check_bake_uv(context)
         self._timer = context.window_manager.event_timer_add(0.000000001, window=context.window)
         update_progress("Initializing", 0.0001)
 
