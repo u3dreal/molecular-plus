@@ -4,7 +4,7 @@ from . import bl_info
 
 class MS_PT_MolecularHelperPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
-    bl_label = "Molecular+     "  + str(bl_info['version']).replace('(','').replace(')','').replace(',','.')
+    bl_label = "Molecular+     v"  + str(bl_info['version']).replace('(','').replace(')','').replace(',','.')
     bl_idname = "OBJECT_PT_molecular_helper"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -23,45 +23,45 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
         row = box.row()
         
         if obj != None:
-            row.scale_y = 0.5
-            row.label(text = "Molecular Object : " + obj.name)
+            #row.scale_y = 0.5
+            #row.label(text = "Molecular Object : " + obj.name)
 
             if context.object.particle_systems.active:
                 psys = get_object(context, obj).particle_systems.active
                 parcount = len(psys.particles)
                 row = box.row()
-                row.scale_y = 0.5
-                row.label(text = "System particles : " + str(parcount))
-                row = box.row()
-                row.scale_y = 0.5
-                row.label(text = "Total particles : " + str(scn.mol_parnum))
+                row.scale_y = 0.1
+                row.scale_x = 0.8
+                row.label(text = "System : " + str(parcount))
+                #row = box.row()
+                #row.scale_y = 0.1
+                row.label(text = "Total : " + str(scn.mol_parnum))
                 row.operator("object.mol_set_subs", text="", icon="FILE_REFRESH")
 
                 box = layout.box()
                 row = box.row()
                 if not scn.mol_simrun and not psys.point_cache.is_baked:
-                    row.enabled = True
                     row.operator("object.mol_simulate", icon='PLAY', text="Start Simulation")
-                    if not psys.point_cache.info.startswith('1 ') or psys.point_cache.info.startswith('0 '):
+                    if not psys.point_cache.info.startswith('1 frames') or psys.point_cache.info.startswith('0 frames'):
                         row = box.row()
                         row.operator('object.resume_sim', icon='LOOP_FORWARDS', text="Resume Simulation")
-                    row = box.row()
-                    row.enabled = False
-                    row.operator("object.clear_pcache", text="Free All Bakes")
-                    row = box.row()
-                    row.enabled = True
-                    row.operator("object.bake_sim", icon='REC', text="Current Cache to Bake")
+                        row = box.row()
+                        row.operator("object.bake_sim", icon='REC', text="Current Cache to Bake")
+
+                    #row = box.row()
+                    #row.enabled = False
+                    #row.operator("object.clear_pcache", text="Free All Bakes")
 
 
                 if psys.point_cache.is_baked and not scn.mol_simrun:
-                    row.enabled = False
-                    row.operator("object.mol_simulate", icon='PLAY', text="Simulation baked")
-                    row = box.row()
-                    row.enabled = True
+                    #row.enabled = False
+                    #row.operator("object.mol_simulate", icon='PLAY', text="Simulation baked")
+                    #row = box.row()
+                    #row.enabled = True
                     row.operator("object.clear_pcache", text="Free All Bakes")
-                    row = box.row()
-                    row.enabled = False
-                    row.operator("ptcache.bake_from_cache", icon='REC', text="Current Cache to Bake")
+                    #row = box.row()
+                    #row.enabled = False
+                    #row.operator("ptcache.bake_from_cache", icon='REC', text="Current Cache to Bake")
 
                 if scn.mol_simrun:
                     row.enabled = False
@@ -77,9 +77,9 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 row.prop(scn,"mol_substep", text = "Steps")
                 row.prop(scn,"mol_cpu",text = "Threads")
 
-                row = box.row()
-                row.prop(scn, "frame_start", text="Start")
-                row.prop(scn, "frame_end", text="End")
+                #row = box.row()
+                #row.prop(scn, "frame_start", text="Start")
+                #row.prop(scn, "frame_end", text="End")
                 row = box.row()
                 # row = box.row()
                 # row.enabled = scn.mol_timescale_active
@@ -128,13 +128,13 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
             psys = obj.particle_systems.active.settings
             row = layout.row()
             row.label(text="MolObject: " + obj.name)
-            row = layout.row()
-            row.prop(psys, "mol_voxel_size", text="Voxel Size")
             if psys.distribution == 'GRID':
                 row = layout.row()
                 row.prop(psys, "hexagonal_grid", text="Hexagonal Grid")
                 row = layout.row()
                 row.prop(psys, "grid_random", text="Random")
+            row = layout.row()
+            row.prop(psys, "mol_voxel_size", text="Voxel Size")
             
 class MS_PT_MolecularCreatePanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
