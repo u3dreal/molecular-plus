@@ -360,7 +360,7 @@ def define_props():
     bpy.types.Scene.mol_bake = bpy.props.BoolProperty(
         name="Bake all at ending",
         description=descriptions.BAKE,
-        default=False
+        default=True
     )
     bpy.types.Scene.mol_render = bpy.props.BoolProperty(
         name="Render at ending",
