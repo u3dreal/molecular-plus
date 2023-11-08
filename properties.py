@@ -399,7 +399,6 @@ def define_props():
     bpy.types.Scene.mol_minsize = bpy.props.FloatProperty()
     bpy.types.Scene.mol_simrun = bpy.props.BoolProperty(default=False)
     bpy.types.Scene.mol_timeremain = bpy.props.StringProperty()
-    bpy.types.Scene.mol_resume = bpy.props.BoolProperty()
     bpy.types.Scene.mol_old_currentframe = bpy.props.IntProperty()
     bpy.types.Scene.mol_old_startframe = bpy.props.IntProperty()
     bpy.types.Scene.mol_old_endframe = bpy.props.IntProperty()
