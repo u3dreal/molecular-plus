@@ -387,7 +387,8 @@ class MolSimulateModal(bpy.types.Operator):
         self._timer = context.window_manager.event_timer_add(0.000000001, window=context.window)
         update_progress("Initializing", 0.0001)
 
-        if context.area.type == 'VIEW_3D':
+        show_stats = False
+        if show_stats and context.area.type == 'VIEW_3D':
             self._handler = bpy.types.SpaceView3D.draw_handler_add(draw_callback_px, (self, context), "WINDOW", "POST_PIXEL")
 
         context.window_manager.modal_handler_add(self)
@@ -401,7 +402,7 @@ class MolSimulateModal(bpy.types.Operator):
         print("Total time : " + tt_s + " sec")
 
         self.report({'INFO'}, 'Total time: {0}'.format(tt_s))
-        bpy.types.SpaceView3D.draw_handler_remove(self._handler, 'WINDOW')
+        #bpy.types.SpaceView3D.draw_handler_remove(self._handler, 'WINDOW')
         context.window_manager.event_timer_remove(self._timer)
         bpy.context.scene.mol_cancel = False
         obj = get_object(context, context.object)

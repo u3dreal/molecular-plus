@@ -41,10 +41,10 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 box = layout.box()
                 row = box.row()
                 if not scn.mol_simrun and not psys.point_cache.is_baked:
-                    row.operator("object.mol_simulate", icon='PLAY', text="Start Simulation")
+                    row.operator("object.mol_simulate", icon='PLAY', text="Simulate")
                     if not psys.point_cache.info.startswith('1 frames') or psys.point_cache.info.startswith('0 frames'):
                         row = box.row()
-                        row.operator('object.resume_sim', icon='LOOP_FORWARDS', text="Resume Simulation")
+                        row.operator('object.resume_sim', icon='TRACKING_FORWARDS', text="Resume")
                         row = box.row()
                         row.operator("object.bake_sim", icon='REC', text="Current Cache to Bake")
 
@@ -58,14 +58,14 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                     #row.operator("object.mol_simulate", icon='PLAY', text="Simulation baked")
                     #row = box.row()
                     #row.enabled = True
-                    row.operator("object.clear_pcache", text="Free All Bakes")
+                    row.operator("object.clear_pcache", icon='CANCEL', text="Free All Bakes")
                     #row = box.row()
                     #row.enabled = False
                     #row.operator("ptcache.bake_from_cache", icon='REC', text="Current Cache to Bake")
 
                 if scn.mol_simrun:
                     row.enabled = False
-                    row.operator("object.mol_simulate", icon='RADIOBUT_ON', text="Process: " + scn.mol_timeremain + " left")
+                    row.operator("object.mol_simulate", icon='NONE', text="Process: " + scn.mol_timeremain + " left")
                     row = box.row()
                     row.operator("object.cancel_sim", icon='PAUSE', text="Pause")
 
@@ -124,7 +124,7 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
             row = layout.row()
             row.prop(obj.collision, "stickiness", text="Stickiness", slider=True)
 
-        if obj['mol_type'] == 'EMITTER':
+        if obj['mol_type'] == 'EMITTER' or obj['mol_type'] == 'PIN':
             psys = obj.particle_systems.active.settings
             row = layout.row()
             row.label(text="MolObject: " + obj.name)
@@ -163,6 +163,8 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         row = layout.row()
         row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
         row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
+        row=layout.row()
+        row.operator('molecular_operators.molecular_makepin2d', icon='MOD_SIMPLIFY', text="PinPlane")
 
 class MS_PT_MolecularToolsPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""

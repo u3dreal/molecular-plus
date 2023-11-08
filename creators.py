@@ -21,6 +21,7 @@ class MolecularGrid3d(bpy.types.Operator):
                 bpy.ops.object.particle_system_add()
 
             psys = obj.particle_systems.active.settings
+            obj.particle_systems.active.point_cache.name="MolCache"
 
         # ParticlsSystemSettings
             max_dim = max(obj.dimensions)
@@ -78,9 +79,10 @@ class MolecularGrid2d(bpy.types.Operator):
         # ParctilsSystemSettings
             i = 1
             for parsys in obj.particle_systems:
-                parsys.name = "stack : " + str(i)
+                parsys.name = "Molstack : " + str(i)
                 psys = parsys.settings
-                psys.name = "pstack : " + str(i)
+                parsys.point_cache.name = "MolCache" + str(i)
+                psys.name = "MolPSettings : " + str(i)
                 max_dim = max(obj.dimensions)
                 psys.grid_resolution = int(max_dim/voxel_size)
                 psys.particle_size = max_dim/psys.grid_resolution/2
@@ -137,6 +139,8 @@ class MolecularEmitter(bpy.types.Operator):
                 bpy.ops.object.particle_system_add()
 
             psys = obj.particle_systems.active.settings
+            parsys = obj.particle_systems.active
+            parsys.point_cache.name = "MolCache"
 
         # ParctilsSystemSettings
             max_dim = max(obj.dimensions)
@@ -190,4 +194,66 @@ class MolecularCollider(bpy.types.Operator):
 
         return {'FINISHED'}
 
-create_classes = (MolecularEmitter, MolecularCollider, MolecularGrid2d, MolecularGrid3d)
+
+class MolecularPin(bpy.types.Operator):
+    bl_idname = "molecular_operators.molecular_makepin2d"
+    bl_label = "Create Molecular 2D Pin Object"
+    bl_description = "Create Pinobject 2d"
+    bl_options = {'REGISTER'}
+
+    def execute(self,  context):
+
+        voxel_size = 0.4
+
+        for obj in context.view_layer.objects.selected:
+            if obj.particle_systems.active == None:
+                obj.display_type = 'WIRE'
+                obj['mol_type'] = 'PIN'
+                bpy.context.view_layer.objects.active = obj
+                bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                bpy.ops.object.particle_system_add()
+
+        # ParctilsSystemSettings
+            i = 1
+            for parsys in obj.particle_systems:
+                parsys.name = "Molpin : " + str(i)
+                parsys = obj.particle_systems.active
+                parsys.point_cache.name = "MolCache" + str(i)
+                psys = parsys.settings
+                psys.name = "Molpinset : " + str(i)
+                max_dim = max(obj.dimensions)
+                psys.grid_resolution = int(max_dim/voxel_size)
+                psys.particle_size = max_dim/psys.grid_resolution/2
+                psys.display_size = psys.particle_size/2
+                psys.hexagonal_grid = context.scene.mol_hexgrid
+                psys.emit_from = 'FACE'
+                psys.distribution = 'GRID'
+                psys.normal_factor = 0.0
+
+                psys.frame_start = 1
+                psys.frame_end = 1
+                psys.lifetime = 500
+                psys.grid_random = 0.0
+                psys.use_size_deflect = True
+                psys.use_modifier_stack = True
+                psys.physics_type = 'NO'
+
+                psys.mol_active = True
+                psys.mol_selfcollision_active = False
+                psys.mol_othercollision_active = False
+                psys.mol_links_active = True
+                psys.mol_other_link_active = True
+                psys.mol_link_length = 1.0
+                psys.mol_link_max = 128
+                psys.mol_link_friction = 0.8
+                psys.mol_link_broken = 100
+
+                i += 20
+            # update
+            bpy.ops.object.reset_pcache()
+
+            bpy.ops.object.mol_set_subs()
+
+        return {'FINISHED'}
+
+create_classes = (MolecularEmitter, MolecularCollider, MolecularGrid2d, MolecularGrid3d, MolecularPin)

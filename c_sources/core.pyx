@@ -266,28 +266,31 @@ cpdef simulate(importdata):
 
     for i in range(parnum):
         parlistcopy[i].id = parlist[i].id
+
         parlistcopy[i].loc[0] = parlist[i].loc[0]
-        # if parlist[i].loc[0] >= FLT_MAX or parlist[i].loc[0] <= -FLT_MAX :
-            # print('ALERT! INF value in X')
         if parlist[i].loc[0] < minX:
             minX = parlist[i].loc[0]
         if parlist[i].loc[0] > maxX:
             maxX = parlist[i].loc[0]
+
         parlistcopy[i].loc[1] = parlist[i].loc[1]
         if parlist[i].loc[1] < minY:
             minY = parlist[i].loc[1]
         if parlist[i].loc[1] > maxY:
             maxY = parlist[i].loc[1]
+
         parlistcopy[i].loc[2] = parlist[i].loc[2]
         if parlist[i].loc[2] < minZ:
             minZ = parlist[i].loc[2]
         if parlist[i].loc[2] > maxZ:
             maxZ = parlist[i].loc[2]
+
         if parlist[i].sys.links_active == 1:
             if parlist[i].links_num > 0:
                 for ii in range(parlist[i].links_num):
                     if parlist[i].links[ii].lenght > maxSize:
                         maxSize = parlist[i].links[ii].lenght
+
         if (parlist[i].size * 2) > maxSize:
             maxSize = (parlist[i].size * 2)
 
@@ -956,7 +959,6 @@ cdef void update(data):
     cdef int i = 0
     cdef int ii = 0
     for i in range(psysnum):
-
         psys[i].selfcollision_active = data[i][3]
         
         for ii in range(psys[i].parnum):
