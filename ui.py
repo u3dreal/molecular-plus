@@ -85,7 +85,7 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 # row.enabled = scn.mol_timescale_active
                 row.prop(scn, "timescale", text="")
                 #row.alignment = 'RIGHT'
-                row.prop(scn, "mol_timescale_active", text="TimeScaling")
+                row.prop(scn, "mol_timescale_active", text="Custom Timescale")
                 #row.label(text="")
                 #row = box.row()
 
