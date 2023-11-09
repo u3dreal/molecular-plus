@@ -180,9 +180,10 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         row.operator("object.convert_to_geo", text="Convert to Geonodes", icon='GEOMETRY_NODES')
+        row = layout.row()
+        row.operator("object.mol_cache_global_uv", text="Cache global UVs", icon='GEOMETRY_NODES')
         #row = layout.row()
-        #row.operator("object.uv_to_geo", text="Transfer UVs to Geonodes", icon='GEOMETRY_NODES')
-
+        #row.operator("object.mol_cache_active_uv", text="Cache active UVs", icon='GEOMETRY_NODES')
         
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
@@ -408,14 +409,12 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
 
         box = layout.box()
         row = box.row()
-        if obj.data.uv_layers.active != None:
-            row.prop(psys.settings,"mol_bakeuv",text = "Bake UV (current: " + str(obj.data.uv_layers.active.name) + ")" )
+        if 'uv_cache' in obj:
+            row.enabled =True
+            row.prop(psys.settings,"mol_bakeuv",text = "Bake UV")
         else:
-            row.prop(psys.settings,"mol_bakeuv",text = "Bake UV (current: None)" )
-        row = box.row()
-        row.enabled = psys.settings.mol_bakeuv
-        row.prop(psys.settings,"mol_bakeuv_global",text = "Global")
-        row = box.row()
+            row.enabled = False
+            row.prop(psys.settings,"mol_bakeuv",text = "Bake UV")
 
 class MolecularAdd(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_add"

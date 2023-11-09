@@ -107,33 +107,69 @@ class MolSimulate(bpy.types.Operator):
         bpy.ops.wm.mol_simulate_modal(resume=self.resume)
         return {'FINISHED'}
 
+class MolApplyUVcache(bpy.types.Operator):
+    bl_idname = "object.mol_uv_cache_apply"
+    bl_label = "Mol Apply Cached UV"
+
+    uv_object_name: bpy.props.StringProperty()
+
+    def execute(self, context):
+        ob = bpy.data.objects[self.uv_object_name]
+        obj = get_object(context, ob)
+
+        print('applying uv from:', obj.name)
+        psys = obj.particle_systems.active
+        psys.settings.use_rotations = True
+        psys.settings.angular_velocity_mode = 'RAND'
+        psys.particles.foreach_set("angular_velocity", obj['uv_cache'])
+        print('applied cached uv on:', psys.settings.name)
+
+        return {'FINISHED'}
+
+class MolCacheGlobalUV(bpy.types.Operator):
+    bl_idname = "object.mol_cache_global_uv"
+    bl_label = "Mol Cache global UV"
+    def execute(self, context):
+        scene = context.scene
+        obj = get_object(context, context.object)
+        bpy.ops.object.mol_set_global_uv("INVOKE_DEFAULT")
+
+        return {'FINISHED'}
+
+class MolCacheUV(bpy.types.Operator):
+    bl_idname = "object.mol_cache_active_uv"
+    bl_label = "Mol Cache UV"
+    def execute(self, context):
+        scene = context.scene
+        obj = get_object(context, context.object)
+        bpy.ops.object.mol_set_active_uv("INVOKE_DEFAULT")
+
+        return {'FINISHED'}
+
+
 class MolSetGlobalUV(bpy.types.Operator):
     bl_idname = "object.mol_set_global_uv"
     bl_label = "Mol Set UV"
 
-    objname : bpy.props.StringProperty()
+    uv_obj_name: bpy.props.StringProperty()
 
     def execute(self, context):
-        scene = context.scene
+        context.object.particle_systems.active.settings.mol_bakeuv = True
         obj = get_object(context, context.object)
 
         print('start bake global uv from:', obj.name)
-
         psys = obj.particle_systems.active
+        psys.settings.mol_bakeuv = True
 
         par_uv = []
         for par in psys.particles:
-
             newuv = (par.location @ obj.matrix_world) - obj.location
             par_uv.append(newuv[0])
             par_uv.append(newuv[1])
             par_uv.append(newuv[2])
 
-        psys.settings.use_rotations = True
-        psys.settings.angular_velocity_mode = 'RAND'
-
-        psys.particles.foreach_set("angular_velocity", par_uv)
-        print('global uv baked on:', psys.settings.name)
+        context.object['uv_cache'] = par_uv
+        print('global uv cached on:', obj.name)
 
         return {'FINISHED'}
 
@@ -142,11 +178,13 @@ class MolSetActiveUV(bpy.types.Operator):
     bl_idname = "object.mol_set_active_uv"
     bl_label = "Mol Set Active UV"
 
-    objname : bpy.props.StringProperty()
+    uv_obj_name: bpy.props.StringProperty()
 
     def execute(self, context):
 
-        obj = get_object(context, context.view_layer.objects[self.objname])
+        obj = get_object(context, context.object)
+        psys = obj.particle_systems.active
+        context.object.particle_systems.active.settings.mol_bakeuv = True
 
         if not obj.data.uv_layers.active:
             return {'FINISHED'}
@@ -168,7 +206,6 @@ class MolSetActiveUV(bpy.types.Operator):
 
         context.view_layer.update()
 
-        psys = obj.particle_systems.active
         par_uv = []
         me = obj2.data
 
@@ -220,12 +257,8 @@ class MolSetActiveUV(bpy.types.Operator):
         bpy.data.objects.remove(obj2)
         bpy.data.meshes.remove(obdata)
 
-        print('         uv baked on:', psys.settings.name)
-
-        psys.settings.use_rotations = True
-        psys.settings.angular_velocity_mode = 'RAND'
-
-        psys.particles.foreach_set("angular_velocity", par_uv)
+        context.object['uv_cache'] = par_uv
+        print('uv cached on:', obj.name)
 
         return {'FINISHED'}
 
@@ -277,14 +310,13 @@ class MolSimulateModal(bpy.types.Operator):
         scene = context.scene
         frame_old = scene.frame_current
         for ob in bpy.data.objects:
+            #if not 'uv_cache' in ob:
+            #    pass
             obj = get_object(context, ob)
             for psys in obj.particle_systems:
-                if psys.settings.mol_bakeuv:
-                    scene.frame_set(frame=int(psys.settings.frame_start))
-                    if psys.settings.mol_bakeuv_global:
-                        bpy.ops.object.mol_set_global_uv("INVOKE_DEFAULT", objname = obj.name)
-                    else:
-                        bpy.ops.object.mol_set_active_uv("INVOKE_DEFAULT", objname = obj.name)
+                    if psys.settings.mol_bakeuv:
+                        scene.frame_set(frame=int(psys.settings.frame_start))
+                        bpy.ops.object.mol_uv_cache_apply("INVOKE_DEFAULT", uv_object_name=obj.name)
 
         scene.frame_set(frame=frame_old)
 
@@ -346,6 +378,7 @@ class MolSimulateModal(bpy.types.Operator):
                 for psys in obj.particle_systems:
                     if psys.settings.mol_active and len(psys.particles):
                         psys.particles.foreach_set('velocity', mol_importdata[1][i])
+                        psys.particles.foreach_set('location', mol_importdata[0][i])
                         i += 1
 
             scene.mol_newlink = 0
@@ -533,4 +566,4 @@ class MolToolsConvertGeo(bpy.types.Operator):
         return {'FINISHED'}
 
 
-operator_classes = (MolSimulateModal, MolSimulate, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolBakeCache, MolResumeSim, MolRemoveCollider, MolToolsConvertGeo)
+operator_classes = (MolSimulateModal, MolSimulate, MolApplyUVcache, MolCacheGlobalUV, MolCacheUV, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolBakeCache, MolResumeSim, MolRemoveCollider, MolToolsConvertGeo)
