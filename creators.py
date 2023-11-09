@@ -195,15 +195,15 @@ class MolecularCollider(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MolecularPin(bpy.types.Operator):
-    bl_idname = "molecular_operators.molecular_makepin2d"
+class MolecularTape(bpy.types.Operator):
+    bl_idname = "molecular_operators.molecular_maketape"
     bl_label = "Create Molecular 2D Pin Object"
     bl_description = "Create Pinobject 2d"
     bl_options = {'REGISTER'}
 
     def execute(self,  context):
 
-        voxel_size = 0.4
+        voxel_size = 0.1
 
         for obj in context.view_layer.objects.selected:
             if obj.particle_systems.active == None:
@@ -233,7 +233,7 @@ class MolecularPin(bpy.types.Operator):
                 psys.frame_start = 1
                 psys.frame_end = 1
                 psys.lifetime = 500
-                psys.grid_random = 0.0
+                psys.grid_random = 0.7
                 psys.use_size_deflect = True
                 psys.use_modifier_stack = True
                 psys.physics_type = 'NO'
@@ -256,4 +256,4 @@ class MolecularPin(bpy.types.Operator):
 
         return {'FINISHED'}
 
-create_classes = (MolecularEmitter, MolecularCollider, MolecularGrid2d, MolecularGrid3d, MolecularPin)
+create_classes = (MolecularEmitter, MolecularCollider, MolecularGrid2d, MolecularGrid3d, MolecularTape)

@@ -128,14 +128,14 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
             psys = obj.particle_systems.active.settings
             row = layout.row()
             row.label(text="MolObject: " + obj.name)
-            if psys.distribution == 'GRID':
-                row = layout.row()
-                row.prop(psys, "hexagonal_grid", text="Hexagonal Grid")
-                row = layout.row()
-                row.prop(psys, "grid_random", text="Random")
             row = layout.row()
             row.prop(psys, "mol_voxel_size", text="Voxel Size")
-            
+            if psys.distribution == 'GRID':
+                row = layout.row()
+                row.prop(psys, "grid_random", text="Random")
+                row = layout.row()
+                row.prop(psys, "hexagonal_grid", text="Hexa Grid")
+
 class MS_PT_MolecularCreatePanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
     bl_label = "Create"
@@ -164,7 +164,8 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
         row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
         row=layout.row()
-        row.operator('molecular_operators.molecular_makepin2d', icon='MOD_SIMPLIFY', text="PinPlane")
+        row.operator('molecular_operators.molecular_maketape', icon='MOD_SIMPLIFY', text="Sticky Tape")
+        row.operator('molecular_operators.molecular_maketape', icon='MOD_SIMPLIFY', text="Sticky Pin")
 
 class MS_PT_MolecularToolsPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
