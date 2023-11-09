@@ -2,8 +2,8 @@ import bpy
 
 class MolecularGrid3d(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_makegrid3d"
-    bl_label = "Create Molecular 3d grid"
-    bl_description = "Create / Set Gridobject 3d"
+    bl_label = "Create Molecular 3D grid"
+    bl_description = "Create / Set Gridobject 3D"
     bl_options = {'REGISTER'}
 
     def execute(self,  context):
@@ -58,8 +58,8 @@ class MolecularGrid3d(bpy.types.Operator):
 
 class MolecularGrid2d(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_makegrid2d"
-    bl_label = "Create Molecular 2d grid"
-    bl_description = "Create / Set Gridobject 2d"
+    bl_label = "Create Molecular 2D grid"
+    bl_description = "Create / Set Gridobject 2D"
     bl_options = {'REGISTER'}
 
     def execute(self,  context):

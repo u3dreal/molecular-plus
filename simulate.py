@@ -4,7 +4,7 @@ import numpy as np
 from .utils import get_object
 
 def get_weak_map(obj, psys):
-    print('start bake weak map from:', obj.name)
+    print('start bake weakmap from:', obj.name)
 
     par_weak = array.array('f',[0]) * len(psys.particles)
     tex = psys.settings.texture_slots[0].texture
@@ -16,7 +16,7 @@ def get_weak_map(obj, psys):
         newuv = (psys.particles[i].location + texm_offset) @ obj.matrix_world * texm_scale
         par_weak[i] = tex.evaluate(newuv).w
 
-    print('Weak Map baked on:', psys.settings.name)
+    print('Weakmap baked on:', psys.settings.name)
 
     return par_weak
 
