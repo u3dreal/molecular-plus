@@ -154,21 +154,25 @@ class MolSetGlobalUV(bpy.types.Operator):
     uv_obj_name: bpy.props.StringProperty()
 
     def execute(self, context):
-        context.object.particle_systems.active.settings.mol_bakeuv = True
         obj = get_object(context, context.object)
+        if len(context.view_layer.objects.selected) == 2:
+            uv_obj = context.view_layer.objects.selected[1]
+        else:
+            uv_obj = obj
 
-        print('start bake global uv from:', obj.name)
+        print('start bake global uv from:', uv_obj.name)
         psys = obj.particle_systems.active
         psys.settings.mol_bakeuv = True
 
         par_uv = []
         for par in psys.particles:
-            newuv = (par.location @ obj.matrix_world) - obj.location
+            newuv = (par.location @ uv_obj.matrix_world) - uv_obj.location
             par_uv.append(newuv[0])
             par_uv.append(newuv[1])
             par_uv.append(newuv[2])
 
         context.object['uv_cache'] = par_uv
+        context.object.particle_systems.active.settings.mol_bakeuv = True
         print('global uv cached on:', obj.name)
 
         return {'FINISHED'}
@@ -177,23 +181,28 @@ class MolSetGlobalUV(bpy.types.Operator):
 class MolSetActiveUV(bpy.types.Operator):
     bl_idname = "object.mol_set_active_uv"
     bl_label = "Mol Set Active UV"
-
-    uv_obj_name: bpy.props.StringProperty()
-
     def execute(self, context):
 
         obj = get_object(context, context.object)
-        psys = obj.particle_systems.active
-        context.object.particle_systems.active.settings.mol_bakeuv = True
 
-        if not obj.data.uv_layers.active:
+        if len(context.view_layer.objects.selected) == 2:
+            uv_obj = get_object(context, context.view_layer.objects.selected[1])
+        else:
+            uv_obj = obj
+
+        bpy.context.view_layer.objects.active = uv_obj
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+
+        psys = obj.particle_systems.active
+
+        if not uv_obj.data.uv_layers.active:
             return {'FINISHED'}
 
-        print('  start bake uv from:', obj.name)
+        print('  start bake uv from:', uv_obj.name)
 
-        obdata = context.object.data.copy()
+        obdata = uv_obj.data.copy()
         obj2 = bpy.data.objects.new(name="mol_uv_temp", object_data=obdata)
-        obj2.matrix_world = obj.matrix_world
+        obj2.matrix_world = uv_obj.matrix_world
 
         context.scene.collection.objects.link(obj2)
         mod = obj2.modifiers.new("tri_for_uv", "TRIANGULATE")
@@ -258,6 +267,7 @@ class MolSetActiveUV(bpy.types.Operator):
         bpy.data.meshes.remove(obdata)
 
         context.object['uv_cache'] = par_uv
+        bpy.context.view_layer.objects.active = obj
         print('uv cached on:', obj.name)
 
         return {'FINISHED'}
