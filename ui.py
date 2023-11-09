@@ -182,8 +182,8 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
         row.operator("object.convert_to_geo", text="Convert to Geonodes", icon='GEOMETRY_NODES')
         row = layout.row()
         row.operator("object.mol_cache_global_uv", text="Cache global UVs", icon='GEOMETRY_NODES')
-        #row = layout.row()
-        #row.operator("object.mol_cache_active_uv", text="Cache active UVs", icon='GEOMETRY_NODES')
+        row = layout.row()
+        row.operator("object.mol_cache_active_uv", text="Cache active UVs", icon='GEOMETRY_NODES')
         
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
