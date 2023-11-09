@@ -164,7 +164,7 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
         row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
         row=layout.row()
-        row.operator('molecular_operators.molecular_maketape', icon='MOD_SIMPLIFY', text="Glue")
+        row.operator('molecular_operators.molecular_maketape', icon='MOD_SIMPLIFY', text="Tape Particles")
         row.operator('molecular_operators.molecular_maketape', icon='MOD_SIMPLIFY', text="Sticky Pin")
 
 class MS_PT_MolecularToolsPanel(bpy.types.Panel):
