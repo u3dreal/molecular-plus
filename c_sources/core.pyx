@@ -232,11 +232,9 @@ cpdef simulate(importdata):
     global totaldeadlinks
     global deadlinks
 
-
     cdef int i = 0
     cdef int ii = 0
     cdef int profiling = 0
-
     cdef float minX = INT_MAX
     cdef float minY = INT_MAX
     cdef float minZ = INT_MAX
@@ -757,7 +755,6 @@ cdef void collide(Particle *par)noexcept nogil:
 
                     if ((par.sys.relink_chance + par2.sys.relink_chance) / 2) \
                             > 0:
-
                         create_link(par.id,par.sys.link_max * 2, par2.id)
 
 
@@ -956,8 +953,10 @@ cdef void update(data):
     global parnum
     global psysnum
     global psys
+
     cdef int i = 0
     cdef int ii = 0
+
     for i in range(psysnum):
         psys[i].selfcollision_active = data[i][3]
         
