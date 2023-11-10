@@ -126,32 +126,10 @@ class MolApplyUVcache(bpy.types.Operator):
 
         return {'FINISHED'}
 
+
 class MolCacheGlobalUV(bpy.types.Operator):
     bl_idname = "object.mol_cache_global_uv"
     bl_label = "Mol Cache global UV"
-    def execute(self, context):
-        scene = context.scene
-        obj = get_object(context, context.object)
-        bpy.ops.object.mol_set_global_uv("INVOKE_DEFAULT")
-
-        return {'FINISHED'}
-
-class MolCacheUV(bpy.types.Operator):
-    bl_idname = "object.mol_cache_active_uv"
-    bl_label = "Mol Cache UV"
-    def execute(self, context):
-        scene = context.scene
-        obj = get_object(context, context.object)
-        bpy.ops.object.mol_set_active_uv("INVOKE_DEFAULT")
-
-        return {'FINISHED'}
-
-
-class MolSetGlobalUV(bpy.types.Operator):
-    bl_idname = "object.mol_set_global_uv"
-    bl_label = "Mol Set UV"
-
-    uv_obj_name: bpy.props.StringProperty()
 
     def execute(self, context):
         obj = get_object(context, context.object)
@@ -178,9 +156,9 @@ class MolSetGlobalUV(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MolSetActiveUV(bpy.types.Operator):
-    bl_idname = "object.mol_set_active_uv"
-    bl_label = "Mol Set Active UV"
+class MolCacheUV(bpy.types.Operator):
+    bl_idname = "object.mol_cache_active_uv"
+    bl_label = "Mol Cache UV"
     def execute(self, context):
 
         ob = context.object
@@ -579,4 +557,4 @@ class MolToolsConvertGeo(bpy.types.Operator):
         return {'FINISHED'}
 
 
-operator_classes = (MolSimulateModal, MolSimulate, MolApplyUVcache, MolCacheGlobalUV, MolCacheUV, MolSetGlobalUV, MolSetActiveUV, MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolBakeCache, MolResumeSim, MolRemoveCollider, MolToolsConvertGeo)
+operator_classes = (MolSimulateModal, MolSimulate, MolApplyUVcache, MolCacheGlobalUV, MolCacheUV,  MolSet_Substeps, MolClearCache, MolResetCache, MolCancelSim, MolBakeCache, MolResumeSim, MolRemoveCollider, MolToolsConvertGeo)
