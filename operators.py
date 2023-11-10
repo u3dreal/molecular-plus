@@ -474,6 +474,7 @@ class MolCancelSim(bpy.types.Operator):
 
     def execute(self, context):
         context.scene.mol_cancel = True
+        context.scene.mol_simrun = False
 
         return {'FINISHED'}
 
