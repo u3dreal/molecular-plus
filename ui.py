@@ -85,7 +85,7 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
                 # row.enabled = scn.mol_timescale_active
                 row.prop(scn, "timescale", text="")
                 #row.alignment = 'RIGHT'
-                row.prop(scn, "mol_timescale_active", text="TimeScaling")
+                row.prop(scn, "mol_timescale_active", text="Custom Timescale")
                 #row.label(text="")
                 #row = box.row()
 
@@ -368,13 +368,13 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row.prop(psys.settings,"mol_link_damp",text = "Damping")
             row.prop(psys.settings,"mol_link_damprand",text = "Rand Damping")
             row = box.row()
-            row.prop(psys.settings,"mol_link_broken",text = "broken")
+            row.prop(psys.settings,"mol_link_broken",text = "Broken")
             row.prop(psys.settings,"mol_link_brokenrand",text = "Rand Broken")
             row = box.row()
             if psys.settings.texture_slots[0]:
                 row.active = True
                 row.enabled = True
-                row.prop(psys.settings, "mol_bake_weak_map", text="WeakMap")
+                row.prop(psys.settings, "mol_bake_weak_map", text="Weakmap")
                 row = box.row()
                 row.label(text="Using Texture " + psys.settings.texture_slots[0].texture.name)
             else:
@@ -382,7 +382,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
                 row = box.row()
                 row.active = False
                 row.enabled = False
-                row.prop(psys.settings, "mol_bake_weak_map", text="WeakMap")
+                row.prop(psys.settings, "mol_bake_weak_map", text="Weakmap")
             box = layout.box()
             row = box.row()
             row.prop(psys.settings,"mol_link_samevalue", text="Same values for compression/expansion")
@@ -399,14 +399,14 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
                 row.prop(psys.settings,"mol_link_edamp",text = "E Damping")
                 row.prop(psys.settings,"mol_link_edamprand",text = "Rand E Damping")
                 row = box.row()
-                row.prop(psys.settings,"mol_link_ebroken",text = "E broken")
+                row.prop(psys.settings,"mol_link_ebroken",text = "E Broken")
                 row.prop(psys.settings,"mol_link_ebrokenrand",text = "Rand E Broken")
 
         ###   Relinking   ###
 
         box = layout.box()
         row = box.row()
-        row.label(text = "ReLinks :")
+        row.label(text = "Re-Links :")
         #row.prop(psys.settings,"mol_selfrelink_active", icon = 'CONSTRAINT', text = "Self Relink")
         #row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Relink with Others")
         #if psys.settings.mol_other_link_active: # or psys.settings.mol_selfrelink_active:# or psys.settings.mol_otherrelink_active:
@@ -430,8 +430,8 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row.prop(psys.settings,"mol_relink_damp",text = "Damping")
             row.prop(psys.settings,"mol_relink_damprand",text = "Rand Damping")
             row = box.row()
-            row.prop(psys.settings,"mol_relink_broken",text = "broken")
-            row.prop(psys.settings,"mol_relink_brokenrand",text = "Rand broken")
+            row.prop(psys.settings,"mol_relink_broken",text = "Broken")
+            row.prop(psys.settings,"mol_relink_brokenrand",text = "Rand Broken")
             row = box.row()
             row.prop(psys.settings,"mol_relink_samevalue", text = "Same values for compression/expansion")
             row = box.row()
@@ -444,7 +444,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row.prop(psys.settings,"mol_relink_edamprand",text = "Rand E Damping")
             row = box.row()
             row.prop(psys.settings,"mol_relink_ebroken",text = "E broken")
-            row.prop(psys.settings,"mol_relink_ebrokenrand",text = "Rand E broken")
+            row.prop(psys.settings,"mol_relink_ebrokenrand",text = "Rand E Broken")
 
         box = layout.box()
         row = box.row()
