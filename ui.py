@@ -165,7 +165,8 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
         row=layout.row()
         row.operator('molecular_operators.molecular_maketape', icon='MOD_SIMPLIFY', text="Sticky Tape")
-        row.operator('molecular_operators.molecular_maketape', icon='MOD_SIMPLIFY', text="Sticky Pin")
+        row.operator('molecular_operators.molecular_makepin', icon='MOD_SIMPLIFY', text="Sticky Pin")
+
 
 class MS_PT_MolecularUVToolsPanel(bpy.types.Panel):
     """Creates a Panel in the UVTool properties window"""
