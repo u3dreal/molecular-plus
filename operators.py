@@ -156,7 +156,7 @@ class MolSetGlobalUV(bpy.types.Operator):
     def execute(self, context):
         obj = get_object(context, context.object)
         if len(context.view_layer.objects.selected) == 2:
-            uv_obj = context.view_layer.objects.selected[1]
+            uv_obj = get_object(context, context.view_layer.objects.selected[1])
         else:
             uv_obj = obj
 
@@ -183,15 +183,17 @@ class MolSetActiveUV(bpy.types.Operator):
     bl_label = "Mol Set Active UV"
     def execute(self, context):
 
-        obj = get_object(context, context.object)
+        ob = context.object
+        obj = get_object(context, ob)
 
         if len(context.view_layer.objects.selected) == 2:
-            uv_obj = get_object(context, context.view_layer.objects.selected[1])
+            u_obj = context.view_layer.objects.selected[0]
+            bpy.context.view_layer.objects.active = u_obj
+            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+            uv_obj = get_object(context, u_obj)
         else:
             uv_obj = obj
-
-        bpy.context.view_layer.objects.active = uv_obj
-        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        #print(uv_obj)
 
         psys = obj.particle_systems.active
 
@@ -266,8 +268,9 @@ class MolSetActiveUV(bpy.types.Operator):
         bpy.data.objects.remove(obj2)
         bpy.data.meshes.remove(obdata)
 
-        context.object['uv_cache'] = par_uv
-        bpy.context.view_layer.objects.active = obj
+        ob['uv_cache'] = par_uv
+        bpy.context.view_layer.objects.active = ob
+        context.object.particle_systems.active.settings.mol_bakeuv = True
         print('uv cached on:', obj.name)
 
         return {'FINISHED'}

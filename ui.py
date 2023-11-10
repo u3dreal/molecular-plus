@@ -167,6 +167,39 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         row.operator('molecular_operators.molecular_maketape', icon='MOD_SIMPLIFY', text="Sticky Tape")
         row.operator('molecular_operators.molecular_maketape', icon='MOD_SIMPLIFY', text="Sticky Pin")
 
+class MS_PT_MolecularUVToolsPanel(bpy.types.Panel):
+    """Creates a Panel in the UVTool properties window"""
+    bl_label = "UV Tools"
+    bl_idname = "OBJECT_PT_molecular_uvtools"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Molecular+"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.object
+        if 'mol_type' in obj and obj['mol_type'] == 'EMITTER':
+            return True
+        else:
+            return False
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        row.operator("object.mol_cache_global_uv", text="Cache global UVs", icon='GEOMETRY_NODES')
+        row = layout.row()
+        row.operator("object.mol_cache_active_uv", text="Cache active UVs", icon='GEOMETRY_NODES')
+        if len(context.view_layer.objects.selected) == 2:
+            uv_obj = get_object(context, context.view_layer.objects.selected[0])
+        else:
+            uv_obj = get_object(context, context.object)
+
+        labeltext = "baking UV from " + uv_obj.name
+        row = layout.row()
+        row.label(text = labeltext)
+
+
 class MS_PT_MolecularToolsPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
     bl_label = "Tools"
@@ -176,15 +209,20 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
     bl_category = "Molecular+"
     bl_options = {'DEFAULT_CLOSED'}
 
+    @classmethod
+    def poll(cls, context):
+        obj = context.object
+        if 'mol_type' in obj and obj['mol_type'] == 'EMITTER':
+            return True
+        else:
+            return False
+
     def draw(self, context):
         layout = self.layout
         row = layout.row()
         row.operator("object.convert_to_geo", text="Convert to Geonodes", icon='GEOMETRY_NODES')
-        row = layout.row()
-        row.operator("object.mol_cache_global_uv", text="Cache global UVs", icon='GEOMETRY_NODES')
-        row = layout.row()
-        row.operator("object.mol_cache_active_uv", text="Cache active UVs", icon='GEOMETRY_NODES')
-        
+
+
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
     bl_label = "q3de"
@@ -482,4 +520,4 @@ def append_to_PHYSICS_PT_add_panel(self, context):
                 )
 
 
-panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel, MS_PT_MolecularCreatePanel, MS_PT_MolecularInspectPanel, MS_PT_MolecularToolsPanel, MS_PT_MolecularDonorPanel)
+panel_classes = (MS_PT_MolecularPanel,MolecularAdd, MolecularRemove, MS_PT_MolecularHelperPanel, MS_PT_MolecularCreatePanel, MS_PT_MolecularInspectPanel, MS_PT_MolecularUVToolsPanel, MS_PT_MolecularToolsPanel, MS_PT_MolecularDonorPanel)
