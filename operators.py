@@ -85,7 +85,7 @@ class MolSimulate(bpy.types.Operator):
 
         scene.frame_set(frame=scene.frame_start)
 
-        if scene.mol_timescale_active == True:
+        if scene.timescale != 1.0:
             fps = scene.render.fps * scene.timescale
         else:
             fps = scene.render.fps
@@ -110,22 +110,18 @@ class MolSimulate(bpy.types.Operator):
 class MolApplyUVcache(bpy.types.Operator):
     bl_idname = "object.mol_uv_cache_apply"
     bl_label = "Mol Apply Cached UV"
-
     uv_object_name: bpy.props.StringProperty()
 
     def execute(self, context):
         ob = bpy.data.objects[self.uv_object_name]
         obj = get_object(context, ob)
-
         print('applying uv from:', obj.name)
         psys = obj.particle_systems.active
         psys.settings.use_rotations = True
         psys.settings.angular_velocity_mode = 'RAND'
         psys.particles.foreach_set("angular_velocity", obj['uv_cache'])
         print('applied cached uv on:', psys.settings.name)
-
         return {'FINISHED'}
-
 
 class MolCacheGlobalUV(bpy.types.Operator):
     bl_idname = "object.mol_cache_global_uv"
@@ -141,7 +137,6 @@ class MolCacheGlobalUV(bpy.types.Operator):
         print('start bake global uv from:', uv_obj.name)
         psys = obj.particle_systems.active
         psys.settings.mol_bakeuv = True
-
         par_uv = []
         for par in psys.particles:
             newuv = (par.location @ uv_obj.matrix_world) - uv_obj.location
@@ -152,7 +147,6 @@ class MolCacheGlobalUV(bpy.types.Operator):
         context.object['uv_cache'] = par_uv
         context.object.particle_systems.active.settings.mol_bakeuv = True
         print('global uv cached on:', obj.name)
-
         return {'FINISHED'}
 
 
@@ -171,10 +165,7 @@ class MolCacheUV(bpy.types.Operator):
             uv_obj = get_object(context, u_obj)
         else:
             uv_obj = obj
-        #print(uv_obj)
-
         psys = obj.particle_systems.active
-
         if not uv_obj.data.uv_layers.active:
             return {'FINISHED'}
 
@@ -192,9 +183,7 @@ class MolCacheUV(bpy.types.Operator):
         ctx = bpy.context.copy()
         ctx["object"] = obj2
         bpy.ops.object.modifier_apply(ctx, modifier=mod.name)
-
         context.view_layer.update()
-
         par_uv = []
         me = obj2.data
 
@@ -301,11 +290,9 @@ class MolSimulateModal(bpy.types.Operator):
         scene = context.scene
         frame_old = scene.frame_current
         for ob in bpy.data.objects:
-            #if not 'uv_cache' in ob:
-            #    pass
             obj = get_object(context, ob)
             for psys in obj.particle_systems:
-                    if psys.settings.mol_bakeuv:
+                    if psys.settings.mol_bakeuv and 'uv_cache' in ob:
                         scene.frame_set(frame=int(psys.settings.frame_start))
                         bpy.ops.object.mol_uv_cache_apply("INVOKE_DEFAULT", uv_object_name=obj.name)
 
@@ -315,7 +302,6 @@ class MolSimulateModal(bpy.types.Operator):
         scene = context.scene
         frame_end = scene.frame_end
         frame_current = scene.frame_current
-
         if frame_current == frame_end-1:
             update_progress("finished", 1)
 
@@ -369,7 +355,7 @@ class MolSimulateModal(bpy.types.Operator):
                 for psys in obj.particle_systems:
                     if psys.settings.mol_active and len(psys.particles):
                         psys.particles.foreach_set('velocity', mol_importdata[1][i])
-                        psys.particles.foreach_set('location', mol_importdata[0][i])
+                        #psys.particles.foreach_set('location', mol_importdata[0][i])
                         i += 1
 
             scene.mol_newlink = 0
@@ -396,9 +382,8 @@ class MolSimulateModal(bpy.types.Operator):
                 print("      Total Frame      : " + str(round((blendertime + packtime + moltime) * (mol_substep + 1), 3)) + " sec")
 
                 remain = (blendertime + packtime + moltime) * (mol_substep + 1) * (float(scene.mol_old_endframe) - (framesubstep + 1.0))
-                #print("      Remaining estimated:", remain)
                 days = int(strftime('%d', gmtime(remain))) - 1
-                scene.mol_timeremain = strftime(str(days) + ' days %H hours %M mins %S secs', gmtime(remain))
+                scene.mol_timeremain = strftime(str(days) + ' d %H h %M m %S s', gmtime(remain))
                 print("      Remaining estimated:", scene.mol_timeremain)
 
         return {'PASS_THROUGH'}
