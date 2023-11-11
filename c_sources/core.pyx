@@ -68,6 +68,7 @@ cpdef init(importdata):
     cdef int i = 0
     cdef int ii = 0
     cdef int profiling = 0
+
     newlinks = 0
     totallinks = 0
     totaldeadlinks = 0
@@ -149,7 +150,6 @@ cpdef init(importdata):
             parlist[jj].mass = importdata[i + 1][4][ii]
             parlist[jj].state = importdata[i + 1][5][ii]
             parlist[jj].weak = importdata[i + 1][7][ii]
-
             parlist[jj].sys = &psys[i]
             parlist[jj].collided_with = <int *>malloc(1 * cython.sizeof(int))
             parlist[jj].collided_num = 0
@@ -175,9 +175,11 @@ cpdef init(importdata):
                         num_threads=cpunum
                         ):
             parlistcopy[i].id = parlist[i].id
-            parlistcopy[i].loc[0] = parlist[i].loc[0]
-            parlistcopy[i].loc[1] = parlist[i].loc[1]
-            parlistcopy[i].loc[2] = parlist[i].loc[2]
+            parlistcopy[i].loc = parlist[i].loc
+
+            #parlistcopy[i].loc[0] = parlist[i].loc[0]
+            #parlistcopy[i].loc[1] = parlist[i].loc[1]
+            #parlistcopy[i].loc[2] = parlist[i].loc[2]
 
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1)
 
@@ -234,7 +236,7 @@ cpdef simulate(importdata):
 
     cdef int i = 0
     cdef int ii = 0
-    cdef int profiling = 0
+    cdef int profiling = 1
     cdef float minX = INT_MAX
     cdef float minY = INT_MAX
     cdef float minZ = INT_MAX
@@ -1061,10 +1063,13 @@ cdef Node KDTree_create_tree(
         )noexcept nogil:
 
     global parnum
+
     cdef int index = 0
     cdef int len = (end - start) + 1
+
     if len <= 0:
         return kdtree.nodes[kdtree.numnodes]
+
     cdef int axis
     cdef int k = 3
     axis =  kdtree.axis[depth]
@@ -1247,6 +1252,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
     global parlist
     global parnum
     global newlinks
+
     cdef Links *link = <Links *>malloc(1 * cython.sizeof(Links))
     cdef int *neighbours = NULL
     cdef int ii = 0
