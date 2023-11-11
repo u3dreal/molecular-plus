@@ -66,7 +66,7 @@ def pack_data(context, initiate):
                     else:
                         par_mass = array.array('f',[psys.settings.mass]) * parlen
 
-                    if scene.mol_timescale_active == True:
+                    if scene.timescale != 1.0:
                         psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
                     else:
                         psys.settings.timestep = 1 / scene.render.fps
