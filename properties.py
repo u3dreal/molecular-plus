@@ -337,15 +337,10 @@ def define_props():
         update=update_parsys
     )
 
-    bpy.types.Scene.mol_timescale_active = bpy.props.BoolProperty(
-        name="mol_timescale_active",
-        description=descriptions.TIME_SCALE_ACTIVE,
-        default=False
-    )
     bpy.types.Scene.timescale = bpy.props.FloatProperty(
         name="timescale",
         description=descriptions.TIME_SCALE,
-        default=1
+        default=1.0
     )
     bpy.types.Scene.mol_substep = bpy.props.IntProperty(
         name="Substeps",
