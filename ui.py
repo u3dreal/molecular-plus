@@ -19,77 +19,51 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
         scn = context.scene
         obj = context.object
         layout = self.layout
-        box = layout.box()
-        row = box.row()
-        
-        if obj != None:
-            #row.scale_y = 0.5
-            #row.label(text = "Molecular Object : " + obj.name)
 
-            if context.object.particle_systems.active:
-                psys = get_object(context, obj).particle_systems.active
-                parcount = len(psys.particles)
+        if obj and obj.particle_systems.active:
+            box = layout.box()
+            #row = box.row()
+            psys = get_object(context, obj).particle_systems.active
+            parcount = len(psys.particles)
+
+            if not scn.mol_simrun:
                 row = box.row()
-                row.scale_y = 0.1
-                row.scale_x = 0.8
                 row.label(text = "System : " + str(parcount))
-                #row = box.row()
-                #row.scale_y = 0.1
                 row.label(text = "Total : " + str(scn.mol_parnum))
                 row.operator("object.mol_set_subs", text="", icon="FILE_REFRESH")
-
-                box = layout.box()
+            else:
                 row = box.row()
-                if not scn.mol_simrun and not psys.point_cache.is_baked:
-                    row.operator("object.mol_simulate", icon='PLAY', text="Simulate")
-                    if not psys.point_cache.info.startswith('1 frames') or psys.point_cache.info.startswith('0 frames'):
-                        row = box.row()
-                        row.operator('object.resume_sim', icon='TRACKING_FORWARDS', text="Resume")
-                        row = box.row()
-                        row.operator("object.bake_sim", icon='REC', text="Current Cache to Bake")
+                row.label(text="Remaining : " + scn.mol_timeremain)
 
-                    #row = box.row()
-                    #row.enabled = False
-                    #row.operator("object.clear_pcache", text="Free All Bakes")
-
-
-                if psys.point_cache.is_baked and not scn.mol_simrun:
-                    #row.enabled = False
-                    #row.operator("object.mol_simulate", icon='PLAY', text="Simulation baked")
-                    #row = box.row()
-                    #row.enabled = True
-                    row.operator("object.clear_pcache", icon='CANCEL', text="Free All Bakes")
-                    #row = box.row()
-                    #row.enabled = False
-                    #row.operator("ptcache.bake_from_cache", icon='REC', text="Current Cache to Bake")
-
-                if scn.mol_simrun:
-                    row.enabled = False
-                    row.operator("object.mol_simulate", icon='NONE', text="Process: " + scn.mol_timeremain + " left")
+            box = layout.box()
+            row = box.row()
+            if not scn.mol_simrun and not psys.point_cache.is_baked:
+                row.operator("object.mol_simulate", icon='PLAY', text="Simulate")
+                if not psys.point_cache.info.startswith('1 frames') or psys.point_cache.info.startswith('0 frames'):
                     row = box.row()
-                    row.operator("object.cancel_sim", icon='PAUSE', text="Pause")
+                    row.operator('object.resume_sim', icon='TRACKING_FORWARDS', text="Resume")
+                    row = box.row()
+                    row.operator("object.bake_sim", icon='REC', text="Current Cache to Bake")
 
-                row = box.row()
-                row.prop(scn,"mol_bake",text = "Bake")
-                row.prop(scn,"mol_render",text = "Render")
-                row.prop(scn, "mol_autosubsteps", text="Auto")
-                row = box.row()
-                row.prop(scn,"mol_substep", text = "Steps")
-                row.prop(scn,"mol_cpu",text = "Threads")
+            if psys.point_cache.is_baked and not scn.mol_simrun:
+                row.operator("object.clear_pcache", icon='CANCEL', text="Free All Bakes")
 
-                #row = box.row()
-                #row.prop(scn, "frame_start", text="Start")
-                #row.prop(scn, "frame_end", text="End")
-                row = box.row()
-                # row = box.row()
-                # row.enabled = scn.mol_timescale_active
-                row.prop(scn, "timescale", text="")
-                #row.alignment = 'RIGHT'
-                row.prop(scn, "mol_timescale_active", text="Custom Timescale")
-                #row.label(text="")
-                #row = box.row()
+            if scn.mol_simrun:
+                row.operator("object.cancel_sim", icon='PAUSE', text="Pause")
+
+            row = box.row()
+            row = row.split(factor=0.75, align=True)
+            row.prop(scn, "mol_substep", text="SubSteps")
+            row.prop(scn, "mol_autosubsteps", text="Auto")
+            row = box.row()
+            row.prop(scn,"mol_cpu",text = "Threads")
+            row.prop(scn, "timescale", text="Timescale")
+            row = box.row()
+            row.prop(scn, "mol_render", text="Render after Bakeing")
 
         else:
+            box = layout.box()
+            row = box.row()
             row.label(text="No Object selected")
 
             
@@ -327,7 +301,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         row.prop(psys.settings,"mol_selfcollision_active", icon = 'PHYSICS', text = "Self Collision")
         row.prop(psys.settings,"mol_othercollision_active", icon = 'PHYSICS', text = "Collision with Others")
         if psys.settings.mol_othercollision_active:
-            box.prop(psys.settings,"mol_collision_group",text = "only with:")
+            box.prop(psys.settings,"mol_collision_group",text = "Collision Group:")
         if psys.settings.mol_selfcollision_active or psys.settings.mol_othercollision_active:
             row = box.row()
             row.prop(psys.settings,"mol_friction",text = " Friction:")
@@ -343,7 +317,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         row.prop(psys.settings,"mol_other_link_active", icon = 'CONSTRAINT', text = "Link with Others at Birth")
         if psys.settings.mol_other_link_active:
             row = box.row()
-            row.prop(psys.settings,"mol_relink_group",text = "Only with:")
+            row.prop(psys.settings,"mol_relink_group",text = "Link Groups:")
 
 
         if psys.settings.mol_links_active :
@@ -451,9 +425,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         if 'uv_cache' in obj:
             row.enabled =True
             row.prop(psys.settings,"mol_bakeuv",text = "Bake UV")
-        else:
-            row.enabled = False
-            row.prop(psys.settings,"mol_bakeuv",text = "Bake UV")
+
 
 class MolecularAdd(bpy.types.Operator):
     bl_idname = "molecular_operators.molecular_add"
