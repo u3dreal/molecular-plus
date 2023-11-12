@@ -3,7 +3,7 @@ import bpy
 from . import descriptions
 
 def update_parsys(self, context):
-    retina = False
+    retina = context.preferences.addons[__package__].preferences.use_retina
     obj = context.object
     psys = obj.particle_systems.active.settings
     max_dim = max(obj.dimensions)

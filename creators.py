@@ -9,7 +9,7 @@ class MolecularGrid3d(bpy.types.Operator):
     def execute(self,  context):
 
         voxel_size = context.scene.mol_voxel_size
-        retina = False
+        retina = context.preferences.addons[__package__].preferences.use_retina
 
         for obj in context.view_layer.objects.selected:
             init = False
@@ -69,7 +69,7 @@ class MolecularGrid2d(bpy.types.Operator):
     def execute(self,  context):
 
         voxel_size = context.scene.mol_voxel_size
-        retina = False
+        retina = context.preferences.addons[__package__].preferences.use_retina
 
         for obj in context.view_layer.objects.selected:
             init = False
@@ -135,7 +135,7 @@ class MolecularEmitter(bpy.types.Operator):
 
     def execute(self,  context):
         voxel_size = context.scene.mol_voxel_size
-        retina = False
+        retina = context.preferences.addons[__package__].preferences.use_retina
 
         for obj in context.view_layer.objects.selected:
             init = False
@@ -216,7 +216,7 @@ class MolecularTape(bpy.types.Operator):
     def execute(self,  context):
 
         voxel_size = 0.1
-        retina = False
+        retina = context.preferences.addons[__package__].preferences.use_retina
 
         for obj in context.view_layer.objects.selected:
             if obj.particle_systems.active == None:
@@ -281,7 +281,7 @@ class MolecularPin(bpy.types.Operator):
     def execute(self,  context):
 
         voxel_size = 0.5
-        retina = False
+        retina = context.preferences.addons[__package__].preferences.use_retina
 
         for obj in context.view_layer.objects.selected:
             if obj.particle_systems.active == None:

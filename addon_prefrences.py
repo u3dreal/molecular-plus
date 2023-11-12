@@ -1,7 +1,7 @@
 import bpy
 from os.path import basename, dirname
 from bpy.types import AddonPreferences
-from bpy.props import IntProperty
+from bpy.props import IntProperty, BoolProperty
 
 
 class MolecularAddonPreferences(AddonPreferences):
@@ -14,10 +14,16 @@ class MolecularAddonPreferences(AddonPreferences):
         max=200
     )
 
+    use_retina: BoolProperty(
+        name='retina display',
+        default=False
+    )
+
     def draw(self, context):
         layout = self.layout
         row = layout.row()
         row.prop(self, "log_size")
+        row.prop(self, "use_retina")
 
 
 pref_classes = (MolecularAddonPreferences)
