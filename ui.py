@@ -58,8 +58,6 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
             row = box.row()
             row.prop(scn,"mol_cpu",text = "Threads")
             row.prop(scn, "timescale", text="Timescale")
-            row = box.row()
-            row.prop(scn, "mol_render", text="Render after Bakeing")
 
         else:
             box = layout.box()
@@ -196,6 +194,8 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         row.operator("object.convert_to_geo", text="Convert to Geonodes", icon='GEOMETRY_NODES')
+        row = layout.row()
+        row.prop(context.scene, "mol_render", text="Render after Bakeing")
 
 
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
