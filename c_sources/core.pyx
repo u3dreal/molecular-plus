@@ -956,20 +956,13 @@ cdef void update(data):
     global psysnum
     global psys
 
-    cdef int profiling = 1
     cdef int i = 0
     cdef int ii = 0
-
-
 
     for i in range(psysnum):
         psys[i].selfcollision_active = data[i][3]
         
         for ii in range(psys[i].parnum):
-
-            if profiling == 1:
-                print("-->start")
-                stime = clock()
 
             psys[i].particles[ii].loc[0] = data[i][0][(ii * 3)]
             psys[i].particles[ii].loc[1] = data[i][0][(ii * 3) + 1]
@@ -977,10 +970,6 @@ cdef void update(data):
             psys[i].particles[ii].vel[0] = data[i][1][(ii * 3)]
             psys[i].particles[ii].vel[1] = data[i][1][(ii * 3) + 1]
             psys[i].particles[ii].vel[2] = data[i][1][(ii * 3) + 2]
-
-            if profiling == 1:
-                print("-->part1", clock() - stime, "sec")
-                stime = clock()
 
             if psys[i].particles[ii].state == 3 and data[i][2][ii] == 3:
                 psys[i].particles[ii].state = data[i][2][ii] + 1
@@ -995,10 +984,6 @@ cdef void update(data):
                     # free(psys[i].particles[ii].neighbours)
                     psys[i].particles[ii].neighboursnum = 0
 
-            if profiling == 1:
-                print("-->part2", clock() - stime, "sec")
-                stime = clock()
-
             elif psys[i].particles[ii].state == 4 and data[i][2][ii] == 3:
                 psys[i].particles[ii].state = 4
 
@@ -1011,9 +996,6 @@ cdef void update(data):
             )
             psys[i].particles[ii].collided_num = 0
 
-            if profiling == 1:
-                print("-->end", clock() - stime, "sec")
-            
 
 
 cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):#noexcept nogil:
