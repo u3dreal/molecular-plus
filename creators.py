@@ -9,6 +9,7 @@ class MolecularGrid3d(bpy.types.Operator):
     def execute(self,  context):
 
         voxel_size = context.scene.mol_voxel_size
+        retina = False
 
         for obj in context.view_layer.objects.selected:
             init = False
@@ -28,7 +29,10 @@ class MolecularGrid3d(bpy.types.Operator):
 
             psys.grid_resolution = int(max_dim/voxel_size)
             psys.particle_size = max_dim/psys.grid_resolution/2
-            psys.display_size = psys.particle_size/2
+            if retina:
+                psys.display_size = psys.particle_size / 2
+            else:
+                psys.display_size = psys.particle_size
             psys.hexagonal_grid = context.scene.mol_hexgrid
             psys.emit_from = 'VOLUME'
             psys.distribution = 'GRID'
@@ -65,6 +69,7 @@ class MolecularGrid2d(bpy.types.Operator):
     def execute(self,  context):
 
         voxel_size = context.scene.mol_voxel_size
+        retina = False
 
         for obj in context.view_layer.objects.selected:
             init = False
@@ -86,7 +91,10 @@ class MolecularGrid2d(bpy.types.Operator):
                 max_dim = max(obj.dimensions)
                 psys.grid_resolution = int(max_dim/voxel_size)
                 psys.particle_size = max_dim/psys.grid_resolution/2
-                psys.display_size = psys.particle_size/2
+                if retina:
+                    psys.display_size = psys.particle_size / 2
+                else:
+                    psys.display_size = psys.particle_size
                 psys.hexagonal_grid = context.scene.mol_hexgrid
                 psys.emit_from = 'FACE'
                 psys.distribution = 'GRID'
@@ -127,6 +135,7 @@ class MolecularEmitter(bpy.types.Operator):
 
     def execute(self,  context):
         voxel_size = context.scene.mol_voxel_size
+        retina = False
 
         for obj in context.view_layer.objects.selected:
             init = False
@@ -147,7 +156,10 @@ class MolecularEmitter(bpy.types.Operator):
 
             psys.grid_resolution = int(max_dim/voxel_size)
             psys.particle_size = voxel_size/2
-            psys.display_size = voxel_size/4
+            if retina:
+                psys.display_size = psys.particle_size / 2
+            else:
+                psys.display_size = psys.particle_size
             psys.hexagonal_grid = context.scene.mol_hexgrid
             psys.emit_from = 'FACE'
             psys.distribution = 'RAND'
@@ -204,6 +216,7 @@ class MolecularTape(bpy.types.Operator):
     def execute(self,  context):
 
         voxel_size = 0.1
+        retina = False
 
         for obj in context.view_layer.objects.selected:
             if obj.particle_systems.active == None:
@@ -224,7 +237,10 @@ class MolecularTape(bpy.types.Operator):
                 max_dim = max(obj.dimensions)
                 psys.grid_resolution = int(max_dim/voxel_size)
                 psys.particle_size = max_dim/psys.grid_resolution/2
-                psys.display_size = psys.particle_size/2
+                if retina:
+                    psys.display_size = psys.particle_size / 2
+                else:
+                    psys.display_size = psys.particle_size
                 psys.hexagonal_grid = context.scene.mol_hexgrid
                 psys.emit_from = 'FACE'
                 psys.distribution = 'GRID'
@@ -265,6 +281,7 @@ class MolecularPin(bpy.types.Operator):
     def execute(self,  context):
 
         voxel_size = 0.5
+        retina = False
 
         for obj in context.view_layer.objects.selected:
             if obj.particle_systems.active == None:
@@ -285,7 +302,10 @@ class MolecularPin(bpy.types.Operator):
                 max_dim = max(obj.dimensions)
                 psys.grid_resolution = int(max_dim/voxel_size)
                 psys.particle_size = max_dim/psys.grid_resolution/2
-                psys.display_size = psys.particle_size/2
+                if retina:
+                    psys.display_size = psys.particle_size / 2
+                else:
+                    psys.display_size = psys.particle_size
                 psys.hexagonal_grid = context.scene.mol_hexgrid
                 psys.emit_from = 'VERT'
                 psys.normal_factor = 0.0
