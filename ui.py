@@ -195,7 +195,7 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
         row = layout.row()
         row.operator("object.convert_to_geo", text="Convert to Geonodes", icon='GEOMETRY_NODES')
         row = layout.row()
-        row.prop(context.scene, "mol_render", text="Render after Bakeing")
+        row.prop(context.scene, "mol_render", text="Render after Baking")
 
 
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
