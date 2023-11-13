@@ -101,7 +101,7 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
             row = layout.row()
             row.label(text="MolObject: " + obj.name)
             row = layout.row()
-            row.prop(psys, "mol_voxel_size", text="Voxel Size")
+            row.prop(psys, "mol_voxel_size", text="Resolution")
             if psys.distribution == 'GRID':
                 row = layout.row()
                 row.prop(psys, "grid_random", text="Random")
