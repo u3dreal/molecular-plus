@@ -22,7 +22,7 @@ class MolRemoveCollider(bpy.types.Operator):
 
 class MolSet_Substeps(bpy.types.Operator):
     bl_idname = "object.mol_set_subs"
-    bl_label = 'Set SubSteps'
+    bl_label = 'Set Substeps'
 
     def execute(self, context):
         parcount = 0
