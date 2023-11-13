@@ -15,7 +15,7 @@ class MolecularAddonPreferences(AddonPreferences):
     )
 
     use_retina: BoolProperty(
-        name='retina display',
+        name='Use correct particle size for Apple devices.',
         default=False
     )
 
