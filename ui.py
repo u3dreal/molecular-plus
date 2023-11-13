@@ -168,7 +168,7 @@ class MS_PT_MolecularUVToolsPanel(bpy.types.Panel):
         else:
             uv_obj = get_object(context, context.object)
 
-        labeltext = "baking UV from " + uv_obj.name
+        labeltext = "Bake UVs of " + uv_obj.name
         row = layout.row()
         row.label(text = labeltext)
 
