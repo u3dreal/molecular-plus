@@ -99,14 +99,25 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
         if obj['mol_type'] == 'EMITTER' or obj['mol_type'] == 'PIN':
             psys = obj.particle_systems.active.settings
             row = layout.row()
-            row.label(text="MolObject: " + obj.name)
+            row.label(text="Active Object: " + obj.name)
             row = layout.row()
             row.prop(psys, "mol_voxel_size", text="Voxel Size")
+            row.prop(psys, "size_random", text="Random")
             if psys.distribution == 'GRID':
                 row = layout.row()
-                row.prop(psys, "grid_random", text="Random")
+                #row = row.split(factor=0.15, align=True)
+                row.label(text="Grid: ")
                 row = layout.row()
-                row.prop(psys, "hexagonal_grid", text="Hexa Grid")
+                row.prop(psys, "hexagonal_grid", text="Hex")
+                row.prop(psys, "grid_random", text="Random")
+            row = layout.row()
+            row.label(text="Interaction: ")
+            row = layout.row()
+            row.prop(psys, "mol_selfcollision_active", icon = 'PROP_ON', text="")
+            row.prop(psys, "mol_othercollision_active", icon='PIVOT_ACTIVE', text="")
+            row.prop(psys, "mol_links_active", icon='CON_TRACKTO', text="")
+            row.prop(psys, "mol_other_link_active", icon='GROUP_VERTEX', text="")
+
 
 class MS_PT_MolecularCreatePanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
@@ -131,7 +142,7 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         row.operator("molecular_operators.molecular_makeemitter", icon = 'MOD_PARTICLE_INSTANCE',text = "Emitter")
-        row.operator("molecular_operators.molecular_makegrid2d", icon = 'GRID',text = "2D Grid")
+        row.operator("molecular_operators.molecular_makegrid2d", icon = 'LIGHTPROBE_GRID',text = "2D Grid")
         row = layout.row()
         row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
         row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
@@ -200,35 +211,30 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
 
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
-    bl_label = "q3de"
+    bl_label = "Support"
     bl_idname = "OBJECT_PT_molecular_donations"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Molecular+"
-    bl_options = {'DEFAULT_CLOSED'}
+    bl_options = {'HEADER_LAYOUT_EXPAND'}
 
     def draw(self, context):
 
         layout = self.layout
         box = layout.box()
+        #row = box.row()
+        #row.alignment = 'CENTER'
+        #row.label(text = "Support the Development")
         row = box.row()
-        box.active = True
-        row.alignment = 'CENTER'
-        row.label(text = "If you like it")
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.label(text = "Support the Development")
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.operator("wm.url_open", text=" click here to Donate ", icon='URL').url = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA"
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.label(text = "or visit")
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.operator("wm.url_open", text=" q3de.com ", icon='URL').url = "http://www.q3de.com/research/molecular"
-        #row.label(text = "www.q3de.com")
-        
+        #row.alignment = 'CENTER'
+        row.operator("wm.url_open", text=" Donate ", icon='URL').url = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA"
+        #row = box.row()
+        #row.alignment = 'CENTER'
+        row.operator("wm.url_open", text=" Discord ", icon='URL').url = "https://discord.com/invite/tAwvNEAfA3"
+        #row = box.row()
+        #row.alignment = 'CENTER'
+        row.operator("wm.url_open", text=" q3de ", icon='URL').url = "http://www.q3de.com/research/molecular"
+
 class MS_PT_MolecularPanel(bpy.types.Panel):
     """Creates a Panel in the Physics properties window"""
     bl_label = "Molecular"
