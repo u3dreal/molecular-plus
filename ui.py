@@ -53,7 +53,7 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
 
             row = box.row()
             row = row.split(factor=0.75, align=True)
-            row.prop(scn, "mol_substep", text="SubSteps")
+            row.prop(scn, "mol_substep", text="Substeps")
             row.prop(scn, "mol_autosubsteps", text="Auto")
             row = box.row()
             row.prop(scn,"mol_cpu",text = "Threads")
@@ -101,7 +101,7 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
             row = layout.row()
             row.label(text="MolObject: " + obj.name)
             row = layout.row()
-            row.prop(psys, "mol_voxel_size", text="Voxel Size")
+            row.prop(psys, "mol_voxel_size", text="Resolution")
             if psys.distribution == 'GRID':
                 row = layout.row()
                 row.prop(psys, "grid_random", text="Random")
@@ -168,7 +168,7 @@ class MS_PT_MolecularUVToolsPanel(bpy.types.Panel):
         else:
             uv_obj = get_object(context, context.object)
 
-        labeltext = "baking UV from " + uv_obj.name
+        labeltext = "Bake UVs of " + uv_obj.name
         row = layout.row()
         row.label(text = labeltext)
 
@@ -195,7 +195,7 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
         row = layout.row()
         row.operator("object.convert_to_geo", text="Convert to Geonodes", icon='GEOMETRY_NODES')
         row = layout.row()
-        row.prop(context.scene, "mol_render", text="Render after Bakeing")
+        row.prop(context.scene, "mol_render", text="Render after Baking")
 
 
 class MS_PT_MolecularDonorPanel(bpy.types.Panel):
