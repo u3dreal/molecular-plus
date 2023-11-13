@@ -53,7 +53,7 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
 
             row = box.row()
             row = row.split(factor=0.75, align=True)
-            row.prop(scn, "mol_substep", text="SubSteps")
+            row.prop(scn, "mol_substep", text="Substeps")
             row.prop(scn, "mol_autosubsteps", text="Auto")
             row = box.row()
             row.prop(scn,"mol_cpu",text = "Threads")
