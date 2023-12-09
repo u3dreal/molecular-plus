@@ -182,7 +182,11 @@ class MolCacheUV(bpy.types.Operator):
 
         ctx = bpy.context.copy()
         ctx["object"] = obj2
-        bpy.ops.object.modifier_apply(ctx, modifier=mod.name)
+        if bpy.app.version[0] == 4:
+            with context.temp_override(**ctx):
+                bpy.ops.object.modifier_apply(modifier=mod.name)
+        else:
+            bpy.ops.object.modifier_apply(ctx, modifier=mod.name)
         context.view_layer.update()
         par_uv = []
         me = obj2.data
@@ -469,13 +473,17 @@ class MolBakeCache(bpy.types.Operator):
     bl_label = "Bake Particle Simulation"
 
     def execute(self, context):
-        fake_context = context.copy()
+        context_override = context.copy()
         for ob in bpy.data.objects:
             obj = get_object(context, ob)
             for psys in obj.particle_systems:
                 if psys.settings.mol_active and len(psys.particles):
-                    fake_context["point_cache"] = psys.point_cache
-                    bpy.ops.ptcache.bake_from_cache(fake_context)
+                    context_override["point_cache"] = psys.point_cache
+                    if bpy.app.version[0] == 4:
+                        with context.temp_override(**context_override):
+                            bpy.ops.ptcache.bake_from_cache()
+                    else:
+                        bpy.ops.ptcache.bake_from_cache(context_override)
         return {'FINISHED'}
 
 class MolResumeSim(bpy.types.Operator):

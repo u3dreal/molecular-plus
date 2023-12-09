@@ -142,7 +142,10 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         row.operator("molecular_operators.molecular_makeemitter", icon = 'MOD_PARTICLE_INSTANCE',text = "Emitter")
-        row.operator("molecular_operators.molecular_makegrid2d", icon = 'LIGHTPROBE_GRID',text = "2D Grid")
+        if bpy.app.version[0] == 4:
+            row.operator("molecular_operators.molecular_makegrid2d", icon='LIGHTPROBE_VOLUME', text="2D Grid")
+        else:
+            row.operator("molecular_operators.molecular_makegrid2d", icon = 'LIGHTPROBE_GRID',text = "2D Grid")
         row = layout.row()
         row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
         row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
@@ -163,15 +166,17 @@ class MS_PT_MolecularUVToolsPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         obj = context.object
-        if 'mol_type' in obj and obj['mol_type'] == 'EMITTER':
-            return True
+        if obj and 'mol_type' in obj:
+            if obj['mol_type'] == 'EMITTER':
+                return True
+            else:
+                return False
         else:
             return False
-
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-        row.operator("object.mol_cache_global_uv", text="Cache global UVs", icon='GEOMETRY_NODES')
+        row.operator("object.mol_cache_global_uv", text="Cache Object UVs", icon='GEOMETRY_NODES')
         row = layout.row()
         row.operator("object.mol_cache_active_uv", text="Cache active UVs", icon='GEOMETRY_NODES')
         if len(context.view_layer.objects.selected) == 2:
@@ -196,8 +201,11 @@ class MS_PT_MolecularToolsPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         obj = context.object
-        if 'mol_type' in obj and obj['mol_type'] == 'EMITTER':
-            return True
+        if obj and 'mol_type' in obj:
+            if obj['mol_type'] == 'EMITTER':
+                return True
+            else:
+                return False
         else:
             return False
 
