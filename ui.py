@@ -54,10 +54,10 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
             row = box.row()
             row = row.split(factor=0.75, align=True)
             row.prop(scn, "mol_substep", text="SubSteps")
-            row.prop(scn, "mol_autosubsteps", text="Auto")
+            row.prop(scn, "mol_autosubsteps", text="Auto", toggle = 1)
             row = box.row()
             row.prop(scn,"mol_cpu",text = "Threads")
-            row.prop(scn, "timescale", text="Timescale")
+            row.prop(scn, "timescale", text="Timescale", slider=True)
 
         else:
             box = layout.box()
@@ -100,14 +100,18 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
             psys = obj.particle_systems.active.settings
             row = layout.row()
             row.label(text="Active Object: " + obj.name)
-            row = layout.row()
+            box = layout.box()
+            row = box.row()
             row.prop(psys, "mol_voxel_size", text="Voxel Size")
+            row = box.row()
             row.prop(psys, "size_random", text="Random")
             if psys.distribution == 'GRID':
                 row = layout.row()
                 #row = row.split(factor=0.15, align=True)
                 row.label(text="Grid: ")
-                row = layout.row()
+                box = layout.box()
+                row = box.row()
+                row = row.split(factor=0.3, align=True)
                 row.prop(psys, "hexagonal_grid", text="Hex")
                 row.prop(psys, "grid_random", text="Random")
             row = layout.row()
