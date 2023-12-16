@@ -227,20 +227,11 @@ class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     bl_options = {'HEADER_LAYOUT_EXPAND'}
 
     def draw(self, context):
-
         layout = self.layout
         box = layout.box()
-        #row = box.row()
-        #row.alignment = 'CENTER'
-        #row.label(text = "Support the Development")
         row = box.row()
-        #row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" Donate ", icon='URL').url = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA"
-        #row = box.row()
-        #row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" Discord ", icon='URL').url = "https://discord.com/invite/tAwvNEAfA3"
-        #row = box.row()
-        #row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" q3de ", icon='URL').url = "http://www.q3de.com/research/molecular"
 
 class MS_PT_MolecularPanel(bpy.types.Panel):
