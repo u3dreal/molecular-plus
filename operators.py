@@ -1,6 +1,5 @@
 import bpy
 import blf
-import numpy as np
 import math
 
 from mathutils import Vector
@@ -503,10 +502,20 @@ class MolToolsConvertGeo(bpy.types.Operator):
 
     def add_nodetree(self,context, node_tree):
         out_node = node_tree.nodes["Group Output"]
+        out_node.location.x += 400
+
         in_node = node_tree.nodes['Group Input']
+        node_tree.inputs.new(type='NodeSocketMaterial', name="Material")
+
         mesh2points = node_tree.nodes.new(type="GeometryNodeMeshToPoints")
+
+        setMaterial = node_tree.nodes.new(type="GeometryNodeSetMaterial")
+        setMaterial.location.x += 200
+
         node_tree.links.new(in_node.outputs['Geometry'], mesh2points.inputs['Mesh'])
-        node_tree.links.new(mesh2points.outputs['Points'], out_node.inputs['Geometry'])
+        node_tree.links.new(mesh2points.outputs['Points'], setMaterial.inputs['Geometry'])
+        node_tree.links.new(setMaterial.outputs['Geometry'], out_node.inputs['Geometry'])
+        node_tree.links.new(setMaterial.inputs['Material'], in_node.outputs['Material'])
 
     def execute(self, context):
         obj = context.object
