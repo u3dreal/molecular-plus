@@ -17,6 +17,7 @@ class MolRemoveCollider(bpy.types.Operator):
 
     def execute(self, context):
         bpy.ops.object.modifier_remove(modifier='Collision')
+        context.object['mol_type'] = None
 
         return {'FINISHED'}
 

@@ -76,7 +76,7 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         obj = context.object
-        if obj and 'mol_type' in obj:
+        if obj and 'mol_type' in obj and obj['mol_type'] != None:
             return True
         else:
             return False
@@ -135,7 +135,7 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
     def poll(cls, context):
         obj = context.object
         if obj and obj.type == 'MESH':
-            if 'mol_type' in obj:
+            if 'mol_type' in obj and obj['mol_type'] != None:
                 return False
             else:
                 return True
