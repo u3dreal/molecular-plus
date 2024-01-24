@@ -4,7 +4,7 @@ from . import bl_info
 
 class MS_PT_MolecularHelperPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
-    bl_label = "Molecular+     v"  + str(bl_info['version']).replace('(','').replace(')','').replace(',','.')
+    bl_label = "Molecular+     v" + '.'.join(map(str, bl_info['version']))
     bl_idname = "OBJECT_PT_molecular_helper"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
