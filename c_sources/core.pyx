@@ -5,15 +5,12 @@
 #cython: language_level=3
 #cython: cpow=True
 
-# NOTE: order of slow fonction to be optimize/multithreaded:
+# NOTE: order of slow functions to be optimize/multithreaded:
 # kdtreesearching, kdtreecreating, linksolving
 
 
 cimport cython
-try:
-    from time import process_time as clock
-except ImportError:
-    from time import clock
+from time import process_time as clock
 from cython.parallel import parallel, prange, threadid
 from libc.stdlib cimport malloc, realloc, free, rand, srand, abs
 
@@ -137,6 +134,7 @@ cpdef init(importdata):
         psys[i].link_friction = importdata[i + 1][6][44]
         psys[i].link_group = importdata[i + 1][6][45]
         psys[i].other_link_active = importdata[i + 1][6][46]
+        psys[i].link_rellength = importdata[i + 1][6][47]
 
         for ii in range(psys[i].parnum):
             parlist[jj].id = jj
@@ -204,12 +202,20 @@ cpdef init(importdata):
                         num_threads=cpunum
                         ):
             if parlist[i].sys.links_active == 1:
-                KDTree_rnn_query(
-                    kdtree,
-                    &parlist[i],
-                    parlist[i].loc,
-                    parlist[i].sys.link_length
-                )
+                if parlist[i].sys.link_rellength == 1:
+                    KDTree_rnn_query(
+                        kdtree,
+                        &parlist[i],
+                        parlist[i].loc,
+                        parlist[i].size * parlist[i].sys.link_length
+                    )
+                else:
+                    KDTree_rnn_query(
+                        kdtree,
+                        &parlist[i],
+                        parlist[i].loc,
+                        parlist[i].sys.link_length
+                    )
 
     for i in range(parnum):
         create_link(parlist[i].id, parlist[i].sys.link_max)
@@ -974,13 +980,20 @@ cdef void update(data):
             if psys[i].particles[ii].state == 3 and data[i][2][ii] == 3:
                 psys[i].particles[ii].state = data[i][2][ii] + 1
                 if psys[i].links_active == 1:
-                    KDTree_rnn_query(
-                        kdtree,
-                        &psys[i].particles[ii],
-                        psys[i].particles[ii].loc,
-                        #psys[i].particles[ii].sys.link_length
-                        psys[i].particles[ii].size * psys[i].particles[ii].sys.link_length
-                    )
+                    if psys[i].link_rellength == 1:
+                        KDTree_rnn_query(
+                            kdtree,
+                            &psys[i].particles[ii],
+                            psys[i].particles[ii].loc,
+                            psys[i].particles[ii].size * psys[i].particles[ii].sys.link_length
+                        )
+                    else:
+                        KDTree_rnn_query(
+                            kdtree,
+                            &psys[i].particles[ii],
+                            psys[i].particles[ii].loc,
+                            psys[i].particles[ii].sys.link_length
+                        )
                     create_link(psys[i].particles[ii].id, psys[i].link_max)
                     # free(psys[i].particles[ii].neighbours)
                     psys[i].particles[ii].neighboursnum = 0
@@ -1463,6 +1476,7 @@ cdef struct ParSys:
     float collision_damp
     int links_active
     float link_length
+    int link_rellength
     int link_max
     float link_tension
     float link_tensionrand

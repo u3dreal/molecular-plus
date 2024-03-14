@@ -332,7 +332,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
         if psys.settings.mol_links_active :
             row = box.row()
             row.prop(psys.settings,"mol_link_length",text = "Search Distance")
-            #row.prop(psys.settings,"mol_link_rellength",text = "Relative")
+            row.prop(psys.settings,"mol_link_rellength",text = "Relative")
 
             row = box.row()
             row.prop(psys.settings,"mol_link_max",text = "Max links")
