@@ -34,9 +34,9 @@ def get_size_map(obj, psys, par_size):
     for i in range(parlen):
         newuv = (psys.particles[i].location + texm_offset) @ obj.matrix_world * texm_scale
         if tex.use_color_ramp:
-            par_size[i] = colramp.evaluate(tex.evaluate(newuv).w)[0] * psys.particles[i].size
+            par_size[i] = colramp.evaluate(tex.evaluate(newuv).w)[0] * (psys.particles[i].size *2)
         else:
-            par_size[i] = tex.evaluate(newuv).w * psys.particles[i].size
+            par_size[i] = tex.evaluate(newuv).w * (psys.particles[i].size * 2)
 
     print('Sizemap baked on:', psys.settings.name)
 
