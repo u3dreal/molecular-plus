@@ -3,10 +3,9 @@ import array
 import numpy as np
 from .utils import get_object
 
-def get_weak_map(obj, psys):
+def get_weak_map(obj, psys, par_weak):
     print('start bake weakmap from:', obj.name)
 
-    par_weak = array.array('f',[0]) * len(psys.particles)
     tex = psys.settings.texture_slots[0].texture
     texm_offset = psys.settings.texture_slots[0].offset
     texm_scale = psys.settings.texture_slots[0].scale
@@ -22,7 +21,25 @@ def get_weak_map(obj, psys):
 
     print('Weakmap baked on:', psys.settings.name)
 
-    return par_weak
+
+def get_size_map(obj, psys, par_size):
+    print('start bake sizemap from:', obj.name)
+
+    tex = psys.settings.texture_slots[0].texture
+    texm_offset = psys.settings.texture_slots[0].offset
+    texm_scale = psys.settings.texture_slots[0].scale
+    parlen = len(psys.particles)
+    colramp = tex.color_ramp
+
+    for i in range(parlen):
+        newuv = (psys.particles[i].location + texm_offset) @ obj.matrix_world * texm_scale
+        if tex.use_color_ramp:
+            par_size[i] = colramp.evaluate(tex.evaluate(newuv).w)[0] * psys.particles[i].size
+        else:
+            par_size[i] = tex.evaluate(newuv).w * psys.particles[i].size
+
+    print('Sizemap baked on:', psys.settings.name)
+
 
 def pack_data(context, initiate):
     psyslen = 0
@@ -45,6 +62,7 @@ def pack_data(context, initiate):
                 par_size = array.array('f', [0]) * parlen
                 par_alive = array.array('h', [0]) * parlen
 
+
                 parnum += parlen
 
                 psys.particles.foreach_get('location', par_loc)
@@ -53,12 +71,19 @@ def pack_data(context, initiate):
 
                 if initiate:
                     par_mass = array.array('f',[0]) * parlen
-                    psys.particles.foreach_get('size', par_size)
 
-                    if psys.settings.mol_bake_weak_map:
-                        par_weak = get_weak_map(obj, psys)
+                    #use texture in slot 0 for particle size
+                    if psys.settings.texture_slots[0].use_map_size:
+                        get_size_map(obj, psys, par_size)
                     else:
-                        par_weak = array.array('f',[1.0]) * parlen
+                        psys.particles.foreach_get('size', par_size)
+
+                    #use texture in slot 0 for particle weak
+                    par_weak = array.array('f',[1.0]) * parlen
+                    if psys.settings.mol_bake_weak_map:
+                        get_weak_map(obj, psys, par_weak)
+
+
 
                     if psys.settings.mol_density_active:
                         par_mass_np = np.asarray(par_mass)
