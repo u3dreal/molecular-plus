@@ -11,10 +11,14 @@ def get_weak_map(obj, psys):
     texm_offset = psys.settings.texture_slots[0].offset
     texm_scale = psys.settings.texture_slots[0].scale
     parlen = len(psys.particles)
+    colramp = tex.color_ramp
 
     for i in range(parlen):
         newuv = (psys.particles[i].location + texm_offset) @ obj.matrix_world * texm_scale
-        par_weak[i] = tex.evaluate(newuv).w
+        if tex.use_color_ramp:
+            par_weak[i] = colramp.evaluate(tex.evaluate(newuv).w)[0]
+        else:
+            par_weak[i] = tex.evaluate(newuv).w
 
     print('Weakmap baked on:', psys.settings.name)
 
