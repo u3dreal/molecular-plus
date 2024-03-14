@@ -978,7 +978,8 @@ cdef void update(data):
                         kdtree,
                         &psys[i].particles[ii],
                         psys[i].particles[ii].loc,
-                        psys[i].particles[ii].sys.link_length
+                        #psys[i].particles[ii].sys.link_length
+                        psys[i].particles[ii].size * psys[i].particles[ii].sys.link_length
                     )
                     create_link(psys[i].particles[ii].id, psys[i].link_max)
                     # free(psys[i].particles[ii].neighbours)

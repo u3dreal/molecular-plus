@@ -15,31 +15,11 @@ def get_weak_map(obj, psys, par_weak):
     for i in range(parlen):
         newuv = (psys.particles[i].location + texm_offset) @ obj.matrix_world * texm_scale
         if tex.use_color_ramp:
-            par_weak[i] = colramp.evaluate(tex.evaluate(newuv).w)[0]
+            par_weak[i] = colramp.evaluate(tex.evaluate(newuv)[0])[0]
         else:
-            par_weak[i] = tex.evaluate(newuv).w
+            par_weak[i] = tex.evaluate(newuv)[0]
 
     print('Weakmap baked on:', psys.settings.name)
-
-
-def get_size_map(obj, psys, par_size):
-    print('start bake sizemap from:', obj.name)
-
-    tex = psys.settings.texture_slots[0].texture
-    texm_offset = psys.settings.texture_slots[0].offset
-    texm_scale = psys.settings.texture_slots[0].scale
-    parlen = len(psys.particles)
-    colramp = tex.color_ramp
-
-    for i in range(parlen):
-        newuv = (psys.particles[i].location + texm_offset) @ obj.matrix_world * texm_scale
-        if tex.use_color_ramp:
-            par_size[i] = colramp.evaluate(tex.evaluate(newuv).w)[0] * (psys.particles[i].size *2)
-        else:
-            par_size[i] = tex.evaluate(newuv).w * (psys.particles[i].size * 2)
-
-    print('Sizemap baked on:', psys.settings.name)
-
 
 def pack_data(context, initiate):
     psyslen = 0
@@ -72,11 +52,7 @@ def pack_data(context, initiate):
                 if initiate:
                     par_mass = array.array('f',[0]) * parlen
 
-                    #use texture in slot 0 for particle size
-                    if psys.settings.texture_slots[0].use_map_size:
-                        get_size_map(obj, psys, par_size)
-                    else:
-                        psys.particles.foreach_get('size', par_size)
+                    psys.particles.foreach_get('size', par_size)
 
                     #use texture in slot 0 for particle weak
                     par_weak = array.array('f',[1.0]) * parlen
@@ -132,10 +108,10 @@ def pack_data(context, initiate):
                     params[4] = psys.settings.mol_collision_damp
                     params[5] = psys.settings.mol_links_active
 
-                    if psys.settings.mol_link_rellength:
-                        params[6] = psys.settings.particle_size * psys.settings.mol_link_length
-                    else:
-                        params[6] = psys.settings.mol_link_length
+                    #if psys.settings.mol_link_rellength:
+                    #    params[6] = psys.settings.particle_size * psys.settings.mol_link_length
+                    #else:
+                    params[6] = psys.settings.mol_link_length
 
                     params[7] = psys.settings.mol_link_max
                     params[8] = psys.settings.mol_link_tension
