@@ -528,6 +528,8 @@ class MolToolsConvertGeo(bpy.types.Operator):
         bpy.ops.object.editmode_toggle()
         bpy.ops.object.modifier_add(type='PARTICLE_INSTANCE')
         bpy.context.object.modifiers["ParticleInstance"].object = obj
+        bpy.context.object.modifiers["ParticleInstance"].show_dead = False
+        bpy.context.object.modifiers["ParticleInstance"].show_unborn = False
 
         bpy.ops.node.new_geometry_nodes_modifier()
 
