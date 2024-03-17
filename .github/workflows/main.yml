@@ -5,13 +5,12 @@ name: Molecular plus
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build_windows:
-
     runs-on: windows-latest
 
     steps:
@@ -33,7 +32,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
-        run: echo "::set-output name=version::$(python pack_molecular.py)"
+        run: echo "version=$(python pack_molecular.py)" >> "$GITHUB_OUTPUT"
       - name: Upload windows zip
         uses: actions/upload-artifact@v2
         with:
@@ -41,7 +40,6 @@ jobs:
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_win.zip
 
   build_linux:
-
     runs-on: ubuntu-20.04
 
     steps:
@@ -62,7 +60,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
-        run: echo "version=$(python pack_molecular.py)" >> $GITHUB_OUTPUT
+        run: echo "version=$(python pack_molecular.py)" >> "$GITHUB_OUTPUT"
       - name: Upload linux zip
         uses: actions/upload-artifact@v2
         with:
@@ -70,7 +68,6 @@ jobs:
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_linux.zip
 
   build_macos:
-
     runs-on: macos-11
     outputs:
       version: ${{steps.build.outputs.version}}
@@ -93,7 +90,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
-        run: echo "version=$(python pack_molecular.py)" >> $GITHUB_OUTPUT
+        run: echo "version=$(python pack_molecular.py)" >> "$GITHUB_OUTPUT"
       - name: Upload mac zip
         uses: actions/upload-artifact@v2
         with:
