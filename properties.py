@@ -97,7 +97,7 @@ def define_props():
     )
     parset.mol_link_length = bpy.props.FloatProperty(
         name="Search Distance", description=descriptions.LINK_LENGTH,
-        min=0, precision=6, default=1
+        min=0, precision=2, default=1
     )
     parset.mol_link_tension = bpy.props.FloatProperty(
         name="Tension", description=descriptions.LINK_TENSION,
