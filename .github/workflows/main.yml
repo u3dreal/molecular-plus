@@ -40,6 +40,37 @@ jobs:
           name: molecular-plus_${{steps.build.outputs.version}}_310_win.zip
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_win.zip
 
+  build_windows41:
+
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.11.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11.6
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest cython
+          # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --exit-zero --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Build with Cython
+        id: build
+        run: echo "::set-output name=version::$(python pack_molecular.py)"
+      - name: Upload windows zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: molecular-plus_${{steps.build.outputs.version}}_311_win.zip
+          path: ./molecular-plus_${{steps.build.outputs.version}}_311_win.zip
+
+
   build_linux:
 
     runs-on: ubuntu-20.04
@@ -62,12 +93,41 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
-        run: echo "version=$(python pack_molecular.py)" >> $GITHUB_OUTPUT
+        run: echo "::set-output name=version::$(python pack_molecular.py)"
       - name: Upload linux zip
         uses: actions/upload-artifact@v2
         with:
           name: molecular-plus_${{steps.build.outputs.version}}_310_linux.zip
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_linux.zip
+
+  build_linux41:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.11.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11.6
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest cython
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --exit-zero --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Build with Cython
+        id: build
+        run: echo "::set-output name=version::$(python pack_molecular.py)"
+      - name: Upload linux zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: molecular-plus_${{steps.build.outputs.version}}_311_linux.zip
+          path: ./molecular-plus_${{steps.build.outputs.version}}_311_linux.zip
 
   build_macos:
 
@@ -93,9 +153,40 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
-        run: echo "version=$(python pack_molecular.py)" >> $GITHUB_OUTPUT
+        run: echo "::set-output name=version::$(python pack_molecular.py)"
       - name: Upload mac zip
         uses: actions/upload-artifact@v2
         with:
           name: molecular-plus_${{steps.build.outputs.version}}_310_macos.zip
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_macos.zip
+
+  build_macos41:
+
+    runs-on: macos-11
+    outputs:
+      version: ${{steps.build.outputs.version}}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.11.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11.6
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest cython
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --exit-zero --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Build with Cython
+        id: build
+        run: echo "::set-output name=version::$(python pack_molecular.py)"
+      - name: Upload mac zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: molecular-plus_${{steps.build.outputs.version}}_311_macos.zip
+          path: ./molecular-plus_${{steps.build.outputs.version}}_311_macos.zip
