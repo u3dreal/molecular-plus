@@ -85,7 +85,7 @@ cpdef init(importdata):
     for i in range(psysnum):
         psys[i].id = i
         psys[i].parnum = importdata[i + 1][0]
-        #psys[i].particles = <Particle *>malloc(psys[i].parnum * cython.sizeof(Particle))
+        psys[i].particles = <Particle *>malloc(psys[i].parnum * cython.sizeof(Particle))
         psys[i].particles = &parlist[jj]
         psys[i].selfcollision_active = importdata[i + 1][6][0]
         psys[i].othercollision_active = importdata[i + 1][6][1]
