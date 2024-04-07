@@ -1,18 +1,17 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Molecular plus
+name: Build release all
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build_windows:
-
     runs-on: windows-latest
 
     steps:
@@ -42,7 +41,6 @@ jobs:
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_win.zip
 
   build_windows41:
-
     runs-on: windows-latest
 
     steps:
@@ -71,9 +69,7 @@ jobs:
           name: molecular-plus_${{steps.build.outputs.version}}_311_win.zip
           path: ./molecular-plus_${{steps.build.outputs.version}}_311_win.zip
 
-
   build_linux:
-
     runs-on: ubuntu-20.04
 
     steps:
@@ -102,7 +98,6 @@ jobs:
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_linux.zip
 
   build_linux41:
-
     runs-on: ubuntu-20.04
 
     steps:
@@ -131,7 +126,6 @@ jobs:
           path: ./molecular-plus_${{steps.build.outputs.version}}_311_linux.zip
 
   build_macos:
-
     runs-on: macos-11
     outputs:
       version: ${{steps.build.outputs.version}}
@@ -162,7 +156,6 @@ jobs:
           path: ./molecular-plus_${{steps.build.outputs.version}}_310_macos.zip
 
   build_macos41:
-
     runs-on: macos-11
     outputs:
       version: ${{steps.build.outputs.version}}
