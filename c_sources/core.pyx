@@ -5,12 +5,15 @@
 #cython: language_level=3
 #cython: cpow=True
 
-# NOTE: order of slow functions to be optimize/multithreaded:
+# NOTE: order of slow fonction to be optimize/multithreaded:
 # kdtreesearching, kdtreecreating, linksolving
 
 
 cimport cython
-from time import process_time as clock
+try:
+    from time import process_time as clock
+except ImportError:
+    from time import clock
 from cython.parallel import parallel, prange, threadid
 from libc.stdlib cimport malloc, realloc, free, rand, srand, abs
 
@@ -44,7 +47,7 @@ cdef Particle *parlist = NULL
 cdef SParticle *parlistcopy = NULL
 cdef ParSys *psys = NULL
 cdef KDTree *kdtree = NULL
-print("cmolcore imported  v1.15.0")
+print("cmolcore imported  v1.14.1")
 
 
 cpdef init(importdata):
@@ -201,12 +204,13 @@ cpdef init(importdata):
                         num_threads=cpunum
                         ):
             if parlist[i].sys.links_active == 1:
-                 KDTree_rnn_query(
+                KDTree_rnn_query(
                     kdtree,
                     &parlist[i],
                     parlist[i].loc,
                     parlist[i].sys.link_length
                 )
+
     for i in range(parnum):
         create_link(parlist[i].id, parlist[i].sys.link_max)
         if parlist[i].neighboursnum > 1:

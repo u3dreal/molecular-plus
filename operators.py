@@ -1,5 +1,6 @@
 import bpy
 import blf
+import numpy as np
 import math
 
 from mathutils import Vector
@@ -16,7 +17,6 @@ class MolRemoveCollider(bpy.types.Operator):
 
     def execute(self, context):
         bpy.ops.object.modifier_remove(modifier='Collision')
-        del context.object['mol_type']
 
         return {'FINISHED'}
 
@@ -502,20 +502,10 @@ class MolToolsConvertGeo(bpy.types.Operator):
 
     def add_nodetree(self,context, node_tree):
         out_node = node_tree.nodes["Group Output"]
-        out_node.location.x += 400
-
         in_node = node_tree.nodes['Group Input']
-        node_tree.inputs.new(type='NodeSocketMaterial', name="Material")
-
         mesh2points = node_tree.nodes.new(type="GeometryNodeMeshToPoints")
-
-        setMaterial = node_tree.nodes.new(type="GeometryNodeSetMaterial")
-        setMaterial.location.x += 200
-
         node_tree.links.new(in_node.outputs['Geometry'], mesh2points.inputs['Mesh'])
-        node_tree.links.new(mesh2points.outputs['Points'], setMaterial.inputs['Geometry'])
-        node_tree.links.new(setMaterial.outputs['Geometry'], out_node.inputs['Geometry'])
-        node_tree.links.new(setMaterial.inputs['Material'], in_node.outputs['Material'])
+        node_tree.links.new(mesh2points.outputs['Points'], out_node.inputs['Geometry'])
 
     def execute(self, context):
         obj = context.object
@@ -528,8 +518,6 @@ class MolToolsConvertGeo(bpy.types.Operator):
         bpy.ops.object.editmode_toggle()
         bpy.ops.object.modifier_add(type='PARTICLE_INSTANCE')
         bpy.context.object.modifiers["ParticleInstance"].object = obj
-        bpy.context.object.modifiers["ParticleInstance"].show_dead = False
-        bpy.context.object.modifiers["ParticleInstance"].show_unborn = False
 
         bpy.ops.node.new_geometry_nodes_modifier()
 

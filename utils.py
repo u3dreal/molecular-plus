@@ -1,5 +1,5 @@
 import bpy
-
+#import sys
 
 def get_object(context, obj):
     depsgraph = context.evaluated_depsgraph_get()

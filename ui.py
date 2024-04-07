@@ -4,7 +4,7 @@ from . import bl_info
 
 class MS_PT_MolecularHelperPanel(bpy.types.Panel):
     """Creates a Panel in the Tool properties window"""
-    bl_label = "Molecular+     v" + '.'.join(map(str, bl_info['version']))
+    bl_label = "Molecular+     v"  + str(bl_info['version']).replace('(','').replace(')','').replace(',','.')
     bl_idname = "OBJECT_PT_molecular_helper"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -54,10 +54,10 @@ class MS_PT_MolecularHelperPanel(bpy.types.Panel):
             row = box.row()
             row = row.split(factor=0.75, align=True)
             row.prop(scn, "mol_substep", text="SubSteps")
-            row.prop(scn, "mol_autosubsteps", text="Auto", toggle = 1)
+            row.prop(scn, "mol_autosubsteps", text="Auto")
             row = box.row()
             row.prop(scn,"mol_cpu",text = "Threads")
-            row.prop(scn, "timescale", text="Timescale", slider=True)
+            row.prop(scn, "timescale", text="Timescale")
 
         else:
             box = layout.box()
@@ -100,18 +100,14 @@ class MS_PT_MolecularInspectPanel(bpy.types.Panel):
             psys = obj.particle_systems.active.settings
             row = layout.row()
             row.label(text="Active Object: " + obj.name)
-            box = layout.box()
-            row = box.row()
+            row = layout.row()
             row.prop(psys, "mol_voxel_size", text="Voxel Size")
-            row = box.row()
             row.prop(psys, "size_random", text="Random")
             if psys.distribution == 'GRID':
                 row = layout.row()
                 #row = row.split(factor=0.15, align=True)
                 row.label(text="Grid: ")
-                box = layout.box()
-                row = box.row()
-                row = row.split(factor=0.3, align=True)
+                row = layout.row()
                 row.prop(psys, "hexagonal_grid", text="Hex")
                 row.prop(psys, "grid_random", text="Random")
             row = layout.row()
@@ -231,11 +227,20 @@ class MS_PT_MolecularDonorPanel(bpy.types.Panel):
     bl_options = {'HEADER_LAYOUT_EXPAND'}
 
     def draw(self, context):
+
         layout = self.layout
         box = layout.box()
+        #row = box.row()
+        #row.alignment = 'CENTER'
+        #row.label(text = "Support the Development")
         row = box.row()
+        #row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" Donate ", icon='URL').url = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA"
+        #row = box.row()
+        #row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" Discord ", icon='URL').url = "https://discord.com/invite/tAwvNEAfA3"
+        #row = box.row()
+        #row.alignment = 'CENTER'
         row.operator("wm.url_open", text=" q3de ", icon='URL').url = "http://www.q3de.com/research/molecular"
 
 class MS_PT_MolecularPanel(bpy.types.Panel):

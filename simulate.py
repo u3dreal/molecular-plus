@@ -49,7 +49,6 @@ def pack_data(context, initiate):
 
                 if initiate:
                     par_mass = array.array('f',[0]) * parlen
-
                     psys.particles.foreach_get('size', par_size)
 
                     if psys.settings.mol_bake_weak_map:
