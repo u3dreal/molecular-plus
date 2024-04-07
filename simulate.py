@@ -42,7 +42,6 @@ def pack_data(context, initiate):
                 par_size = array.array('f', [0]) * parlen
                 par_alive = array.array('h', [0]) * parlen
 
-
                 parnum += parlen
 
                 psys.particles.foreach_get('location', par_loc)
@@ -58,8 +57,6 @@ def pack_data(context, initiate):
                     par_weak = array.array('f',[1.0]) * parlen
                     if psys.settings.mol_bake_weak_map:
                         get_weak_map(obj, psys, par_weak)
-
-
 
                     if psys.settings.mol_density_active:
                         par_mass_np = np.asarray(par_mass)
@@ -99,7 +96,7 @@ def pack_data(context, initiate):
                         psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
                         psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
 
-                    params = [0] * 48
+                    params = [0] * 47
 
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
@@ -107,7 +104,12 @@ def pack_data(context, initiate):
                     params[3] = psys.settings.mol_friction
                     params[4] = psys.settings.mol_collision_damp
                     params[5] = psys.settings.mol_links_active
-                    params[6] = psys.settings.mol_link_length
+
+                    if psys.settings.mol_link_rellength:
+                        params[6] = psys.settings.particle_size * psys.settings.mol_link_length
+                    else:
+                        params[6] = psys.settings.mol_link_length
+
                     params[7] = psys.settings.mol_link_max
                     params[8] = psys.settings.mol_link_tension
                     params[9] = psys.settings.mol_link_tensionrand
@@ -148,7 +150,6 @@ def pack_data(context, initiate):
                     params[44] = psys.settings.mol_link_friction
                     params[45] = psys.settings.mol_link_group
                     params[46] = psys.settings.mol_other_link_active
-                    params[47] = int(psys.settings.mol_link_rellength)
 
                 mol_exportdata = bpy.context.scene.mol_exportdata
 
