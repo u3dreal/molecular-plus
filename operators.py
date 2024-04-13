@@ -505,7 +505,14 @@ class MolToolsConvertGeo(bpy.types.Operator):
         out_node.location.x += 400
 
         in_node = node_tree.nodes['Group Input']
-        node_tree.inputs.new(type='NodeSocketMaterial', name="Material")
+        if bpy.app.version[0] == 4:
+            node_tree.interface.new_socket(
+                name='Material',
+                in_out='INPUT',
+                socket_type='NodeSocketMaterial',
+                )
+        else:
+            node_tree.inputs.new(type='NodeSocketMaterial', name="Material")
 
         mesh2points = node_tree.nodes.new(type="GeometryNodeMeshToPoints")
 

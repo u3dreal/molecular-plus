@@ -21,7 +21,7 @@ if is_linux:
     name = 'linux'
 elif is_windows:
     name = 'win'
-
+    
 if is_windows:
     cwd = getcwd()
     
