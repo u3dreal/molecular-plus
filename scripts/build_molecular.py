@@ -22,18 +22,19 @@ if is_linux:
 elif is_windows:
     name = 'win'
 
-if is_windows:
-    cwd = getcwd()
-else:
+if is_linux:
     chdir(getcwd() + "//c_sources")
+elif is_windows:
+    cwd = getcwd()
 
-    
     # Get the parent directory
     parent_dir = path.dirname(cwd)
 
     # Construct the path to the 'c_sources' directory
     path_to_c_sources = path.join(parent_dir, "c_sources")
     chdir(path_to_c_sources)
+else:
+    chdir(getcwd() + "//c_sources")
 
 # TODO, blenders (or a compatible) python bin needs to be in $PATH, and if you use blender's you need to copy the python includes from SVN
 # into the include folder of blenders python, too
