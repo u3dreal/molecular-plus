@@ -21,11 +21,11 @@ if is_linux:
     name = 'linux'
 elif is_windows:
     name = 'win'
-
-if is_linux:
-    chdir(getcwd() + "//c_sources")
-elif is_windows:
+    
+if is_windows:
     cwd = getcwd()
+else:
+    chdir(getcwd() + "//c_sources")
 
     # Get the parent directory
     parent_dir = path.dirname(cwd)
