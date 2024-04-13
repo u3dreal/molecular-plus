@@ -505,7 +505,7 @@ class MolToolsConvertGeo(bpy.types.Operator):
         out_node.location.x += 400
 
         in_node = node_tree.nodes['Group Input']
-        if bpy.app.version[0] == 4 and bpy.app.version[1] >= 1:
+        if bpy.app.version[0] == 4:
             node_tree.interface.new_socket(
                 name='Material',
                 in_out='INPUT',
