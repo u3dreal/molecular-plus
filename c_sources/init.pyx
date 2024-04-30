@@ -128,10 +128,6 @@ cpdef init(importdata):
 
             memcpy(parlistcopy[i].loc, parlist[i].loc, sizeof(parlist[i].loc))
 
-            # parlistcopy[i].loc[0] = parlist[i].loc[0]
-            # parlistcopy[i].loc[1] = parlist[i].loc[1]
-            # parlistcopy[i].loc[2] = parlist[i].loc[2]
-
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1)
 
     with nogil:
