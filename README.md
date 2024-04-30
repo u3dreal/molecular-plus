@@ -22,7 +22,8 @@ If you find this helpful and want to support future development please consider 
 
 [![paypal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA)
 
-![header image](https://github.com/u3dreal/molecular-plus/blob/main/doc/molecular-plus2.jpg)
+![header image](https://github.com/u3dreal/molecular-plus/blob/main/doc/molecular-3.jpg)
+image by tinkerboy123
 
 ![header image](https://github.com/u3dreal/molecular-plus/blob/main/doc/molecular-plus.png)
 
