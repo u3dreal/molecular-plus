@@ -81,7 +81,6 @@ setup(
     ext_modules=cythonize(ext_modules)
 )
 
-
 # Delete the files after the build
 if os.path.isfile('core.html'):
     os.remove('core.html')
