@@ -21,12 +21,10 @@ if is_linux:
     name = 'linux'
 elif is_windows:
     name = 'win'
-
-if is_linux:
-    chdir(getcwd() + "//c_sources")
-elif is_windows:
+    
+if is_windows:
     cwd = getcwd()
-
+    
     # Get the parent directory
     parent_dir = path.dirname(cwd)
 
@@ -77,13 +75,6 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
     #     pass
     # chdir("..")
     # chdir(getcwd() + "//c_sources")
-
-    try:
-        remove("core.html")
-        remove("core.c")
-        shutil.rmtree("build")
-    except:
-        pass
 
     chdir("..")
 
