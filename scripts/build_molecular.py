@@ -76,13 +76,6 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
     # chdir("..")
     # chdir(getcwd() + "//c_sources")
 
-    try:
-        remove("core.html")
-        remove("core.c")
-        shutil.rmtree("build")
-    except:
-        pass
-
     chdir("..")
 
 #print(version)
