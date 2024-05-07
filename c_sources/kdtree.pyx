@@ -47,7 +47,6 @@ cdef void KDTree_create_nodes(KDTree *kdtree,int parnum):#noexcept nogil:
     kdtree.thread_name = <int *>malloc(128 * cython.sizeof(int))
     kdtree.thread_parent = <int *>malloc(128 * cython.sizeof(int))
     kdtree.thread_depth = <int *>malloc(128 * cython.sizeof(int))
-    # kdtree.axis = <int *>malloc( 64 * cython.sizeof(int) )
 
     for i in range(64):
         kdtree.axis[i] = i % 3
