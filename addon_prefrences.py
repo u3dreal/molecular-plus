@@ -12,12 +12,12 @@ class MolecularAddonPreferences(AddonPreferences):
         default=25,
         min=1,
         max=200
-    )
+    ) # type: ignore
 
     use_retina: BoolProperty(
         name='retina display',
         default=False
-    )
+    ) # type: ignore
 
     def draw(self, context):
         layout = self.layout
