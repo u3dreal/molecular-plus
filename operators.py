@@ -50,7 +50,7 @@ class MolSimulate(bpy.types.Operator):
                 name="Resume bake",
                 description="Resume Sim",
                 default=False
-                )
+                ) # type: ignore
 
     def execute(self, context):
 
@@ -287,7 +287,7 @@ class MolSimulateModal(bpy.types.Operator):
     _timer = None
     _draw_handler = None
     _profiling = False
-    resume : bpy.props.BoolProperty()
+    resume : bpy.props.BoolProperty() # type: ignore
 
     def check_bake_uv(self, context):
         # bake the UV in the beginning
