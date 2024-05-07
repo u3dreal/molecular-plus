@@ -31,8 +31,6 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
         return
 
     if parothers_id == -1:
-        # KDTree_rnn_query(kdtree, &fakepar[0], par.loc, par.sys.link_length)
-        # neighbours = fakepar[0].neighbours
         neighbours = par.neighbours
         neighboursnum = par.neighboursnum
     else:
@@ -50,13 +48,9 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
             par2 = &parlist[neighbours[0]]
             tension = (par.sys.link_tension + par2.sys.link_tension) / 2
         if par.id != par2.id:
-            # arraysearch(par2.id, par.link_with, par.link_withnum)
 
             if arraysearch(par.id,par2.link_with,par2.link_withnum) == -1 and \
                     par2.state >= 3 and par.state >= 3:
-
-            #if par not in par2.link_with and par2.state <= 1 \
-            #   and par.state <= 1:
 
                 link.start = par.id
                 link.end = par2.id
@@ -78,7 +72,6 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
                         tension = ((par.sys.link_tension + par2.sys.link_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
                         srand(2)
                         link.lenght = sqrt(square_dist(par.loc,par2.loc,3)) * tension
-                        # link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                         stiffrandom = (par.sys.link_stiffrand + par2.sys.link_stiffrand) / 2 * 2
                         link.stiffness = ((par.sys.link_stiff + par2.sys.link_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
                         srand(3)
@@ -92,7 +85,6 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
                         link.edamping = ((par.sys.link_edamp + par2.sys.link_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
                         brokrandom = ((par.sys.link_brokenrand + par2.sys.link_brokenrand) / 2) * 2
                         srand(6)
-                        #link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         link.broken = ((par.weak + par2.weak) / 2) * ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         srand(7)
                         link.ebroken = ((par.weak + par2.weak) / 2) * ((par.sys.link_ebroken + par2.sys.link_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
@@ -111,7 +103,6 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
 
                         par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 2) * cython.sizeof(int))
                         newlinks += 1
-                        # free(link)
 
                 if parothers_id != -1 and par.sys.relink_group == par2.sys.relink_group:
                     srand(8)
@@ -125,7 +116,6 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
                         tension = ((par.sys.relink_tension + par2.sys.relink_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
                         srand(11)
                         link.lenght = sqrt(square_dist(par.loc,par2.loc,3)) * tension
-                        # link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                         stiffrandom = (par.sys.relink_stiffrand + par2.sys.relink_stiffrand) / 2 * 2
                         link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
                         srand(12)
@@ -152,12 +142,8 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
                         par2.link_withnum += 1
                         par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 1) * cython.sizeof(int))
                         newlinks += 1
-                        # free(link)
-    #free(neighbours)
     free(fakepar)
     free(link)
-    #free(par)
-    #free(par2)
 
 
 cdef void solve_link(Particle *par)noexcept nogil:
@@ -204,7 +190,7 @@ cdef void solve_link(Particle *par)noexcept nogil:
     cdef float *xpar1_vel = [0, 0, 0]
     cdef float *ypar2_vel = [0, 0, 0]
     cdef float *xpar2_vel = [0, 0, 0]
-    # broken_links = []
+
     if  par.state < 3:
         return
     for i in range(par.links_num):
@@ -215,23 +201,10 @@ cdef void solve_link(Particle *par)noexcept nogil:
             memcpy(Loc2, par2.loc, sizeof(par2.loc))
             memcpy(V1, par1.vel, sizeof(par1.vel))
             memcpy(V2, par2.vel, sizeof(par2.vel))
-            # Loc1[0] = par1.loc[0]
-            # Loc1[1] = par1.loc[1]
-            # Loc1[2] = par1.loc[2]
-            # Loc2[0] = par2.loc[0]
-            # Loc2[1] = par2.loc[1]
-            # Loc2[2] = par2.loc[2]
-            # V1[0] = par1.vel[0]
-            # V1[1] = par1.vel[1]
-            # V1[2] = par1.vel[2]
-            # V2[0] = par2.vel[0]
-            # V2[1] = par2.vel[1]
-            # V2[2] = par2.vel[2]
             LengthX = Loc2[0] - Loc1[0]
             LengthY = Loc2[1] - Loc1[1]
             LengthZ = Loc2[2] - Loc1[2]
             Length = sqrt(LengthX * LengthX + LengthY * LengthY + LengthZ * LengthZ)
-            # Length = (LengthX ** 2 + LengthY ** 2 + LengthZ ** 2) ** (0.5)
             if par.links[i].lenght != Length and Length != 0:
                 if par.links[i].lenght > Length:
                     stiff = par.links[i].stiffness * deltatime
@@ -271,12 +244,6 @@ cdef void solve_link(Particle *par)noexcept nogil:
                 for j in range(3):
                     par1.vel[j] += Force1[j] * ratio1
                     par2.vel[j] += Force2[j] * ratio2
-                #par1.vel[0] += Force1[0] * ratio1
-                #par1.vel[1] += Force1[1] * ratio1
-                #par1.vel[2] += Force1[2] * ratio1
-                #par2.vel[0] += Force2[0] * ratio2
-                #par2.vel[1] += Force2[1] * ratio2
-                #par2.vel[2] += Force2[2] * ratio2
 
                 normal1[0] = LengthX / Length
                 normal1[1] = LengthY / Length
@@ -295,48 +262,12 @@ cdef void solve_link(Particle *par)noexcept nogil:
                     ypar2_vel[j] = factor2 * normal2[j]
                     xpar2_vel[j] = par2.vel[j] - ypar2_vel[j]
 
-                #factor1 = dot_product(par1.vel, normal1)
-
-                #ypar1_vel[0] = factor1 * normal1[0]
-                #ypar1_vel[1] = factor1 * normal1[1]
-                #ypar1_vel[2] = factor1 * normal1[2]
-                #xpar1_vel[0] = par1.vel[0] - ypar1_vel[0]
-                #xpar1_vel[1] = par1.vel[1] - ypar1_vel[1]
-                #xpar1_vel[2] = par1.vel[2] - ypar1_vel[2]
-
-                #factor2 = dot_product(par2.vel, normal2)
-
-                #ypar2_vel[0] = factor2 * normal2[0]
-                #ypar2_vel[1] = factor2 * normal2[1]
-                #ypar2_vel[2] = factor2 * normal2[2]
-                #xpar2_vel[0] = par2.vel[0] - ypar2_vel[0]
-                #xpar2_vel[1] = par2.vel[1] - ypar2_vel[1]
-                #xpar2_vel[2] = par2.vel[2] - ypar2_vel[2]
-
                 friction1 = 1 - ((par.links[i].friction) * ratio1)
                 friction2 = 1 - ((par.links[i].friction) * ratio2)
 
                 for j in range(3):
                     par1.vel[j] = ypar1_vel[j] + ((xpar1_vel[j] * friction1) + (xpar2_vel[j] * (1 - friction1)))
                     par2.vel[j] = ypar2_vel[j] + ((xpar2_vel[j] * friction2) + (xpar1_vel[j] * (1 - friction2)))
-
-                #par1.vel[0] = ypar1_vel[0] + ((xpar1_vel[0] * friction1) + \
-                #    (xpar2_vel[0] * ( 1 - friction1)))
-
-                #par1.vel[1] = ypar1_vel[1] + ((xpar1_vel[1] * friction1) + \
-                #    (xpar2_vel[1] * ( 1 - friction1)))
-
-                #par1.vel[2] = ypar1_vel[2] + ((xpar1_vel[2] * friction1) + \
-                #    (xpar2_vel[2] * ( 1 - friction1)))
-
-                #par2.vel[0] = ypar2_vel[0] + ((xpar2_vel[0] * friction2) + \
-                #    (xpar1_vel[0] * ( 1 - friction2)))
-
-                #par2.vel[1] = ypar2_vel[1] + ((xpar2_vel[1] * friction2) + \
-                #    (xpar1_vel[1] * ( 1 - friction2)))
-
-                #par2.vel[2] = ypar2_vel[2] + ((xpar2_vel[2] * friction2) + \
-                #    (xpar1_vel[2] * ( 1 - friction2)))
 
                 if Length > (par.links[i].lenght * (1 + par.links[i].ebroken)) \
                 or Length < (par.links[i].lenght  * (1 - par.links[i].broken)):
@@ -362,13 +293,3 @@ cdef void solve_link(Particle *par)noexcept nogil:
 
                     if par2search != -1:
                         par2.link_with[par2search] = -1
-
-                    # broken_links.append(link)
-                    # if par2 in par1.link_with:
-                        # par1.link_with.remove(par2)
-                    # if par1 in par2.link_with:
-                        # par2.link_with.remove(par1)
-
-    # par.links = list(set(par.links) - set(broken_links))
-    # free(par1)
-    # free(par2)
