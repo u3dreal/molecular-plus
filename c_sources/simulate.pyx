@@ -236,21 +236,6 @@ cpdef simulate(importdata):
     if profiling == 1:
         print("-->neighbours time", clock() - stime, "sec")
         stime = clock()
-    
-    #cdef int total_heaps = <int>(parPool[0].max * scale) + 1
-    #cdef int total_pairs = 2
-
-    # Create a list of tasks
-    #tasks = [(pair, heaps, i) for pair in range(total_pairs) for heaps in range(total_heaps) for i in range(parPool[0].parity[pair].heap[heaps].parnum)]
-
-    #cdef int index
-    #for index in prange(len(tasks), nogil=True):
-    #    pair, heaps, i = tasks[index]
-    #    collide(&parlist[parPool[0].parity[pair].heap[heaps].par[i]])
-    #    solve_link(&parlist[parPool[0].parity[pair].heap[heaps].par[i]])
-
-    #    if parlist[parPool[0].parity[pair].heap[heaps].par[i]].neighboursnum > 1:
-    #        parlist[parPool[0].parity[pair].heap[heaps].par[i]].neighboursnum = 0
 
     with nogil:
         for pair in range(2):
