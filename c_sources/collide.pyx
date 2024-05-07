@@ -49,7 +49,6 @@ cdef void collide(Particle *par)noexcept nogil:
 
     neighbours = par.neighbours
 
-    # for i in range(kdtree.num_result):
     for i in range(par.neighboursnum):
         check = 0
         if parlist[i].id == -1:
@@ -58,7 +57,6 @@ cdef void collide(Particle *par)noexcept nogil:
         if par.id == par2.id:
             check += 10
         if arraysearch(par2.id, par.collided_with, par.collided_num) == -1:
-        # if par2 not in par.collided_with:
             if par2.sys.id != par.sys.id :
                 if par2.sys.othercollision_active == False or \
                         par.sys.othercollision_active == False:
@@ -83,15 +81,12 @@ cdef void collide(Particle *par)noexcept nogil:
                         par.id, par2.link_with, par2.link_withnum
                     ) == -1:
 
-            # if par.state <= 1 and par2.state <= 1 and \
-            #       par2 not in par.link_with and par not in par2.link_with:
                 lenghtx = par.loc[0] - par2.loc[0]
                 lenghty = par.loc[1] - par2.loc[1]
                 lenghtz = par.loc[2] - par2.loc[2]
                 sqlenght  = square_dist(par.loc, par2.loc, 3)
                 if sqlenght != 0 and sqlenght < sqtarget:
                     lenght = sqrt(sqlenght)
-                    # lenght = sqlenght ** 0.5
                     invlenght = 1 / lenght
                     factor = (lenght - target) * invlenght
                     ratio1 = (par2.mass / (par.mass + par2.mass))
