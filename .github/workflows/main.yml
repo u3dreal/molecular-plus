@@ -131,7 +131,7 @@ jobs:
 
   build_macos:
 
-    runs-on: macos-11
+    runs-on: macos-12
     outputs:
       version: ${{steps.build.outputs.version}}
 
@@ -162,7 +162,7 @@ jobs:
 
   build_macos41:
 
-    runs-on: macos-11
+    runs-on: macos-12
     outputs:
       version: ${{steps.build.outputs.version}}
 
