@@ -146,7 +146,7 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         row.operator("molecular_operators.molecular_makeemitter", icon = 'MOD_PARTICLE_INSTANCE',text = "Emitter")
-        if bpy.app.version[0] == 4 and bpy.app.version[1] == 1:
+        if bpy.app.version[0] == 4 and bpy.app.version[1] >= 1:
             row.operator("molecular_operators.molecular_makegrid2d", icon='LIGHTPROBE_VOLUME', text="2D Grid")
         else:
             row.operator("molecular_operators.molecular_makegrid2d", icon = 'LIGHTPROBE_GRID',text = "2D Grid")
