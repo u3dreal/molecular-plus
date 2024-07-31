@@ -9,6 +9,8 @@ c_sources/.DS_Store
 *.so
 *.zip
 
+.venv/*
+
 c_sources/openmp/openmp-13.0.1.src/www/Reference.pdf
 c_sources/openmp/openmp-13.0.1.src/www/README.txt
 c_sources/openmp/openmp-13.0.1.src/www/menu.css
