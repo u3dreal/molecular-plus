@@ -1,4 +1,4 @@
-name: Molecular plus
+name: Molecular Plus
 
 on:
   push:
@@ -29,11 +29,9 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
-        shell: pwsh
         run: |
           $version = python pack_molecular.py
-          Write-Output "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
-
+          echo "VERSION=${version}" >> $env:GITHUB_ENV
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
@@ -60,10 +58,9 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
-        shell: pwsh
         run: |
           $version = python pack_molecular.py
-          Write-Output "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "VERSION=${version}" >> $env:GITHUB_ENV
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
@@ -183,7 +180,7 @@ jobs:
       - name: Upload mac zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_311-macos
+          name: molecular-plus_${{ env.VERSION }}_311_macos
           path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
 
   release:
@@ -200,7 +197,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download artifacts
+      - name: Download artifacts for Windows 310
+        uses: actions/download-artifact@v3
+        with:
+          name: molecular-plus_${{ needs.build_windows.outputs.VERSION }}_310_win
+
+      - name: Download artifacts for Windows 311
+        uses: actions/download-artifact@v3
+        with:
+          name: molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win
+
+      - name: Download artifacts for Linux 310
+        uses: actions/download-artifact@v3
+        with:
+          name: molecular-plus_${{ needs.build_linux.outputs.VERSION }}_310_linux
+
+      - name: Download artifacts for Linux 311
+        uses: actions/download-artifact@v3
+        with:
+          name: molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux
+
+      - name: Download artifacts for macOS 310
+        uses: actions/download-artifact@v3
+        with:
+          name: molecular-plus_${{ needs.build_macos.outputs.VERSION }}_310_macos
+
+      - name: Download artifacts for macOS 311
+        uses: actions/download-artifact@v3
+        with:
+          name: molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos
+
+      - name: Create Release
         run: |
           tag=${GITHUB_REF#refs/tags/}
           gh release create "$tag" \
@@ -212,5 +239,5 @@ jobs:
             molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos.zip \
             --title "Release $tag" \
             --notes "Release of version $tag"
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
