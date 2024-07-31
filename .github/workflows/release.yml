@@ -196,40 +196,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download Windows 310 Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: molecular-plus-${{ needs.build_windows.outputs.VERSION }}-310-win
-
-      - name: Download Windows 311 Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: molecular-plus-${{ needs.build_windows41.outputs.VERSION }}-311-win
-
-      - name: Download Linux 310 Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: molecular-plus-${{ needs.build_linux.outputs.VERSION }}-310-linux
-
-      - name: Download Linux 311 Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: molecular-plus-${{ needs.build_linux41.outputs.VERSION }}-311-linux
-
-      - name: Download macOS 310 Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: molecular-plus-${{ needs.build_macos.outputs.VERSION }}-310-macos
-
-      - name: Download macOS 311 Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: molecular-plus-${{ needs.build_macos41.outputs.VERSION }}-311-macos
-
-      - name: Create Release
+      - name: Download artifacts
         run: |
-          tag=${GITHUB_REF#refs/tags/}
-          gh release create "$tag" \
+          gh release create ${{ github.ref }} \
+            --title "${{ github.event.repository.name }} Release ${{ github.ref }}" \
+            --notes "Release notes for ${{ github.ref }}" \
             molecular-plus-${{ needs.build_windows.outputs.VERSION }}-310-win.zip \
             molecular-plus-${{ needs.build_windows41.outputs.VERSION }}-311-win.zip \
             molecular-plus-${{ needs.build_linux.outputs.VERSION }}-310-linux.zip \
