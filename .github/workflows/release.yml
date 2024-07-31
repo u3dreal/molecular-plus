@@ -31,7 +31,6 @@ jobs:
         run: |
           $version = python pack_molecular.py
           echo "VERSION=${version}" >> $GITHUB_ENV
-          echo "::set-output name=VERSION::${version}"
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
@@ -61,7 +60,6 @@ jobs:
         run: |
           $version = python pack_molecular.py
           echo "VERSION=${version}" >> $GITHUB_ENV
-          echo "::set-output name=VERSION::${version}"
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
@@ -91,7 +89,6 @@ jobs:
         run: |
           version=$(python pack_molecular.py)
           echo "VERSION=${version}" >> $GITHUB_ENV
-          echo "::set-output name=VERSION::${version}"
       - name: Upload linux zip
         uses: actions/upload-artifact@v3
         with:
@@ -121,7 +118,6 @@ jobs:
         run: |
           version=$(python pack_molecular.py)
           echo "VERSION=${version}" >> $GITHUB_ENV
-          echo "::set-output name=VERSION::${version}"
       - name: Upload linux zip
         uses: actions/upload-artifact@v3
         with:
@@ -151,7 +147,6 @@ jobs:
         run: |
           version=$(python pack_molecular.py)
           echo "VERSION=${version}" >> $GITHUB_ENV
-          echo "::set-output name=VERSION::${version}"
       - name: Upload mac zip
         uses: actions/upload-artifact@v3
         with:
@@ -181,7 +176,6 @@ jobs:
         run: |
           version=$(python pack_molecular.py)
           echo "VERSION=${version}" >> $GITHUB_ENV
-          echo "::set-output name=VERSION::${version}"
       - name: Upload mac zip
         uses: actions/upload-artifact@v3
         with:
