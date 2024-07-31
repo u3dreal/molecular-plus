@@ -31,7 +31,8 @@ jobs:
         shell: pwsh
         run: |
           $version = python pack_molecular.py
-          echo "VERSION=${version}" >> $GITHUB_ENV
+          Write-Output "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
@@ -61,7 +62,7 @@ jobs:
         shell: pwsh
         run: |
           $version = python pack_molecular.py
-          echo "VERSION=${version}" >> $GITHUB_ENV
+          Write-Output "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
