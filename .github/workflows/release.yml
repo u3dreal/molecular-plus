@@ -183,17 +183,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+      - name: List directory contents
+        run: |
+          ls -la
       - name: Create Release
         run: |
           tag=${GITHUB_REF#refs/tags/}
           gh release create "$tag" \
-            molecular-plus_${{ env.VERSION }}_310_macos.zip \
-            molecular-plus_${{ env.VERSION }}_311_macos.zip \
             molecular-plus_${{ env.VERSION }}_310_win.zip \
             molecular-plus_${{ env.VERSION }}_311_win.zip \
             molecular-plus_${{ env.VERSION }}_310_linux.zip \
             molecular-plus_${{ env.VERSION }}_311_linux.zip \
+            molecular-plus_${{ env.VERSION }}_310_macos.zip \
+            molecular-plus_${{ env.VERSION }}_311_macos.zip \
             --title "Release $tag" \
             --notes "Release of version $tag"
         env:
