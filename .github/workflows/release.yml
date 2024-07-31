@@ -29,7 +29,7 @@ jobs:
       - name: Build with Cython
         id: build
         run: |
-          version=$(python pack_molecular.py)
+          $version = python pack_molecular.py
           echo "VERSION=${version}" >> $GITHUB_ENV
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
@@ -58,7 +58,7 @@ jobs:
       - name: Build with Cython
         id: build
         run: |
-          version=$(python pack_molecular.py)
+          $version = python pack_molecular.py
           echo "VERSION=${version}" >> $GITHUB_ENV
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
