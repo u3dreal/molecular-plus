@@ -29,7 +29,7 @@ jobs:
       - name: Build with Cython
         id: build
         run: |
-          version=$(python pack_molecular.py)
+          $version = python pack_molecular.py
           echo "VERSION=${version}" >> $GITHUB_ENV
           echo "::set-output name=VERSION::${version}"
       - name: Upload windows zip
@@ -59,7 +59,7 @@ jobs:
       - name: Build with Cython
         id: build
         run: |
-          version=$(python pack_molecular.py)
+          $version = python pack_molecular.py
           echo "VERSION=${version}" >> $GITHUB_ENV
           echo "::set-output name=VERSION::${version}"
       - name: Upload windows zip
