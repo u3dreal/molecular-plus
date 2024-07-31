@@ -200,43 +200,43 @@ jobs:
       - name: Download artifacts for Windows 310
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_windows.outputs.VERSION }}_310_win
+          name: molecular-plus_${{ env.VERSION }}_310_win
 
       - name: Download artifacts for Windows 311
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win
+          name: molecular-plus_${{ env.VERSION }}_311_win
 
       - name: Download artifacts for Linux 310
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_linux.outputs.VERSION }}_310_linux
+          name: molecular-plus_${{ env.VERSION }}_310_linux
 
       - name: Download artifacts for Linux 311
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux
+          name: molecular-plus_${{ env.VERSION }}_311_linux
 
       - name: Download artifacts for macOS 310
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_macos.outputs.VERSION }}_310_macos
+          name: molecular-plus_${{ env.VERSION }}_310_macos
 
       - name: Download artifacts for macOS 311
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos
+          name: molecular-plus_${{ env.VERSION }}_311_macos
 
       - name: Create Release
         run: |
           tag=${GITHUB_REF#refs/tags/}
           gh release create "$tag" \
-            molecular-plus_${{ needs.build_windows.outputs.VERSION }}_310_win.zip \
-            molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win.zip \
-            molecular-plus_${{ needs.build_linux.outputs.VERSION }}_310_linux.zip \
-            molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux.zip \
-            molecular-plus_${{ needs.build_macos.outputs.VERSION }}_310_macos.zip \
-            molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos.zip \
+            molecular-plus_${{ env.VERSION }}_310_win.zip \
+            molecular-plus_${{ env.VERSION }}_311_win.zip \
+            molecular-plus_${{ env.VERSION }}_310_linux.zip \
+            molecular-plus_${{ env.VERSION }}_311_linux.zip \
+            molecular-plus_${{ env.VERSION }}_310_macos.zip \
+            molecular-plus_${{ env.VERSION }}_311_macos.zip \
             --title "Release $tag" \
             --notes "Release of version $tag"
         env:
