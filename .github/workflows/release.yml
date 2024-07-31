@@ -36,7 +36,7 @@ jobs:
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus-${{ env.VERSION }}-310-win
+          name: molecular-plus_${{ env.VERSION }}_310_win
           path: ./molecular-plus_${{ env.VERSION }}_310_win.zip
 
   build_windows41:
@@ -66,7 +66,7 @@ jobs:
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus-${{ env.VERSION }}-311-win
+          name: molecular-plus_${{ env.VERSION }}_311_win
           path: ./molecular-plus_${{ env.VERSION }}_311_win.zip
 
   build_linux:
@@ -95,7 +95,7 @@ jobs:
       - name: Upload linux zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus-${{ env.VERSION }}-310-linux
+          name: molecular-plus_${{ env.VERSION }}_310_linux
           path: ./molecular-plus_${{ env.VERSION }}_310_linux.zip
 
   build_linux41:
@@ -124,7 +124,7 @@ jobs:
       - name: Upload linux zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus-${{ env.VERSION }}-311-linux
+          name: molecular-plus_${{ env.VERSION }}_311_linux
           path: ./molecular-plus_${{ env.VERSION }}_311_linux.zip
 
   build_macos:
@@ -153,7 +153,7 @@ jobs:
       - name: Upload mac zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus-${{ env.VERSION }}-310-macos
+          name: molecular-plus_${{ env.VERSION }}_310_macos
           path: ./molecular-plus_${{ env.VERSION }}_310_macos.zip
 
   build_macos41:
@@ -182,7 +182,7 @@ jobs:
       - name: Upload mac zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus-${{ env.VERSION }}-311-macos
+          name: molecular-plus_${{ env.VERSION }}_311-macos
           path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
 
   release:
@@ -204,11 +204,11 @@ jobs:
           gh release create ${{ github.ref }} \
             --title "${{ github.event.repository.name }} Release ${{ github.ref }}" \
             --notes "Release notes for ${{ github.ref }}" \
-            molecular-plus-${{ needs.build_windows.outputs.VERSION }}-310-win.zip \
-            molecular-plus-${{ needs.build_windows41.outputs.VERSION }}-311-win.zip \
-            molecular-plus-${{ needs.build_linux.outputs.VERSION }}-310-linux.zip \
-            molecular-plus-${{ needs.build_linux41.outputs.VERSION }}-311-linux.zip \
-            molecular-plus-${{ needs.build_macos.outputs.VERSION }}-310-macos.zip \
-            molecular-plus-${{ needs.build_macos41.outputs.VERSION }}-311-macos.zip
+            molecular-plus_${{ needs.build_windows.outputs.VERSION }}_310_win.zip \
+            molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win.zip \
+            molecular-plus_${{ needs.build_linux.outputs.VERSION }}_310_linux.zip \
+            molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux.zip \
+            molecular-plus_${{ needs.build_macos.outputs.VERSION }}_310_macos.zip \
+            molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
