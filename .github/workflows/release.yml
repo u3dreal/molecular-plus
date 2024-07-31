@@ -2,9 +2,9 @@ name: Molecular Plus
 
 on:
   push:
-    branches: [ main ]
-    #tags:
-    #  - "v*.*.*"  # Trigger release on version tags
+    #branches: [ main ]
+    tags:
+      - "v*.*.*"  # Trigger release on version tags
   pull_request:
     branches: [ main ]
 
