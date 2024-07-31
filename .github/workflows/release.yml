@@ -203,35 +203,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Debug version
+        run:
+          echo "Version: ${{ needs.build_windows.outputs.VERSION }}"
+
       - name: Download artifacts for Windows 310
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_310_win
+          name: molecular-plus_${{ needs.build_windows.outputs.VERSION }}_310_win
 
       - name: Download artifacts for Windows 311
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_311_win
+          name: molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win
 
       - name: Download artifacts for Linux 310
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_310_linux
+          name: molecular-plus_${{ needs.build_linux.outputs.VERSION }}_310_linux
 
       - name: Download artifacts for Linux 311
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_311_linux
+          name: molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux
 
       - name: Download artifacts for macOS 310
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_310_macos
+          name: molecular-plus_${{ needs.build_macos.outputs.VERSION }}_310_macos
 
       - name: Download artifacts for macOS 311
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_311_macos
+          name: molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos
 
       - name: Create Release
         run: |
