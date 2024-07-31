@@ -205,7 +205,7 @@ jobs:
 
       - name: Debug version
         run:
-          echo "Version: ${{ needs.build_windows.outputs.VERSION }}"
+          echo "Version ${{ needs.build_windows.outputs.VERSION }}"
 
       - name: Download artifacts for Windows 310
         uses: actions/download-artifact@v3
