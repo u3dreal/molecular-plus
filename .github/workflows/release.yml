@@ -28,6 +28,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
+        shell: pwsh
         run: |
           $version = python pack_molecular.py
           echo "VERSION=${version}" >> $GITHUB_ENV
@@ -57,6 +58,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build with Cython
         id: build
+        shell: pwsh
         run: |
           $version = python pack_molecular.py
           echo "VERSION=${version}" >> $GITHUB_ENV
