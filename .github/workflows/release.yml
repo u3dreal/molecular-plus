@@ -29,12 +29,12 @@ jobs:
       - name: Build with Cython
         id: build
         run: |
-          $version = python pack_molecular.py
+          version=$(python pack_molecular.py)
           echo "VERSION=${version}" >> $GITHUB_ENV
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_310_win
+          name: molecular-plus-${{ env.VERSION }}-310-win
           path: ./molecular-plus_${{ env.VERSION }}_310_win.zip
 
   build_windows41:
@@ -58,12 +58,12 @@ jobs:
       - name: Build with Cython
         id: build
         run: |
-          $version = python pack_molecular.py
+          version=$(python pack_molecular.py)
           echo "VERSION=${version}" >> $GITHUB_ENV
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_311_win
+          name: molecular-plus-${{ env.VERSION }}-311-win
           path: ./molecular-plus_${{ env.VERSION }}_311_win.zip
 
   build_linux:
@@ -92,7 +92,7 @@ jobs:
       - name: Upload linux zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_310_linux
+          name: molecular-plus-${{ env.VERSION }}-310-linux
           path: ./molecular-plus_${{ env.VERSION }}_310_linux.zip
 
   build_linux41:
@@ -121,7 +121,7 @@ jobs:
       - name: Upload linux zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_311_linux
+          name: molecular-plus-${{ env.VERSION }}-311-linux
           path: ./molecular-plus_${{ env.VERSION }}_311_linux.zip
 
   build_macos:
@@ -150,7 +150,7 @@ jobs:
       - name: Upload mac zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_310_macos
+          name: molecular-plus-${{ env.VERSION }}-310-macos
           path: ./molecular-plus_${{ env.VERSION }}_310_macos.zip
 
   build_macos41:
@@ -179,7 +179,7 @@ jobs:
       - name: Upload mac zip
         uses: actions/upload-artifact@v3
         with:
-          name: molecular-plus_${{ env.VERSION }}_311_macos
+          name: molecular-plus-${{ env.VERSION }}-311-macos
           path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
 
   release:
@@ -196,45 +196,45 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download artifacts for Windows 310
+      - name: Download Windows 310 Artifact
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_windows.outputs.VERSION }}_310_win
+          name: molecular-plus-${{ needs.build_windows.outputs.VERSION }}-310-win
 
-      - name: Download artifacts for Windows 311
+      - name: Download Windows 311 Artifact
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win
+          name: molecular-plus-${{ needs.build_windows41.outputs.VERSION }}-311-win
 
-      - name: Download artifacts for Linux 310
+      - name: Download Linux 310 Artifact
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_linux.outputs.VERSION }}_310_linux
+          name: molecular-plus-${{ needs.build_linux.outputs.VERSION }}-310-linux
 
-      - name: Download artifacts for Linux 311
+      - name: Download Linux 311 Artifact
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux
+          name: molecular-plus-${{ needs.build_linux41.outputs.VERSION }}-311-linux
 
-      - name: Download artifacts for macOS 310
+      - name: Download macOS 310 Artifact
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_macos.outputs.VERSION }}_310_macos
+          name: molecular-plus-${{ needs.build_macos.outputs.VERSION }}-310-macos
 
-      - name: Download artifacts for macOS 311
+      - name: Download macOS 311 Artifact
         uses: actions/download-artifact@v3
         with:
-          name: molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos
+          name: molecular-plus-${{ needs.build_macos41.outputs.VERSION }}-311-macos
 
       - name: Create Release
         run: |
           tag=${GITHUB_REF#refs/tags/}
           gh release create "$tag" \
-            molecular-plus_${{ needs.build_windows.outputs.VERSION }}_310_win.zip \
-            molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win.zip \
-            molecular-plus_${{ needs.build_linux.outputs.VERSION }}_310_linux.zip \
-            molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux.zip \
-            molecular-plus_${{ needs.build_macos.outputs.VERSION }}_310_macos.zip \
-            molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos.zip
+            molecular-plus-${{ needs.build_windows.outputs.VERSION }}-310-win.zip \
+            molecular-plus-${{ needs.build_windows41.outputs.VERSION }}-311-win.zip \
+            molecular-plus-${{ needs.build_linux.outputs.VERSION }}-310-linux.zip \
+            molecular-plus-${{ needs.build_linux41.outputs.VERSION }}-311-linux.zip \
+            molecular-plus-${{ needs.build_macos.outputs.VERSION }}-310-macos.zip \
+            molecular-plus-${{ needs.build_macos41.outputs.VERSION }}-311-macos.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
