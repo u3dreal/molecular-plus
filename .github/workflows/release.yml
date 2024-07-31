@@ -2,7 +2,6 @@ name: Molecular plus
 
 on:
   push:
-    #branches: [ main ]
     tags:
       - "v*.*.*"  # Trigger release on version tags
   pull_request:
@@ -29,7 +28,7 @@ jobs:
         id: build
         run: |
           $version = python pack_molecular.py
-          echo "VERSION=${version}" >> $GITHUB_ENV
+          echo "VERSION=${version}" >> $env:GITHUB_ENV
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
@@ -56,7 +55,7 @@ jobs:
         id: build
         run: |
           $version = python pack_molecular.py
-          echo "VERSION=${version}" >> $GITHUB_ENV
+          echo "VERSION=${version}" >> $env:GITHUB_ENV
       - name: Upload windows zip
         uses: actions/upload-artifact@v3
         with:
@@ -119,8 +118,6 @@ jobs:
 
   build_macos:
     runs-on: macos-13
-    outputs:
-      version: ${{ steps.build.outputs.version }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.10.12
@@ -148,8 +145,6 @@ jobs:
 
   build_macos41:
     runs-on: macos-13
-    outputs:
-      version: ${{ steps.build.outputs.version }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.11.7
