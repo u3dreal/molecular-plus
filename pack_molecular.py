@@ -22,14 +22,15 @@ if is_linux:
 elif is_windows:
     name = 'win'
 
-mkdir(".//molecularplus" + name)
+temp_folder = "molecularplus" + name
+mkdir(temp_folder)
 
 pyfiles = (
     "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
     "simulate.py", "ui.py", "utils.py", "addon_prefrences.py")
 
 for file in pyfiles:
-    shutil.copy(file, ".//molecularplus//" + file)
+    shutil.copy(file, f".//{temp_folder}//{file}")
 
 from molecularplus import bl_info
 
@@ -44,21 +45,21 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
     proc.stdout.read()
 
     if is_linux:  # TODO, test
-        shutil.move("core.cpython-{}-x86_64-linux-gnu.so".format(v),
-                    "..//molecularplus//core.cpython-{}-x86_64-linux-gnu.so".format(v))
+        shutil.move(f"core.cpython-{v}-x86_64-linux-gnu.so",
+                    f"..//{temp_folder}//core.cpython-{v}-x86_64-linux-gnu.so")
     elif is_windows:
-        shutil.move("core.cp{}-win_amd64.pyd".format(v), "..//molecularplus//core.cp{}-win_amd64.pyd".format(v))
+        shutil.move(f"core.cp{v}-win_amd64.pyd", f"..//{temp_folder}//core.cp{v}-win_amd64.pyd")
     else:
-        shutil.move("core.cpython-{}-darwin.so".format(v), "..//molecularplus//core.cpython-{}-darwin.so".format(v))
+        shutil.move(f"core.cpython-{v}-darwin.so", f"..//{temp_folder}//core.cpython-{v}-darwin.so")
 
     chdir("..")
 
     molfiles = (
     "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py", "addon_prefrences.py",
-    "simulate.py", "ui.py", "utils.py", 'core.cpython-{}-darwin.so'.format(v), 'core.cp{}-win_amd64.pyd'.format(v), 'core.cpython-{}-x86_64-linux-gnu.so'.format(v))
+    "simulate.py", "ui.py", "utils.py", f'core.cpython-{v}-darwin.so', f'core.cp{v}-win_amd64.pyd', f'core.cpython-{v}-x86_64-linux-gnu.so')
 
-    with ZipFile('molecular-plus_{}_'.format(version) + '{}_'.format(v) + name + '.zip', 'w') as z:
-        for root, _, files in walk('molecularplus'):
+    with ZipFile(f'molecular-plus_{version}_' + f'{v}_{name}.zip', 'w') as z:
+        for root, _, files in walk(temp_folder):
             for file in files:
                 if file not in molfiles:
                     continue
@@ -66,7 +67,7 @@ with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) 
 
     # cleanup
 
-    shutil.rmtree(".//molecularplus")
+    shutil.rmtree(f".//{temp_folder}")
 
     # chdir(getcwd() + "//molecularplus")
     # try:
