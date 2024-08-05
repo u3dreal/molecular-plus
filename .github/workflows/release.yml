@@ -70,35 +70,35 @@ jobs:
           path: ./molecular-plus_${{ env.VERSION }}_311_win.zip
   
   # Windows, Blender 4.2, Python 3.12
-  build_windows42:
-    runs-on: windows-latest
-    outputs:
-      VERSION: ${{ steps.build.outputs.VERSION }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.12.4
-        uses: actions/setup-python@v3
-        with:
-          python-version: 3.12.4
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest cython
-      - name: Lint with flake8
-        run: |
-          flake8 . --count --exit-zero --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Build with Cython
-        id: build
-        run: |
-          $version = python pack_molecular.py
-          echo "VERSION=${version}" >> $env:GITHUB_ENV
-          echo "::set-output name=VERSION::${version}"
-      - name: Upload windows zip
-        uses: actions/upload-artifact@v3
-        with:
-          name: molecular-plus_${{ env.VERSION }}_312_win
-          path: ./molecular-plus_${{ env.VERSION }}_312_win.zip
+  # build_windows42:
+  #   runs-on: windows-latest
+  #   outputs:
+  #     VERSION: ${{ steps.build.outputs.VERSION }}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Set up Python 3.12.4
+  #       uses: actions/setup-python@v3
+  #       with:
+  #         python-version: 3.12.4
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install flake8 pytest cython
+  #     - name: Lint with flake8
+  #       run: |
+  #         flake8 . --count --exit-zero --select=E9,F63,F7,F82 --show-source --statistics
+  #         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  #     - name: Build with Cython
+  #       id: build
+  #       run: |
+  #         $version = python pack_molecular.py
+  #         echo "VERSION=${version}" >> $env:GITHUB_ENV
+  #         echo "::set-output name=VERSION::${version}"
+  #     - name: Upload windows zip
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: molecular-plus_${{ env.VERSION }}_312_win
+  #         path: ./molecular-plus_${{ env.VERSION }}_312_win.zip
 
   build_linux:
     runs-on: ubuntu-22.04
@@ -252,35 +252,35 @@ jobs:
           path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
   
   # MacOS, Blender 4.2, Python 3.12
-  build_macos41:
-    runs-on: macos-13
-    outputs:
-      VERSION: ${{ steps.build.outputs.VERSION }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.12.4
-        uses: actions/setup-python@v3
-        with:
-          python-version: 3.12.4
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest cython
-      - name: Lint with flake8
-        run: |
-          flake8 . --count --exit-zero --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Build with Cython
-        id: build
-        run: |
-          version=$(python pack_molecular.py)
-          echo "VERSION=${version}" >> $GITHUB_ENV
-          echo "::set-output name=VERSION::${version}"
-      - name: Upload mac zip
-        uses: actions/upload-artifact@v3
-        with:
-          name: molecular-plus_${{ env.VERSION }}_312_macos
-          path: ./molecular-plus_${{ env.VERSION }}_312_macos.zip
+  # build_macos41:
+  #   runs-on: macos-13
+  #   outputs:
+  #     VERSION: ${{ steps.build.outputs.VERSION }}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Set up Python 3.12.4
+  #       uses: actions/setup-python@v3
+  #       with:
+  #         python-version: 3.12.4
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install flake8 pytest cython
+  #     - name: Lint with flake8
+  #       run: |
+  #         flake8 . --count --exit-zero --select=E9,F63,F7,F82 --show-source --statistics
+  #         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  #     - name: Build with Cython
+  #       id: build
+  #       run: |
+  #         version=$(python pack_molecular.py)
+  #         echo "VERSION=${version}" >> $GITHUB_ENV
+  #         echo "::set-output name=VERSION::${version}"
+  #     - name: Upload mac zip
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: molecular-plus_${{ env.VERSION }}_312_macos
+  #         path: ./molecular-plus_${{ env.VERSION }}_312_macos.zip
 
   release:
     runs-on: ubuntu-latest
