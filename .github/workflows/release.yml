@@ -322,6 +322,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux
+      
+      - name: Download artifacts for Linux 312
+        uses: actions/download-artifact@v3
+        with:
+          name: molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_312_linux
 
       - name: Download artifacts for macOS 310
         uses: actions/download-artifact@v3
@@ -341,6 +346,7 @@ jobs:
             molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win.zip \
             molecular-plus_${{ needs.build_linux.outputs.VERSION }}_310_linux.zip \
             molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux.zip \
+            molecular-plus_${{ needs.build_linux42.outputs.VERSION }}_312_linux.zip \
             molecular-plus_${{ needs.build_macos.outputs.VERSION }}_310_macos.zip \
             molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos.zip \
             --title "Release $tag" \
