@@ -252,7 +252,7 @@ jobs:
           path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
   
   # MacOS, Blender 4.2, Python 3.12
-  # build_macos41:
+  # build_macos42:
   #   runs-on: macos-13
   #   outputs:
   #     VERSION: ${{ steps.build.outputs.VERSION }}
@@ -287,13 +287,13 @@ jobs:
     needs:
       - build_windows
       - build_windows41
-      - build_windows42
+      #- build_windows42
       - build_linux
       - build_linux41
       - build_linux42
       - build_macos
       - build_macos41
-      - build_macos42
+      #- build_macos42
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout code
