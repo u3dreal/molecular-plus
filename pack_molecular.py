@@ -32,7 +32,12 @@ pyfiles = (
 for file in pyfiles:
     shutil.copy(file, f".//{temp_folder}//{file}")
 
-from molecularplus import bl_info
+if is_linux:
+    from molecularpluslinux import bl_info
+elif is_windows:
+    from molecularpluswin import bl_info
+else:
+    from molecularplus import bl_info
 
 chdir(getcwd() + "//c_sources")
 
