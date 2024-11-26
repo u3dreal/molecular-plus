@@ -51,7 +51,7 @@ if not DEBUG_MODE:
             module_name,
             ['core.pyx'],
             extra_compile_args=['-msse4.2', '-O3', '-ffast-math', '-fno-builtin', '-arch', 'x86_64', '-Xclang', '-fopenmp', '-isystem./openmp/x86_64/include'],
-            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'x86_64']
+            extra_link_args=['-lm', '-L./openmp/x86_64/lib', '-lomp', '-arch', 'x86_64']
         )]
 else:
     if os_name == "Windows":
@@ -73,7 +73,7 @@ else:
             module_name,
             ['core.pyx'],
             extra_compile_args=['-msse4.2', '-O0', '-g', '-arch', 'x86_64', '-Xclang', '-fopenmp', '-isystem./openmp/x86_64/include'],
-            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'x86_64']
+            extra_link_args=['-lm', '-L./openmp/x86_64/lib', '-lomp', '-arch', 'x86_64']
         )]
 
 setup(
