@@ -57,7 +57,7 @@ with Popen([sys.executable, "setup_arm64.py", "build_ext", "--inplace"], stdout=
     "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py", "addon_prefrences.py",
     "simulate.py", "ui.py", "utils.py", 'core.cpython-{}-darwin.so'.format(v), 'core.cp{}-win_amd64.pyd'.format(v), 'core.cpython-{}-x86_64-linux-gnu.so'.format(v))
 
-    with ZipFile('molecular-plus_{}_'.format(version) + '{}_'.format(v) + name + '.zip', 'w') as z:
+    with ZipFile('molecular-plus_{}_'.format(version) + '{}_'.format(v) + name + '_arm64' + '.zip', 'w') as z:
         for root, _, files in walk('molecularplus'):
             for file in files:
                 if file not in molfiles:
