@@ -50,8 +50,8 @@ if not DEBUG_MODE:
         ext_modules = [Extension(
             module_name,
             ['core.pyx'],
-            extra_compile_args=['-msse4.2', '-O3', '-ffast-math', '-fno-builtin', '-arch', 'x86_64', '-Xclang', '-fopenmp', '-isystem./openmp/x86_64/include'],
-            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'x86_64']
+            extra_compile_args=['-msse4.2', '-O3', '-ffast-math', '-fno-builtin', '-arch', 'arm64', '-arch', 'arm64e', '-Xclang', '-fopenmp', '-isystem./openmp/arm64/include'],
+            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'arm64', '-arch', 'arm64e']
         )]
 else:
     if os_name == "Windows":
@@ -72,8 +72,8 @@ else:
         ext_modules = [Extension(
             module_name,
             ['core.pyx'],
-            extra_compile_args=['-msse4.2', '-O0', '-g', '-arch', 'x86_64', '-Xclang', '-fopenmp', '-isystem./openmp/x86_64/include'],
-            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'x86_64']
+            extra_compile_args=['-msse4.2', '-O0', '-g', '-arch', 'arm64', '-arch', 'arm64e', '-Xclang', '-fopenmp', '-isystem./openmp/arm64/include'],
+            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'arm64', '-arch', 'arm64e']
         )]
 
 setup(
