@@ -16,13 +16,13 @@ from libc.stdlib cimport malloc, realloc, free, rand, srand, abs
 from libc.string cimport memcpy
 from libc.math cimport sqrt
 
-cdef extern from "omp.h":
-    void omp_set_max_active_levels(int max_levels)
+#cdef extern from "omp.h":
+#    void omp_set_max_active_levels(int max_levels)
 
-def set_max_active_levels(int max_levels):
-    omp_set_max_active_levels(max_levels)
+#def set_max_active_levels(int max_levels):
+#    omp_set_max_active_levels(max_levels)
 
-set_max_active_levels(1)
+#set_max_active_levels(1)
 
 cdef extern from *:
     int INT_MAX
