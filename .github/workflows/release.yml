@@ -130,7 +130,7 @@ jobs:
           path: ./molecular-plus_${{ env.VERSION }}_311_linux.zip
 
   build_macos:
-    runs-on: macos-13
+    runs-on: macos-14
     outputs:
       VERSION: ${{ steps.build.outputs.VERSION }}
     steps:
@@ -160,7 +160,7 @@ jobs:
           path: ./molecular-plus_${{ env.VERSION }}_310_macos.zip
 
   build_macos_arm64:
-    runs-on: macos-13
+    runs-on: macos-14-arm64
     outputs:
       VERSION: ${{ steps.build.outputs.VERSION }}
     steps:
@@ -190,7 +190,7 @@ jobs:
           path: ./molecular-plus_${{ env.VERSION }}_310_macos_arm64.zip
 
   build_macos41:
-    runs-on: macos-13
+    runs-on: macos-14
     outputs:
       VERSION: ${{ steps.build.outputs.VERSION }}
     steps:
@@ -220,7 +220,7 @@ jobs:
           path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
 
   build_macos41_arm64:
-    runs-on: macos-13
+    runs-on: macos-14-arm64
     outputs:
       VERSION: ${{ steps.build.outputs.VERSION }}
     steps:
