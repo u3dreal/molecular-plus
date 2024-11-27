@@ -159,7 +159,7 @@ jobs:
           path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
 
   build_macos41_arm64:
-    runs-on: macos-14-arm64
+    runs-on: macos-14
     outputs:
       VERSION: ${{ steps.build.outputs.VERSION }}
     steps:
