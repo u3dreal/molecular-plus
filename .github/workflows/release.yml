@@ -2,11 +2,8 @@ name: Molecular Plus Release
 
 on:
   push:
-    branches: [ main ]
     tags:
       - "v*.*.*"  # Trigger release on version tags
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build_windows:
