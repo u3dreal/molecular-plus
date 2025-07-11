@@ -160,7 +160,7 @@ jobs:
           path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
 
   build_macos41_arm64:
-    runs-on: macos-14-arm64
+    runs-on: macos-14
     outputs:
       VERSION: ${{ steps.build.outputs.VERSION }}
     steps:
@@ -208,32 +208,32 @@ jobs:
           echo "Version ${{ needs.build_windows.outputs.VERSION }}"
 
       - name: Download artifacts for Windows 310
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: molecular-plus_${{ needs.build_windows.outputs.VERSION }}_310_win
 
       - name: Download artifacts for Windows 311
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win
 
       - name: Download artifacts for Linux 310
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: molecular-plus_${{ needs.build_linux.outputs.VERSION }}_310_linux
 
       - name: Download artifacts for Linux 311
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux
 
       - name: Download artifacts for macOS 311
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos
 
       - name: Download artifacts for macOS 311 arm64
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos_arm64
 

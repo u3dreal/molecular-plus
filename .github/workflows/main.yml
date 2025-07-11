@@ -33,7 +33,7 @@ jobs:
           echo "VERSION=${version}" >> $env:GITHUB_ENV
           echo "::set-output name=VERSION::${version}"
       - name: Upload windows zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: molecular-plus_${{ env.VERSION }}_310_win
           path: ./molecular-plus_${{ env.VERSION }}_310_win.zip
@@ -63,7 +63,7 @@ jobs:
           echo "VERSION=${version}" >> $env:GITHUB_ENV
           echo "::set-output name=VERSION::${version}"
       - name: Upload windows zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: molecular-plus_${{ env.VERSION }}_311_win
           path: ./molecular-plus_${{ env.VERSION }}_311_win.zip
@@ -93,7 +93,7 @@ jobs:
           echo "VERSION=${version}" >> $GITHUB_ENV
           echo "::set-output name=VERSION::${version}"
       - name: Upload linux zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: molecular-plus_${{ env.VERSION }}_310_linux
           path: ./molecular-plus_${{ env.VERSION }}_310_linux.zip
@@ -123,7 +123,7 @@ jobs:
           echo "VERSION=${version}" >> $GITHUB_ENV
           echo "::set-output name=VERSION::${version}"
       - name: Upload linux zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: molecular-plus_${{ env.VERSION }}_311_linux
           path: ./molecular-plus_${{ env.VERSION }}_311_linux.zip
@@ -153,7 +153,7 @@ jobs:
           echo "VERSION=${version}" >> $GITHUB_ENV
           echo "::set-output name=VERSION::${version}"
       - name: Upload mac zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: molecular-plus_${{ env.VERSION }}_311_macos
           path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
@@ -183,7 +183,7 @@ jobs:
           echo "VERSION=${version}" >> $GITHUB_ENV
           echo "::set-output name=VERSION::${version}"
       - name: Upload mac zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: molecular-plus_${{ env.VERSION }}_311_macos_arm64
           path: ./molecular-plus_${{ env.VERSION }}_311_macos_arm64.zip
