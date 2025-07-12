@@ -3,6 +3,8 @@ from setuptools import Extension, setup
 import Cython.Compiler.Options
 from Cython.Build import cythonize
 
+core_version = "1.17.21"
+
 DEBUG_MODE = False
 
 os_name = platform.system()
@@ -77,8 +79,10 @@ else:
         )]
 
 setup(
-    name = 'Molecular script',
-    ext_modules=cythonize(ext_modules)
+    name = 'molecular plus core',
+    version = core_version,
+    ext_modules = cythonize(ext_modules
+    )
 )
 
 # Delete the files after the build
