@@ -1,8 +1,9 @@
 import sys
 from zipfile import ZipFile, ZIP_DEFLATED
-from os import path, walk, remove, rmdir, chdir, getcwd, mkdir, rename
+from os import path, walk, remove, rmdir, chdir, getcwd, mkdir, rename, listdir
 import shutil
 import platform
+import subprocess
 from subprocess import Popen, PIPE
 
 is_linux = platform.system() == "Linux"
@@ -22,10 +23,10 @@ if is_linux:
 elif is_windows:
     name = 'win'
 
-mkdir(".//molecularplus" + name)
+mkdir(".//molecularplus")
 
 pyfiles = (
-    "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
+    "blender.manifest", "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
     "simulate.py", "ui.py", "utils.py", "addon_prefrences.py")
 
 for file in pyfiles:
@@ -40,50 +41,41 @@ chdir(getcwd() + "//c_sources")
 
 version = '.'.join(map(str, bl_info['version']))
 
-with Popen([sys.executable, "setup_arm64.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
-    proc.stdout.read()
+# Create wheels directory if it doesn't exist
+wheels_dir = "..//molecularplus//wheels"
+if not path.exists(wheels_dir):
+    mkdir(wheels_dir)
 
-    if is_linux:  # TODO, test
-        shutil.move("core.cpython-{}-x86_64-linux-gnu.so".format(v),
-                    "..//molecularplus//core.cpython-{}-x86_64-linux-gnu.so".format(v))
-    elif is_windows:
-        shutil.move("core.cp{}-win_amd64.pyd".format(v), "..//molecularplus//core.cp{}-win_amd64.pyd".format(v))
-    else:
-        shutil.move("core.cpython-{}-darwin.so".format(v), "..//molecularplus//core.cpython-{}-darwin.so".format(v))
+print("Creating wheel...")
+subprocess.check_call([sys.executable, "setup_arm64.py", "bdist_wheel"])
 
-    chdir("..")
+# Move the wheel to the wheels directory
+for root, _, files in walk('dist'):
+    for file in files:
+        if file.endswith('.whl'):
+            source = path.join(root, file)
+            destination = path.join(wheels_dir, file)
+            shutil.move(source, destination)
 
-    molfiles = (
-    "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py", "addon_prefrences.py",
-    "simulate.py", "ui.py", "utils.py", 'core.cpython-{}-darwin.so'.format(v), 'core.cp{}-win_amd64.pyd'.format(v), 'core.cpython-{}-x86_64-linux-gnu.so'.format(v))
+# Clean up
+try:
+    remove("core.html")
+    remove("core.c")
+    shutil.rmtree("build")
+except:
+    pass
 
-    with ZipFile('molecular-plus_{}_'.format(version) + '{}_'.format(v) + name + '_arm64' + '.zip', 'w') as z:
-        for root, _, files in walk('molecularplus'):
-            for file in files:
-                if file not in molfiles:
-                    continue
-                z.write(path.join(root, file), compress_type=ZIP_DEFLATED)
+chdir("..")
 
-    # cleanup
+shutil.rmtree(".//molecularplus//__pycache__")
 
-    shutil.rmtree(".//molecularplus")
+print("zipping Extension...")
+with ZipFile('molecular-plus_{}_{}_{}_arm64.zip'.format(version, v, name), 'w', compression=ZIP_DEFLATED) as z:
+    for root, _, files in walk('molecularplus'):
+        for file in files:
+            file_path = path.join(root, file)
+            archive_path = path.relpath(file_path)
+            z.write(file_path, archive_path)
 
-    # chdir(getcwd() + "//molecularplus")
-    # try:
-    #     remove("*.*")
-    # except:
-    #     pass
-    # chdir("..")
-    
-    chdir(getcwd() + "//c_sources")
-
-    try:
-        remove("core.html")
-        remove("core.c")
-        shutil.rmtree("build")
-    except:
-        pass
-
-    chdir("..")
-
-print(version)
+shutil.rmtree(".//molecularplus")
+#print(version)
