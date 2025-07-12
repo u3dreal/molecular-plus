@@ -3,6 +3,8 @@ from setuptools import Extension, setup
 import Cython.Compiler.Options
 from Cython.Build import cythonize
 
+core_version = "1.17.21"
+
 DEBUG_MODE = False
 
 os_name = platform.system()
@@ -50,7 +52,7 @@ if not DEBUG_MODE:
         ext_modules = [Extension(
             module_name,
             ['core.pyx'],
-            extra_compile_args=['-msse4.2', '-O3', '-ffast-math', '-fno-builtin', '-arch', 'arm64', '-arch', 'arm64e', '-Xclang', '-fopenmp', '-isystem./openmp/arm64/include'],
+            extra_compile_args=['-O3', '-ffast-math', '-fno-builtin', '-arch', 'arm64', '-arch', 'arm64e', '-Xclang', '-fopenmp', '-isystem./openmp/arm64/include'],
             extra_link_args=['-lm', '-L./openmp/arm64/lib', '-lomp', '-arch', 'arm64', '-arch', 'arm64e']
         )]
 else:
@@ -72,12 +74,13 @@ else:
         ext_modules = [Extension(
             module_name,
             ['core.pyx'],
-            extra_compile_args=['-msse4.2', '-O0', '-g', '-arch', 'arm64', '-arch', 'arm64e', '-Xclang', '-fopenmp', '-isystem./openmp/arm64/include'],
+            extra_compile_args=['-O0', '-g', '-arch', 'arm64', '-arch', 'arm64e', '-Xclang', '-fopenmp', '-isystem./openmp/arm64/include'],
             extra_link_args=['-lm', '-L./openmp/arm64/lib', '-lomp', '-arch', 'arm64', '-arch', 'arm64e']
         )]
 
 setup(
-    name = 'Molecular script',
+    name = 'molecular plus core',
+    version = core_version,
     ext_modules=cythonize(ext_modules)
 )
 
