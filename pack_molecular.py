@@ -47,7 +47,11 @@ if not path.exists(wheels_dir):
     mkdir(wheels_dir)
 
 print("Creating wheel...")
-subprocess.check_call([sys.executable, "setup.py", "bdist_wheel"])
+result = subprocess.run([sys.executable, "setup.py", "bdist_wheel"], capture_output=True, text=True)
+print(result.stdout)
+if result.returncode != 0:
+    print(result.stderr)
+    raise subprocess.CalledProcessError(result.returncode, result.args, output=result.stdout, stderr=result.stderr)
 
 # Move the wheel to the wheels directory
 for root, _, files in walk('dist'):
