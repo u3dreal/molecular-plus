@@ -79,7 +79,7 @@ else:
         )]
 
 setup(
-    name = 'molecular plus core',
+    name = 'molecular_plus_core',
     version = core_version,
     ext_modules=cythonize(ext_modules)
 )
