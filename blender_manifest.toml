@@ -9,11 +9,7 @@ tagline = "Extension for molecular simulations in Blender"
 maintainer = "Jean-Francois Gallant (PyroEvil), Gregor Quade (u3dreal)"
 type = "add-on"
 
-# Supported types: "add-on", "theme"
-# Supported tags: ["Animation", "Sequencer"]
 blender_version_min = "4.2.0"
-# Optional: Blender version that the extension does not support
-# blender_version_max = "5.1.0"
 
 # License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
 license = [
@@ -21,11 +17,13 @@ license = [
 ]
 
 # Optional: list of supported platforms
-platforms = ["windows-x64", "macos-arm64", "linux-x64"]
+platforms = ["windows-x64", "macos-x64", "macos-arm64", "linux-x64"]
 
 # Optional: bundle 3rd party Python modules
 wheels = [
-  "./wheels/molecular_plus_core-1.17.21-cp311-cp311-macosx_10_13_x86_64.whl",
+  "./wheels/molecular_plus_core-1.17.21-cp311-cp311-macosx_10_9_universal2.whl",
+  "./wheels/molecular_plus_core-1.17.21-cp311-cp311-linux_x86_64.whl",
+  "./wheels/molecular_plus_core-1.17.21-cp311-cp311-win_amd64.whl",
 ]
 
 # Optional: add-ons can list which resources they will require
