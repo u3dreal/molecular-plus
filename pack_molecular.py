@@ -46,37 +46,37 @@ wheels_dir = "..//molecularplus//wheels"
 if not path.exists(wheels_dir):
     mkdir(wheels_dir)
 
-print("Creating wheel...")
-with Popen([sys.executable, "setup.py", "bdist_wheel"], stdout=PIPE) as proc:
-    proc.stdout.read()
+#print("Creating wheel...")
+process = Popen([sys.executable, "setup.py", "bdist_wheel"], stdout=PIPE, stderr=PIPE)
+stdout, stderr = process.communicate()
 
-    # Move the wheel to the wheels directory
-    for root, _, files in walk('dist'):
+# Move the wheel to the wheels directory
+for root, _, files in walk('dist'):
+    for file in files:
+        if file.endswith('.whl'):
+            source = path.join(root, file)
+            destination = path.join(wheels_dir, file)
+            shutil.move(source, destination)
+
+# Clean up
+try:
+    remove("core.html")
+    remove("core.c")
+    shutil.rmtree("build")
+except:
+    pass
+
+chdir("..")
+
+shutil.rmtree(".//molecularplus//__pycache__")
+
+#print("zipping Extension...")
+with ZipFile('molecular-plus_{}_{}_{}.zip'.format(version, v, name), 'w', compression=ZIP_DEFLATED) as z:
+    for root, _, files in walk('molecularplus'):
         for file in files:
-            if file.endswith('.whl'):
-                source = path.join(root, file)
-                destination = path.join(wheels_dir, file)
-                shutil.move(source, destination)
+            file_path = path.join(root, file)
+            archive_path = path.relpath(file_path)
+            z.write(file_path, archive_path)
 
-    # Clean up
-    try:
-        remove("core.html")
-        remove("core.c")
-        shutil.rmtree("build")
-    except:
-        pass
-
-    chdir("..")
-
-    shutil.rmtree(".//molecularplus//__pycache__")
-
-    print("zipping Extension...")
-    with ZipFile('molecular-plus_{}_{}_{}.zip'.format(version, v, name), 'w', compression=ZIP_DEFLATED) as z:
-        for root, _, files in walk('molecularplus'):
-            for file in files:
-                file_path = path.join(root, file)
-                archive_path = path.relpath(file_path)
-                z.write(file_path, archive_path)
-
-    shutil.rmtree(".//molecularplus")
+shutil.rmtree(".//molecularplus")
 print(version)
