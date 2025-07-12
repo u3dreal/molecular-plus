@@ -7,7 +7,7 @@ from mathutils.geometry import barycentric_transform as barycentric
 from time import sleep, strftime, gmtime, time
 
 from . import simulate
-from molecular_plus_core import core
+import core
 from .utils import get_object, destroy_caches, update_progress
 
 
