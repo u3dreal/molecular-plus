@@ -26,7 +26,7 @@ elif is_windows:
 mkdir(".//molecularplus")
 
 pyfiles = (
-    "blender.manifest", "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
+    "blender_manifest.toml", "__init__.py", "creators.py", "descriptions.py", "names.py", "operators.py", "properties.py",
     "simulate.py", "ui.py", "utils.py", "addon_prefrences.py")
 
 for file in pyfiles:
