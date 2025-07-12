@@ -79,4 +79,4 @@ with ZipFile('molecular-plus_{}_{}_{}.zip'.format(version, v, name), 'w', compre
             z.write(file_path, archive_path)
 
 shutil.rmtree(".//molecularplus")
-#print(version)
+print(version)

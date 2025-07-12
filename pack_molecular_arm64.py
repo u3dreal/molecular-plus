@@ -49,7 +49,7 @@ if not path.exists(wheels_dir):
 print("Creating wheel...")
 with Popen([sys.executable, "setup.py", "bdist_wheel"], stdout=PIPE) as proc:
     proc.stdout.read()
-    
+
 # Move the wheel to the wheels directory
 for root, _, files in walk('dist'):
     for file in files:
@@ -79,4 +79,4 @@ with ZipFile('molecular-plus_{}_{}_{}_arm64.zip'.format(version, v, name), 'w', 
             z.write(file_path, archive_path)
 
 shutil.rmtree(".//molecularplus")
-#print(version)
+print(version)
