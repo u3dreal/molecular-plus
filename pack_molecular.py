@@ -41,21 +41,17 @@ chdir(getcwd() + "//c_sources")
 
 version = '.'.join(map(str, bl_info['version']))
 
-# Create wheels directory if it doesn't exist
-wheels_dir = "..//molecularplus//wheels"
-if not path.exists(wheels_dir):
-    mkdir(wheels_dir)
-
 #print("Creating wheel...")
-process = Popen([sys.executable, "setup.py", "bdist_wheel"], stdout=PIPE, stderr=PIPE)
-stdout, stderr = process.communicate()
+with Popen([sys.executable, "setup.py", "build_ext", "--inplace"], stdout=PIPE) as proc:
+    proc.stdout.read()
 
 # Move the wheel to the wheels directory
-for root, _, files in walk('dist'):
+rootdir = getcwd()
+for root, _, files in walk(rootdir):
     for file in files:
-        if file.endswith('.whl'):
+        if file.endswith('.so'):
             source = path.join(root, file)
-            destination = path.join(wheels_dir, file)
+            destination = path.join("..//molecularplus", file)
             shutil.move(source, destination)
 
 # Clean up
