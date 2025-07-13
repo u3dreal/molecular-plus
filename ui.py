@@ -148,7 +148,7 @@ class MS_PT_MolecularCreatePanel(bpy.types.Panel):
         if bpy.app.version[0] == 4 and bpy.app.version[1] >= 1:
             row.operator("molecular_operators.molecular_makegrid2d", icon='LIGHTPROBE_VOLUME', text="2D Grid")
         else:
-            row.operator("molecular_operators.molecular_makegrid2d", icon = 'LIGHTPROBE_GRID',text = "2D Grid")
+            row.operator("molecular_operators.molecular_makegrid2d", icon = 'VIEW_ORTHO',text = "2D Grid")
         row = layout.row()
         row.operator("molecular_operators.molecular_makegrid3d", icon = 'MOD_REMESH',text = "3D Grid")
         row.operator("molecular_operators.molecular_makecollider", icon = 'MOD_PHYSICS', text = "Collider")
