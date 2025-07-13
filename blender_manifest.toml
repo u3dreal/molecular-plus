@@ -21,10 +21,10 @@ platforms = ["windows-x64", "macos-x64", "macos-arm64", "linux-x64"]
 
 # Optional: bundle 3rd party Python modules
 wheels = [
-  "./wheels/molecular_plus_core-1.17.21-cp311-cp311-macosx_10_13_x86_64.whl",
-  "./wheels/molecular_plus_core-1.17.21-cp311-cp311-macosx_10_9_universal2.whl",
-  "./wheels/molecular_plus_core-1.17.21-cp311-cp311-linux_x86_64.whl",
-  "./wheels/molecular_plus_core-1.17.21-cp311-cp311-win_amd64.whl",
+  "./wheels/molecular_core-1.17.21-cp311-cp311-macosx_11_0_x86_64.whl",
+  "./wheels/molecular_core-1.17.21-cp311-cp311-macosx_10_9_universal2.whl",
+  "./wheels/molecular_core-1.17.21-cp311-cp311-linux_x86_64.whl",
+  "./wheels/molecular_core-1.17.21-cp311-cp311-win_amd64.whl",
 ]
 
 # Optional: add-ons can list which resources they will require
