@@ -140,31 +140,31 @@ cdef void KDTree_rnn_query(
         float point[3],
         float dist
         )noexcept nogil:
-    if  par.state < 3:
+    if par.state < 3:
         return
 
     global parlist
-    cdef float sqdist  = 0
-    cdef int k  = 0
-    cdef int i = 0
+    cdef float sqdist = dist * dist
     par.neighboursnum = 0
-    par.neighbours[0] = -1
-
+    
+    # Early exit if tree is invalid
     if kdtree.root_node[0].index != kdtree.nodes[0].index:
-        par.neighbours[0] = -1
-        par.neighboursnum = 0
         return
-    else:
-        sqdist = dist * dist
-        KDTree_rnn_search(
-            kdtree, &par[0],
-            kdtree.root_node[0],
-            point,
-            dist,
-            sqdist,
-            3,
-            0
-        )
+    
+    # Pre-allocate neighbor buffer if needed
+    if par.neighboursmax < 32:  # Reasonable minimum
+        par.neighboursmax = 32
+        par.neighbours = <int *>realloc(par.neighbours, par.neighboursmax * cython.sizeof(int))
+    
+    KDTree_rnn_search(
+        kdtree, &par[0],
+        kdtree.root_node[0],
+        point,
+        dist,
+        sqdist,
+        3,
+        0
+    )
 
 
 #@cython.cdivision(True)

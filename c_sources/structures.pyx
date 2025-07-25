@@ -99,25 +99,31 @@ cdef struct SParticle:
 
 
 cdef struct Particle:
-    int id
+    # Hot data - frequently accessed together (cache-friendly layout)
     float loc[3]
     float vel[3]
     float size
     float mass
+    int id
     int state
     float weak
-
-    ParSys *sys
-    int *collided_with
-    int collided_num
+    
+    # Neighbor data - accessed together during collision detection
+    int *neighbours
+    int neighboursnum
+    int neighboursmax
+    
+    # Link data - accessed together during link solving
     Links *links
     int links_num
     int links_activnum
     int *link_with
     int link_withnum
-    int *neighbours
-    int neighboursnum
-    int neighboursmax
+    
+    # Cold data - less frequently accessed
+    ParSys *sys
+    int *collided_with
+    int collided_num
 
 
 cdef struct Pool:

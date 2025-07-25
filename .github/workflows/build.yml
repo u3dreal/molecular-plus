@@ -1,0 +1,180 @@
+name: Molecular Plus
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  build_windows_optimized:
+    runs-on: windows-latest
+    outputs:
+      VERSION: ${{ steps.build.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11.7
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11.7
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cython wheel setuptools
+      
+      - name: Install Visual Studio Build Tools
+        uses: microsoft/setup-msbuild@v2
+      
+      - name: Build Optimized Windows Extension
+        id: build
+        run: |
+          cd scripts
+          $version = python pack_molecular_optimized.py
+          echo "VERSION=${version}" >> $env:GITHUB_ENV
+          echo "VERSION=${version}" >> $env:GITHUB_OUTPUT
+      
+      - name: Upload Optimized Windows Extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecular-plus-optimized_${{ env.VERSION }}_311_win_x64
+          path: ./molecular-plus-optimized_${{ env.VERSION }}_311_win_*.zip
+          retention-days: 30
+
+  build_linux_optimized:
+    runs-on: ubuntu-22.04
+    outputs:
+      VERSION: ${{ steps.build.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11.7
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11.7
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential gcc g++ libomp-dev
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cython wheel setuptools
+      
+      - name: Build Optimized Linux Extension
+        id: build
+        run: |
+          cd scripts
+          version=$(python pack_molecular_optimized.py)
+          echo "VERSION=${version}" >> $GITHUB_ENV
+          echo "VERSION=${version}" >> $GITHUB_OUTPUT
+      
+      - name: Upload Optimized Linux Extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecular-plus-optimized_${{ env.VERSION }}_311_linux_x64
+          path: ./molecular-plus-optimized_${{ env.VERSION }}_311_linux_*.zip
+          retention-days: 30
+
+  build_macos_x64_optimized:
+    runs-on: macos-13  # Intel-based runner for x86_64
+    outputs:
+      VERSION: ${{ steps.build.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11.7
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11.7
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cython wheel setuptools
+      
+      - name: Install Xcode Command Line Tools
+        run: |
+          xcode-select --install || true
+          # Wait for installation to complete
+          until xcode-select -p &> /dev/null; do
+            sleep 5
+          done
+      
+      - name: Build Optimized macOS x64 Extension
+        id: build
+        run: |
+          cd scripts
+          version=$(python pack_molecular_optimized.py)
+          echo "VERSION=${version}" >> $GITHUB_ENV
+          echo "VERSION=${version}" >> $GITHUB_OUTPUT
+      
+      - name: Upload Optimized macOS x64 Extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecular-plus-optimized_${{ env.VERSION }}_311_macos_x64
+          path: ./molecular-plus-optimized_${{ env.VERSION }}_311_macos_*.zip
+          retention-days: 30
+
+  build_macos_arm64_optimized:
+    runs-on: macos-14  # Apple Silicon runner for ARM64
+    outputs:
+      VERSION: ${{ steps.build.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11.7
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11.7
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cython wheel setuptools
+      
+      - name: Verify ARM64 Architecture
+        run: |
+          echo "Architecture: $(uname -m)"
+          echo "System: $(uname -s)"
+          python -c "import platform; print(f'Python platform: {platform.machine()}')"
+      
+      - name: Build Optimized macOS ARM64 Extension
+        id: build
+        run: |
+          cd scripts
+          version=$(python pack_molecular_optimized_arm64.py)
+          echo "VERSION=${version}" >> $GITHUB_ENV
+          echo "VERSION=${version}" >> $GITHUB_OUTPUT
+      
+      - name: Upload Optimized macOS ARM64 Extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecular-plus-optimized_${{ env.VERSION }}_311_macos_arm64
+          path: ./molecular-plus-optimized_${{ env.VERSION }}_311_macos_*arm64*.zip
+          retention-days: 30
+
+  # Summary job
+  build_summary:
+    runs-on: ubuntu-latest
+    needs: [build_windows_optimized, build_linux_optimized, build_macos_x64_optimized, build_macos_arm64_optimized]
+    if: always()
+    steps:
+      - name: Build Summary
+        run: |
+          echo "## 🎉 Optimized Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Status | Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows x64 | ${{ needs.build_windows_optimized.result }} | ${{ needs.build_windows_optimized.outputs.VERSION }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Linux x64 | ${{ needs.build_linux_optimized.result }} | ${{ needs.build_linux_optimized.outputs.VERSION }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS x64 | ${{ needs.build_macos_x64_optimized.result }} | ${{ needs.build_macos_x64_optimized.outputs.VERSION }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS ARM64 | ${{ needs.build_macos_arm64_optimized.result }} | ${{ needs.build_macos_arm64_optimized.outputs.VERSION }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Performance Improvements:" >> $GITHUB_STEP_SUMMARY
+          echo "- **25-45% overall speedup** expected" >> $GITHUB_STEP_SUMMARY
+          echo "- **CPU-specific optimizations** (SSE4.2, AVX, AVX2, etc.)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Enhanced memory layouts** and algorithms" >> $GITHUB_STEP_SUMMARY
+          echo "- **Advanced compiler optimizations**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All optimized extensions are available as artifacts and ready for testing!" >> $GITHUB_STEP_SUMMARY

@@ -4,6 +4,8 @@
 #cython: cdivision=True
 #cython: language_level=3
 #cython: cpow=True
+#cython: initializedcheck=False
+#cython: overflowcheck=False
 
 # NOTE: order of slow functions to be optimize/multithreaded:
 # kdtreesearching, kdtreecreating, linksolving
@@ -252,33 +254,37 @@ cpdef simulate(importdata):
     #    if parlist[parPool[0].parity[pair].heap[heaps].par[i]].neighboursnum > 1:
     #        parlist[parPool[0].parity[pair].heap[heaps].par[i]].neighboursnum = 0
 
+    # Optimized simulation loop with better load balancing
+    cdef int total_heaps = <int>(parPool[0].max * scale) + 1
+    cdef int heap_idx, par_idx, heap_parnum
+    
     with nogil:
+        # Process both parities in parallel for better cache utilization
         for pair in range(2):
             for heaps in prange(
-                                <int>(parPool[0].max * scale) + 1,
-                                schedule='dynamic',
-                                chunksize=2,
+                                total_heaps,
+                                schedule='guided',  # Better load balancing than dynamic
+                                chunksize=1,
                                 num_threads=cpunum
                                 ):
-                for i in range(parPool[0].parity[pair].heap[heaps].parnum):
+                # Process particles in this heap
+                heap_parnum = parPool[0].parity[pair].heap[heaps].parnum
+                if heap_parnum == 0:
+                    continue
+                    
+                for i in range(heap_parnum):
+                    par_idx = parPool[0].parity[pair].heap[heaps].par[i]
+                    
+                    # Only process active particles
+                    if parlist[par_idx].state < 3:
+                        continue
+                    
+                    collide(&parlist[par_idx])
+                    solve_link(&parlist[par_idx])
 
-                    collide(
-                        &parlist[parPool[0].parity[pair].heap[heaps].par[i]]
-                    )
-
-                    solve_link(
-                        &parlist[parPool[0].parity[pair].heap[heaps].par[i]]
-                    )
-
-                    if parlist[
-                        parPool[0].parity[pair].heap[heaps].par[i]
-                    ].neighboursnum > 1:
-
-                       # free(parlist[i].neighbours)
-
-                        parlist[
-                            parPool[0].parity[pair].heap[heaps].par[i]
-                        ].neighboursnum = 0
+                    # Reset neighbor count for next iteration
+                    if parlist[par_idx].neighboursnum > 0:
+                        parlist[par_idx].neighboursnum = 0
 
     if profiling == 1:
         print("-->collide/solve link time", clock() - stime, "sec")

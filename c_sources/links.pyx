@@ -52,7 +52,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
         if par.id != par2.id:
             # arraysearch(par2.id, par.link_with, par.link_withnum)
 
-            if arraysearch(par.id,par2.link_with,par2.link_withnum) == -1 and \
+            if fast_arraysearch(par.id,par2.link_with,par2.link_withnum) == -1 and \
                     par2.state >= 3 and par.state >= 3:
 
             #if par not in par2.link_with and par2.state <= 1 \
@@ -204,6 +204,10 @@ cdef void solve_link(Particle *par)noexcept nogil:
     cdef float *xpar1_vel = [0, 0, 0]
     cdef float *ypar2_vel = [0, 0, 0]
     cdef float *xpar2_vel = [0, 0, 0]
+    cdef float length_diff = 0
+    cdef float ForceSprDam = 0
+    cdef float parSumMass = 0
+    cdef int j = 0
     # broken_links = []
     if  par.state < 3:
         return
@@ -231,8 +235,9 @@ cdef void solve_link(Particle *par)noexcept nogil:
             LengthY = Loc2[1] - Loc1[1]
             LengthZ = Loc2[2] - Loc1[2]
             Length = sqrt(LengthX * LengthX + LengthY * LengthY + LengthZ * LengthZ)
-            # Length = (LengthX ** 2 + LengthY ** 2 + LengthZ ** 2) ** (0.5)
-            if par.links[i].lenght != Length and Length != 0:
+            if Length < 1e-6:  # Avoid division by zero and tiny differences
+                continue
+            if fabs(par.links[i].lenght - Length) > 1e-6:  # Avoid unnecessary computation for tiny differences
                 if par.links[i].lenght > Length:
                     stiff = par.links[i].stiffness * deltatime
                     damping = par.links[i].damping
@@ -245,7 +250,14 @@ cdef void solve_link(Particle *par)noexcept nogil:
                 Vy = V2[1] - V1[1]
                 Vz = V2[2] - V1[2]
                 V = (Vx * LengthX + Vy * LengthY + Vz * LengthZ) / Length
-                ForceSpring = ((Length - par.links[i].lenght) ** (exp)) * stiff
+                # Optimize power calculation - avoid expensive pow() for common cases
+                length_diff = Length - par.links[i].lenght
+                if exp == 1:
+                    ForceSpring = length_diff * stiff
+                elif exp == 2:
+                    ForceSpring = length_diff * length_diff * stiff
+                else:
+                    ForceSpring = (length_diff ** exp) * stiff
                 ForceDamper = damping * V
                 ForceSprDam = ForceSpring + ForceDamper
                 ForceX = ForceSprDam * LengthX / Length
@@ -345,7 +357,7 @@ cdef void solve_link(Particle *par)noexcept nogil:
                     par.links_activnum -= 1
                     deadlinks[threadid()] += 1
 
-                    parsearch = arraysearch(
+                    parsearch = fast_arraysearch(
                         par2.id,
                         par.link_with,
                         par.link_withnum
@@ -354,7 +366,7 @@ cdef void solve_link(Particle *par)noexcept nogil:
                     if parsearch != -1:
                         par.link_with[parsearch] = -1
 
-                    par2search = arraysearch(
+                    par2search = fast_arraysearch(
                         par.id,
                         par2.link_with,
                         par2.link_withnum

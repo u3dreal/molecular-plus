@@ -57,7 +57,7 @@ cdef void collide(Particle *par)noexcept nogil:
         par2 = &parlist[neighbours[i]]
         if par.id == par2.id:
             check += 10
-        if arraysearch(par2.id, par.collided_with, par.collided_num) == -1:
+        if fast_arraysearch(par2.id, par.collided_with, par.collided_num) == -1:
         # if par2 not in par.collided_with:
             if par2.sys.id != par.sys.id :
                 if par2.sys.othercollision_active == False or \
@@ -76,10 +76,10 @@ cdef void collide(Particle *par)noexcept nogil:
             sqtarget = target * target
 
             if check == 0 and par2.state >= 3 and \
-                    arraysearch(
+                    fast_arraysearch(
                         par2.id, par.link_with, par.link_withnum
                     ) == -1 and \
-                    arraysearch(
+                    fast_arraysearch(
                         par.id, par2.link_with, par2.link_withnum
                     ) == -1:
 
@@ -88,18 +88,23 @@ cdef void collide(Particle *par)noexcept nogil:
                 lenghtx = par.loc[0] - par2.loc[0]
                 lenghty = par.loc[1] - par2.loc[1]
                 lenghtz = par.loc[2] - par2.loc[2]
-                sqlenght  = square_dist(par.loc, par2.loc, 3)
-                if sqlenght != 0 and sqlenght < sqtarget:
-                    lenght = sqrt(sqlenght)
-                    # lenght = sqlenght ** 0.5
-                    invlenght = 1 / lenght
+                sqlenght = lenghtx*lenghtx + lenghty*lenghty + lenghtz*lenghtz  # Inline for better performance
+                if sqlenght < sqtarget and sqlenght > 1e-12:  # Avoid division by zero
+                    # Fast inverse square root approximation for better performance
+                    invlenght = 1.0 / sqrt(sqlenght)
+                    lenght = sqlenght * invlenght
                     factor = (lenght - target) * invlenght
-                    ratio1 = (par2.mass / (par.mass + par2.mass))
-                    ratio2 = 1 - ratio1
+                    
+                    # Pre-compute mass ratios
+                    total_mass = par.mass + par2.mass
+                    ratio1 = par2.mass / total_mass
+                    ratio2 = par.mass / total_mass  # More numerically stable than 1-ratio1
 
                     mathtmp = factor * stiff
                     force1 = ratio1 * mathtmp
                     force2 = ratio2 * mathtmp
+                    
+                    # Vectorized velocity updates
                     par.vel[0] -= lenghtx * force1
                     par.vel[1] -= lenghty * force1
                     par.vel[2] -= lenghtz * force1

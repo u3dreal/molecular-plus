@@ -57,14 +57,18 @@ if not DEBUG_MODE:
         ext_modules = [Extension(
             module_name,
             ['molecular_core/core.pyx'],
-            extra_compile_args=['-O3', '-msse4.2', '-ffast-math', '-fno-builtin','-fopenmp'],
-            extra_link_args=['-lm','-fopenmp']
+            extra_compile_args=['-O3', '-march=native', '-mtune=native', '-msse4.2', '-mavx', '-mavx2', 
+                              '-ffast-math', '-fno-builtin', '-fopenmp', '-funroll-loops', 
+                              '-fomit-frame-pointer', '-flto', '-DNDEBUG'],
+            extra_link_args=['-lm', '-fopenmp', '-flto']
         )]
     elif os_name == "Darwin":
         ext_modules = [Extension(
             module_name,
             ['molecular_core/core.pyx'],
-            extra_compile_args=['-msse4.2', '-O3', '-ffast-math', '-fno-builtin', '-arch', 'x86_64', '-Xclang', '-fopenmp', '-isystem./openmp/x86_64/include'],
+            extra_compile_args=['-O3', '-march=native', '-mtune=native', '-msse4.2', '-mavx', '-mavx2',
+                              '-ffast-math', '-fno-builtin', '-arch', 'x86_64', '-Xclang', '-fopenmp', 
+                              '-isystem./openmp/x86_64/include', '-funroll-loops', '-fomit-frame-pointer', '-DNDEBUG'],
             extra_link_args=['-lm', '-L./openmp/x86_64/lib', '-lomp', '-arch', 'x86_64', '-Wl,-rpath,@loader_path']
         )]
 else:
