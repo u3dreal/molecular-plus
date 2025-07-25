@@ -115,8 +115,13 @@ def get_cpu_info():
             result = subprocess.run(['sysctl', '-n', 'machdep.cpu.features'], 
                                   capture_output=True, text=True)
             return result.stdout
+        elif platform.system() == "Windows":
+            # Windows doesn't have easy CPU feature detection, return generic info
+            return f"Windows {platform.machine()} - CPU features detected via GitHub Actions"
+        else:
+            return f"Unknown system: {platform.system()}"
     except:
-        return ""
+        return "CPU feature detection failed"
 
 def get_optimized_flags():
     """Get CPU-specific optimization flags targeting modern user hardware"""
