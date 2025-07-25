@@ -58,21 +58,24 @@ def detect_cpu_features():
             cpuinfo = ""
         
         features = []
-        # Check for AVX2 first (most important for performance)
-        if 'AVX2' in cpuinfo:
-            features.append('AVX2')
-        elif 'AVX' in cpuinfo:
-            features.append('AVX')
         
-        if 'SSE4_2' in cpuinfo or 'SSE4.2' in cpuinfo:
-            features.append('SSE4.2')
-        
-        # On GitHub Actions or if we can't detect features, assume modern CPU
-        if not features and os.getenv('GITHUB_ACTIONS'):
+        # On GitHub Actions, assume modern CPU with AVX2 support
+        # GitHub Actions runners are modern and support AVX2
+        if os.getenv('GITHUB_ACTIONS'):
             features = ['AVX2', 'SSE4.2']
-        elif not features:
-            # Conservative fallback
-            features = ['SSE4.2']
+        else:
+            # Check for AVX2 first (most important for performance)
+            if 'AVX2' in cpuinfo:
+                features.append('AVX2')
+            elif 'AVX' in cpuinfo:
+                features.append('AVX')
+            
+            if 'SSE4_2' in cpuinfo or 'SSE4.2' in cpuinfo:
+                features.append('SSE4.2')
+            
+            # If we can't detect features, use conservative fallback
+            if not features:
+                features = ['SSE4.2']
         
         return features
     except:
