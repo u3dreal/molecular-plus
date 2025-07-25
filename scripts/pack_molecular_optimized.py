@@ -232,7 +232,7 @@ setup(
         'profile': False
     }),
     packages=["molecular_core"],
-    package_data={"molecular_core": ["libomp.dylib"]} if os_name == "Darwin" else [],
+    package_data={"molecular_core": ["libomp.dylib"]} if os_name == "Darwin" else {},
     zip_safe=False,
 )
 
