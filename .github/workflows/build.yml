@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: molecular-plus-optimized_${{ env.VERSION }}_311_win_x64
-          path: ./molecular-plus-optimized_${{ env.VERSION }}_311_win_*.zip
+          path: molecular-plus-optimized_${{ env.VERSION }}_311_win_*.zip
           retention-days: 30
 
   build_linux_optimized:
