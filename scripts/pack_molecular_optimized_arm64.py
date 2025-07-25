@@ -239,10 +239,10 @@ def get_version_from_init():
             major, minor, patch = version_match.groups()
             return f"{major}.{minor}.{patch}"
         else:
-            print("⚠️  Could not extract version from __init__.py, using fallback")
+            print("[WARN] Could not extract version from __init__.py, using fallback")
             return "1.18.0"
     except Exception as e:
-        print(f"⚠️  Error reading version from __init__.py: {e}")
+        print(f"[WARN] Error reading version from __init__.py: {e}")
         return "1.18.0"
 
 def update_manifest_version(version):
@@ -268,11 +268,11 @@ def update_manifest_version(version):
             with open(manifest_path, 'w') as f:
                 f.write(content)
             
-            print(f"  ✅ Updated blender_manifest.toml version to {version}")
+            print(f"  [OK] Updated blender_manifest.toml version to {version}")
         else:
-            print("  ⚠️  blender_manifest.toml not found")
+            print("  [WARN] blender_manifest.toml not found")
     except Exception as e:
-        print(f"  ⚠️  Error updating manifest version: {e}")
+        print(f"  [WARN] Error updating manifest version: {e}")
 
 def main():
     """Main function to build optimized ARM64 wheels and create Blender extension"""
@@ -297,7 +297,7 @@ def main():
     
     # Verify we're on ARM64
     if platform.machine().lower() not in ['arm64', 'aarch64']:
-        print("⚠️  Warning: This script is optimized for ARM64 architecture")
+        print("[WARN] Warning: This script is optimized for ARM64 architecture")
         print(f"   Current architecture: {platform.machine()}")
     
     # Create molecularplus directory
@@ -317,9 +317,9 @@ def main():
         source_path = f"../addon/{file}"
         if os.path.exists(source_path):
             shutil.copy(source_path, f"./molecularplus/{file}")
-            print(f"  ✅ {file}")
+            print(f"  [OK] {file}")
         else:
-            print(f"  ⚠️  {file} - Not found")
+            print(f"  [WARN] {file} - Not found")
     
     # Update manifest version to match __init__.py
     print("\\nUpdating manifest version...")
@@ -347,12 +347,12 @@ def main():
         stdout, stderr = process.communicate()
         
         if process.returncode != 0:
-            print(f"❌ ARM64 wheel build failed!")
+            print(f"[ERROR] ARM64 wheel build failed!")
             print("STDOUT:", stdout.decode())
             print("STDERR:", stderr.decode())
             return False
         
-        print("✅ ARM64 wheel build completed successfully!")
+        print("[OK] ARM64 wheel build completed successfully!")
         
         # Move the wheel to the wheels directory
         wheel_moved = False
@@ -362,11 +362,11 @@ def main():
                     source = path.join(root, file)
                     destination = path.join(wheels_dir, file)
                     shutil.move(source, destination)
-                    print(f"  📦 Moved wheel: {file}")
+                    print(f"  [OK] Moved wheel: {file}")
                     wheel_moved = True
         
         if not wheel_moved:
-            print("⚠️  No wheel file found in dist directory")
+            print("[WARN] No wheel file found in dist directory")
         
         # Clean up build artifacts
         cleanup_files = ["core.html", "core.c", "setup_optimized_arm64.py"]
@@ -415,12 +415,12 @@ def main():
     build_time = time.time() - start_time
     
     print("\\n" + "=" * 70)
-    print("🎉 OPTIMIZED ARM64 BLENDER EXTENSION CREATED SUCCESSFULLY!")
+    print("OPTIMIZED ARM64 BLENDER EXTENSION CREATED SUCCESSFULLY!")
     print("=" * 70)
-    print(f"📦 Extension: {zip_name}")
-    print(f"🚀 Optimizations: ARM64 + {', '.join(arm_features)}")
-    print(f"⏱️  Build time: {build_time:.2f} seconds")
-    print(f"📈 Expected performance improvement: 25-45% faster")
+    print(f"Extension: {zip_name}")
+    print(f"Optimizations: ARM64 + {', '.join(arm_features)}")
+    print(f"Build time: {build_time:.2f} seconds")
+    print(f"Expected performance improvement: 25-45% faster")
     print("\\nInstallation:")
     print("1. Open Blender on your ARM64 system (Apple Silicon Mac)")
     print("2. Go to Edit > Preferences > Extensions")
@@ -431,9 +431,20 @@ def main():
     return True
 
 if __name__ == "__main__":
+    # Check if we need version-only output for GitHub Actions
+    if len(sys.argv) > 1 and sys.argv[1] == "--version-only":
+        version = get_version_from_init()
+        print(version)
+        sys.exit(0)
+    
     success = main()
     if success:
-        print("\\n✅ ARM64 build completed successfully!")
+        # For GitHub Actions, print just the version at the end
+        if os.getenv('GITHUB_ACTIONS') == 'true':
+            version = get_version_from_init()
+            print(version)
+        else:
+            print("\\n[OK] ARM64 build completed successfully!")
     else:
-        print("\\n❌ ARM64 build failed!")
+        print("\\n[ERROR] ARM64 build failed!")
         sys.exit(1)

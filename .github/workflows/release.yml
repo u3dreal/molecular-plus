@@ -30,7 +30,8 @@ jobs:
         id: build
         run: |
           cd scripts
-          $version = python pack_molecular_optimized.py
+          python pack_molecular_optimized.py
+          $version = python pack_molecular_optimized.py --version-only
           echo "VERSION=${version}" >> $env:GITHUB_ENV
           echo "VERSION=${version}" >> $env:GITHUB_OUTPUT
       
@@ -66,7 +67,8 @@ jobs:
         id: build
         run: |
           cd scripts
-          version=$(python pack_molecular_optimized.py)
+          python pack_molecular_optimized.py
+          version=$(python pack_molecular_optimized.py --version-only)
           echo "VERSION=${version}" >> $GITHUB_ENV
           echo "VERSION=${version}" >> $GITHUB_OUTPUT
       
@@ -105,7 +107,8 @@ jobs:
         id: build
         run: |
           cd scripts
-          version=$(python pack_molecular_optimized.py)
+          python pack_molecular_optimized.py
+          version=$(python pack_molecular_optimized.py --version-only)
           echo "VERSION=${version}" >> $GITHUB_ENV
           echo "VERSION=${version}" >> $GITHUB_OUTPUT
       
@@ -142,7 +145,8 @@ jobs:
         id: build
         run: |
           cd scripts
-          version=$(python pack_molecular_optimized_arm64.py)
+          python pack_molecular_optimized_arm64.py
+          version=$(python pack_molecular_optimized_arm64.py --version-only)
           echo "VERSION=${version}" >> $GITHUB_ENV
           echo "VERSION=${version}" >> $GITHUB_OUTPUT
       
