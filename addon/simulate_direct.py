@@ -158,40 +158,25 @@ def _initialize_simulation_parameters(scene, direct_systems):
 
 
 def simulate_direct(direct_data):
-    """
-    Direct memory simulation using Cython backend.
-    """
+    """Direct memory simulation using Cython backend."""
+    from ..c_sources.simulate_direct import simulate_direct_cython
+    
     systems = direct_data['systems']
     results = []
-    
-    try:
-        from ..c_sources.simulate_direct import simulate_direct_cython
-        cython_available = True
-    except ImportError:
-        cython_available = False
     
     for sys_data in systems:
         direct_psys = sys_data['system']
         settings = sys_data['settings']
         
-        if cython_available:
-            particle_pointers = direct_psys.get_particle_pointers()
-            result = simulate_direct_cython(particle_pointers, settings.timestep)
-            
-            if result:
-                results.append({
-                    'particle_count': direct_psys.particle_count,
-                    'system_name': sys_data['object'].name,
-                    'collisions_resolved': result.get('collisions_resolved', 0),
-                    'links_processed': result.get('links_processed', 0),
-                    'mode': 'direct_memory_access'
-                })
-        else:
-            # Fallback without Cython
-            results.append({
-                'particle_count': direct_psys.particle_count,
-                'system_name': sys_data['object'].name,
-                'mode': 'python_fallback'
-            })
+        particle_pointers = direct_psys.get_particle_pointers()
+        result = simulate_direct_cython(particle_pointers, settings.timestep)
+        
+        results.append({
+            'particle_count': direct_psys.particle_count,
+            'system_name': sys_data['object'].name,
+            'collisions_resolved': result.get('collisions_resolved', 0),
+            'links_processed': result.get('links_processed', 0),
+            'mode': 'direct_memory_access'
+        })
     
     return results
