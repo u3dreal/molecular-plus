@@ -22,19 +22,7 @@ from libc.math cimport sqrt
 print("Direct Memory Access Cython Core loaded")
 
 cdef struct BlenderParticle:
-    """
-    Blender particle structure from source code.
-    struct Particle {
-        int index;
-        float age;
-        float lifetime;
-        float3 location;
-        float4 rotation;
-        float size;
-        float3 velocity;
-        float3 angular_velocity;
-    };
-    """
+    # Blender particle structure from source code
     int index
     float age
     float lifetime

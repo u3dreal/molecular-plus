@@ -3,6 +3,8 @@ import array
 import numpy as np
 from .utils import get_object
 
+from .simulate_direct import pack_data_direct, simulate_direct
+
 def get_weak_map(obj, psys, par_weak):
     print('start bake weakmap from:', obj.name)
 
@@ -168,3 +170,14 @@ def pack_data(context, initiate):
                 else:
                     self_coll = psys.settings.mol_selfcollision_active
                     mol_exportdata.append((par_loc, par_vel, par_alive, self_coll))
+
+
+# Direct memory access functions - no fallbacks needed
+def pack_data_optimized(context, initiate):
+    """Use direct memory access for particle data."""
+    return pack_data_direct(context, initiate)
+
+
+def simulate_optimized(data):
+    """Use direct memory simulation."""
+    return simulate_direct(data)
