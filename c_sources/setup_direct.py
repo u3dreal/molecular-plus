@@ -14,17 +14,17 @@ import Cython.Compiler.Options
 Cython.Compiler.Options.annotate = True
 
 def get_optimized_flags():
-    """Get CPU-specific optimization flags"""
+    """Get CPU-specific optimization flags - SSE4.2 compatible"""
     os_name = platform.system()
     
     base_flags = ['-O3', '-ffast-math', '-funroll-loops', '-fomit-frame-pointer', '-DNDEBUG']
     
     if os_name == "Darwin":
-        base_flags.extend(['-march=native', '-mavx2', '-mfma'])
+        base_flags.extend(['-msse4.2'])
     elif os_name == "Linux":
-        base_flags.extend(['-march=native', '-mavx2', '-mfma'])
+        base_flags.extend(['-msse4.2'])
     elif os_name == "Windows":
-        base_flags = ['/Ox', '/arch:AVX2', '/fp:fast']
+        base_flags = ['/Ox', '/arch:SSE2', '/fp:fast']
     
     return base_flags
 
@@ -35,13 +35,13 @@ def main():
     opt_flags = get_optimized_flags()
     os_name = platform.system()
     
-    # Configure extension
+    # Configure extension - no OpenMP needed, using Cython prange with native threading
     if os_name == "Windows":
         ext_modules = [Extension(
             "simulate_direct",
             ["simulate_direct.pyx"],
-            extra_compile_args=opt_flags + ['/openmp'],
-            extra_link_args=['/LTCG']
+            extra_compile_args=opt_flags,
+            extra_link_args=[]
         )]
     elif os_name == "Darwin":
         # macOS - use pthreads for parallel processing
@@ -52,12 +52,12 @@ def main():
             extra_link_args=['-lm', '-lpthread']
         )]
     else:
-        # Linux
+        # Linux - use pthreads for parallel processing
         ext_modules = [Extension(
             "simulate_direct",
             ["simulate_direct.pyx"],
-            extra_compile_args=opt_flags + ['-fopenmp'],
-            extra_link_args=['-lm', '-fopenmp']
+            extra_compile_args=opt_flags + ['-pthread'],
+            extra_link_args=['-lm', '-lpthread']
         )]
     
     # Build the extension
