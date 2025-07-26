@@ -10,6 +10,11 @@ import bpy
 import bmesh
 import time
 
+def get_object(context, obj):
+    """Get evaluated object with particle data."""
+    depsgraph = context.evaluated_depsgraph_get()
+    return obj.evaluated_get(depsgraph)
+
 def create_simple_particle_system():
     """Create a simple particle system for testing."""
     # Clear scene
@@ -45,8 +50,12 @@ def create_simple_particle_system():
     # Advance to generate particles
     bpy.context.scene.frame_set(10)
     
-    print(f"Created particle system with {len(psys.particles)} particles")
-    return emitter, psys
+    # Get evaluated object to access actual particle data
+    evaluated_emitter = get_object(bpy.context, emitter)
+    evaluated_psys = evaluated_emitter.particle_systems[0]
+    
+    print(f"Created particle system with {len(evaluated_psys.particles)} particles")
+    return evaluated_emitter, evaluated_psys
 
 def test_direct_memory_access():
     """Test the direct memory access implementation."""
