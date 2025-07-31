@@ -3,7 +3,7 @@ schema_version = "1.0.0"
 # Example of manifest file for a Blender extension
 # Change the values according to your extension
 id = "molecularplus"
-version = "1.18.00"
+version = "1.20.00"
 name = "Molecular Plus"
 tagline = "Extension for molecular simulations in Blender"
 maintainer = "Jean-Francois Gallant (PyroEvil), Gregor Quade (u3dreal)"
