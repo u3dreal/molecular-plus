@@ -62,13 +62,13 @@ cpdef memfree():
     psysnum = 0
 
     if kdtree.numnodes >= 1:
-        for i in range(kdtree.numnodes):
-            free(kdtree.nodes[i].particle)
-            kdtree.nodes[i].particle = NULL
-            free(kdtree.nodes[i].left_child)
-            kdtree.nodes[i].left_child = NULL
-            free(kdtree.nodes[i].right_child)
-            kdtree.nodes[i].right_child = NULL
+        # Free memory pools instead of individual allocations
+        free(kdtree.particle_pool)
+        kdtree.particle_pool = NULL
+        free(kdtree.left_child_pool)
+        kdtree.left_child_pool = NULL
+        free(kdtree.right_child_pool)
+        kdtree.right_child_pool = NULL
 
         free(kdtree.thread_nodes)
         kdtree.thread_nodes = NULL
@@ -84,7 +84,7 @@ cpdef memfree():
         kdtree.thread_depth = NULL
         free(kdtree.nodes)
         kdtree.nodes = NULL
-        free(kdtree.root_node)
+        # root_node is now part of nodes array, so don't free it separately
         kdtree.root_node = NULL
 
     free(kdtree)

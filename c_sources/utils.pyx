@@ -28,8 +28,12 @@ cdef float dot_product(float u[3],float v[3])noexcept nogil:
 
 
 cdef void quick_sort(SParticle *a, int n, int axis)noexcept nogil:
-    if (n < 2):
+    # Use insertion sort for small arrays (hybrid approach)
+    cdef int THRESHOLD = 10
+    if (n < THRESHOLD):
+        insertion_sort(a, n, axis)
         return
+    
     cdef SParticle t
     cdef float p = a[int(n / 2)].loc[axis]
     cdef SParticle *l = a
@@ -55,6 +59,18 @@ cdef void quick_sort(SParticle *a, int n, int axis)noexcept nogil:
 
     quick_sort(a, r - a + 1, axis)
     quick_sort(l, a + n - l, axis)
+
+# Insertion sort implementation for small arrays
+cdef void insertion_sort(SParticle *a, int n, int axis) noexcept nogil:
+    cdef int i, j
+    cdef SParticle key
+    for i in range(1, n):
+        key = a[i]
+        j = i-1
+        while j >=0 and a[j].loc[axis] > key.loc[axis] :
+                a[j+1] = a[j]
+                j -= 1
+        a[j+1] = key
 
 # cdef void quick_sort(SParticle *a, int n, int axis) nogil:
 #     cdef int THRESHOLD = 10  # switch to insertion sort when the size of the array is less than this threshold

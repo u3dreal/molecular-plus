@@ -195,7 +195,7 @@ cpdef simulate(importdata):
         print("-->copy data time", clock() - stime, "sec")
         stime = clock()
 
-    KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1)
+    KDTree_create_tree_iterative(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1)
 
     with nogil:
         for i in prange(
@@ -204,7 +204,7 @@ cpdef simulate(importdata):
                         chunksize=2,
                         num_threads=cpunum
                         ):
-            KDTree_create_tree(
+            KDTree_create_tree_iterative(
                 kdtree,
                 parlistcopy,
                 kdtree.thread_start[i],

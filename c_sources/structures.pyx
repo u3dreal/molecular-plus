@@ -27,6 +27,12 @@ cdef struct KDTree:
     int *thread_name
     int *thread_parent
     int *thread_depth
+    
+    # Memory pools for particles and nodes
+    SParticle *particle_pool
+    Node *left_child_pool
+    Node *right_child_pool
+    int pool_size
 
 
 cdef struct Node:
