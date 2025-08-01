@@ -20,8 +20,8 @@ bl_info = {
     "author":
         "Jean-Francois Gallant (PyroEvil), "
         "Gregor Quade (u3dreal)",
-    "version": (1, 20, 00),
-    "blender": (3, 00, 0),
+    "version": (1, 20, 0),
+    "blender": (4, 2, 0),
     "location": "Properties editor > Physics Tab",
     "description":
         "Addon for calculating collisions "
