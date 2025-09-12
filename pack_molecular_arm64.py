@@ -50,18 +50,6 @@ if not path.exists(wheels_dir):
 process = Popen([sys.executable, "setup_arm64.py", "bdist_wheel"], stdout=PIPE, stderr=PIPE)
 stdout, stderr = process.communicate()
 
-# Print debug information
-print("Wheel build process return code:", process.returncode)
-if stdout:
-    print("STDOUT:", stdout.decode())
-if stderr:
-    print("STDERR:", stderr.decode())
-
-# Check if the wheel build process succeeded
-if process.returncode != 0:
-    print("Warning: Wheel build failed, but continuing with zip creation...")
-    # Continue even if wheel build fails, so we can see the error in logs
-
 # Move the wheel to the wheels directory
 for root, _, files in walk('dist'):
     for file in files:
