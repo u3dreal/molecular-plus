@@ -3,7 +3,7 @@ from setuptools import Extension, setup
 import Cython.Compiler.Options
 from Cython.Build import cythonize
 
-core_version = "1.17.21"
+core_version = "1.20.2"
 
 DEBUG_MODE = False
 
@@ -27,7 +27,7 @@ shutil.copy("__init__.py", "./molecular_core/__init__.py")
 # Copy libomp.dylib to molecular_plus_core/ if needed
 if os_name == "Darwin":
     shutil.copyfile(
-        "./openmp/x86_64/lib/libomp.dylib",
+        "./openmp/lib/libomp.dylib",
         "./molecular_core/libomp.dylib"
     )
 
@@ -50,22 +50,22 @@ if not DEBUG_MODE:
         ext_modules = [Extension(
             module_name,
             ['molecular_core/core.pyx'],
-            extra_compile_args=['/Ox','/openmp','/GT','/arch:SSE2','/fp:fast']#['/Ox','/openmp:llvm','/GT','/arch:SSE2','/fp:fast', '/wd4244', '/MD']
+            extra_compile_args=['/Ox','/openmp','/GT','/arch:AVX2','/fp:fast']#['/Ox','/openmp:llvm','/GT','/arch:SSE2','/fp:fast', '/wd4244', '/MD']
         )]
 
     elif os_name == "Linux":
         ext_modules = [Extension(
             module_name,
             ['molecular_core/core.pyx'],
-            extra_compile_args=['-O3', '-msse4.2', '-ffast-math', '-fno-builtin','-fopenmp'],
+            extra_compile_args=['-O3', '-mavx2', '-ffast-math', '-fno-builtin','-fopenmp'],
             extra_link_args=['-lm','-fopenmp']
         )]
     elif os_name == "Darwin":
         ext_modules = [Extension(
             module_name,
             ['molecular_core/core.pyx'],
-            extra_compile_args=['-msse4.2', '-O3', '-ffast-math', '-fno-builtin', '-arch', 'x86_64', '-Xclang', '-fopenmp', '-isystem./openmp/x86_64/include'],
-            extra_link_args=['-lm', '-L./openmp/x86_64/lib', '-lomp', '-arch', 'x86_64', '-Wl,-rpath,@loader_path']
+            extra_compile_args=['-msse4.2', '-O3', '-ffast-math', '-fno-builtin', '-arch', 'x86_64', '-Xclang', '-fopenmp', '-isystem./openmp/include'],
+            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'x86_64', '-Wl,-rpath,@loader_path']
         )]
 else:
     if os_name == "Windows":
@@ -86,8 +86,8 @@ else:
         ext_modules = [Extension(
             module_name,
             ['molecular_core/core.pyx'],
-            extra_compile_args=['-msse4.2', '-O0', '-g', '-arch', 'x86_64', '-Xclang', '-fopenmp', '-isystem./openmp/x86_64/include'],
-            extra_link_args=['-lm', '-L./openmp/x86_64/lib', '-lomp', '-arch', 'x86_64', '-Wl,-rpath,@loader_path']
+            extra_compile_args=['-msse4.2', '-O0', '-g', '-arch', 'x86_64', '-Xclang', '-fopenmp', '-isystem./openmp/include'],
+            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'x86_64', '-Wl,-rpath,@loader_path']
         )]
 
 setup(

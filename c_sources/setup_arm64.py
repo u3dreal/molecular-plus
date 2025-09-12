@@ -3,7 +3,7 @@ from setuptools import Extension, setup
 import Cython.Compiler.Options
 from Cython.Build import cythonize
 
-core_version = "1.17.21"
+core_version = "1.20.2"
 
 DEBUG_MODE = False
 
@@ -27,7 +27,7 @@ shutil.copy("__init__.py", "./molecular_core/__init__.py")
 # Copy libomp.dylib to molecular_plus_core/ if needed
 if os_name == "Darwin":
     shutil.copyfile(
-        "./openmp/arm64/lib/libomp.dylib",
+        "./openmp/lib/libomp.dylib",
         "./molecular_core/libomp.dylib"
     )
 
@@ -64,8 +64,8 @@ if not DEBUG_MODE:
         ext_modules = [Extension(
             module_name,
             ['molecular_core/core.pyx'],
-            extra_compile_args=['-O3', '-ffast-math', '-fno-builtin', '-arch', 'arm64', '-arch', 'arm64e', '-Xclang', '-fopenmp', '-isystem./openmp/arm64/include'],
-            extra_link_args=['-lm', '-L./openmp/arm64/lib', '-lomp', '-arch', 'arm64', '-arch', 'arm64e', '-Wl,-rpath,@loader_path']
+            extra_compile_args=['-O3', '-ffast-math', '-fno-builtin', '-arch', 'arm64', '-Xclang', '-fopenmp', '-isystem./openmp/include'],
+            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'arm64', '-Wl,-rpath,@executable_path']
         )]
 else:
     if os_name == "Windows":
@@ -86,8 +86,8 @@ else:
         ext_modules = [Extension(
             module_name,
             ['molecular_core/core.pyx'],
-            extra_compile_args=['-O0', '-g', '-arch', 'arm64', '-arch', 'arm64e', '-Xclang', '-fopenmp', '-isystem./openmp/arm64/include'],
-            extra_link_args=['-lm', '-L./openmp/arm64/lib', '-lomp', '-arch', 'arm64', '-arch', 'arm64e', '-Wl,-rpath,@loader_path']
+            extra_compile_args=['-O0', '-g', '-arch', 'arm64', '-Xclang', '-fopenmp', '-isystem./openmp/include'],
+            extra_link_args=['-lm', '-L./openmp/lib', '-lomp', '-arch', 'arm64', '-Wl,-rpath,@executable_path']
         )]
 
 setup(
