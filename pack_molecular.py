@@ -48,9 +48,15 @@ if not path.exists(wheels_dir):
     mkdir(wheels_dir)
 
 # Print debug information to stderr
-print("Creating wheel...", file=sys.stderr)
+#print("Creating wheel...", file=sys.stderr)
 process = Popen([sys.executable, "setup.py", "bdist_wheel"], stdout=PIPE, stderr=PIPE)
 stdout, stderr = process.communicate()
+
+print("Wheel build return code:", process.returncode, file=sys.stderr)
+if stdout:
+   print("Wheel build STDOUT:", stdout.decode(), file=sys.stderr)
+if stderr:
+   print("Wheel build STDERR:", stderr.decode(), file=sys.stderr)
 
 # Move the wheel to the wheels directory
 for root, _, files in walk('dist'):
