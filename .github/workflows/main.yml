@@ -2,10 +2,10 @@ name: Molecular Plus
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build_windows41:
@@ -68,36 +68,6 @@ jobs:
           name: molecular-plus_${{ env.VERSION }}_311_linux
           path: ./molecular-plus_${{ env.VERSION }}_311_linux.zip
 
-  build_macos41:
-    runs-on: macos-14
-    outputs:
-      VERSION: ${{ steps.build.outputs.VERSION }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.11.7
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11.7
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest cython wheel
-      - name: Lint with flake8
-        run: |
-          flake8 . --count --exit-zero --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Build with Cython
-        id: build
-        run: |
-          version=$(python pack_molecular.py)
-          echo "VERSION=${version}" >> $GITHUB_ENV
-          echo "VERSION=${version}" >> $GITHUB_OUTPUT
-      - name: Upload mac zip
-        uses: actions/upload-artifact@v4
-        with:
-          name: molecular-plus_${{ env.VERSION }}_311_macos
-          path: ./molecular-plus_${{ env.VERSION }}_311_macos.zip
-
   build_macos41_arm64:
     runs-on: macos-14
     outputs:
@@ -127,5 +97,3 @@ jobs:
         with:
           name: molecular-plus_${{ env.VERSION }}_311_macos_arm64
           path: ./molecular-plus_${{ env.VERSION }}_311_macos_arm64.zip
-
-
