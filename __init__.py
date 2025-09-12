@@ -20,7 +20,7 @@ bl_info = {
     "author":
         "Jean-Francois Gallant (PyroEvil), "
         "Gregor Quade (u3dreal)",
-    "version": (1, 20, 1),
+    "version": (1, 20, 2),
     "blender": (4, 2, 0),
     "location": "Properties editor > Physics Tab",
     "description":
