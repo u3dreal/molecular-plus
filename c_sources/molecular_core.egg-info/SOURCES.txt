@@ -1,9 +1,0 @@
-setup.py
-molecular_core/__init__.py
-molecular_core/core.c
-molecular_core/libomp.dylib
-molecular_core.egg-info/PKG-INFO
-molecular_core.egg-info/SOURCES.txt
-molecular_core.egg-info/dependency_links.txt
-molecular_core.egg-info/not-zip-safe
-molecular_core.egg-info/top_level.txt
