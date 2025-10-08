@@ -183,7 +183,7 @@ class MolCacheUV(bpy.types.Operator):
 
         ctx = bpy.context.copy()
         ctx["object"] = obj2
-        if bpy.app.version[0] == 4:
+        if bpy.app.version[0] >= 4:
             with context.temp_override(**ctx):
                 bpy.ops.object.modifier_apply(modifier=mod.name)
         else:
@@ -568,7 +568,7 @@ class MolToolsConvertGeo(bpy.types.Operator):
         out_node.location.x += 400
 
         in_node = node_tree.nodes["Group Input"]
-        if bpy.app.version[0] == 4:
+        if bpy.app.version[0] >= 4:
             node_tree.interface.new_socket(
                 name="Material",
                 in_out="INPUT",
