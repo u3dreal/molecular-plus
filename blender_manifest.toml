@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "molecularplus"
-version = "1.20.2"
+version = "1.20.3"
 name = "Molecular Plus"
 tagline = "Extension for molecular simulations in Blender"
 maintainer = "Jean-Francois Gallant (PyroEvil), Gregor Quade (u3dreal)"
@@ -21,7 +21,7 @@ platforms = ["windows-x64", "macos-arm64", "linux-x64"]
 # molecular-plus_1.20.2_311_macos_arm64.zip
 #
 wheels = [
-  "./wheels/molecular_core-1.20.2-cp311-cp311-macosx_15_0_universal2.whl",
+  "./wheels/molecular_core-1.20.2-cp311-cp311-macosx_15_0_arm64.whl",
   "./wheels/molecular_core-1.20.2-cp311-cp311-linux_x86_64.whl",
   "./wheels/molecular_core-1.20.2-cp311-cp311-win_amd64.whl",
 ]

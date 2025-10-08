@@ -17,24 +17,20 @@
 # ======================= END GPL LICENSE BLOCK ========================
 bl_info = {
     "name": "Molecular+",
-    "author":
-        "Jean-Francois Gallant (PyroEvil), "
-        "Gregor Quade (u3dreal)",
-    "version": (1, 20, 2),
+    "author": "Jean-Francois Gallant (PyroEvil), Gregor Quade (u3dreal)",
+    "version": (1, 20, 3),
     "blender": (4, 2, 0),
     "location": "Properties editor > Physics Tab",
-    "description":
-        "Addon for calculating collisions "
-        "and for creating links between particles",
+    "description": "Addon for calculating collisions "
+    "and for creating links between particles",
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "http://q3de.com/research/molecular/",
     "tracker_url": "https://discord.gg/tAwvNEAfA3",
-    "category": "Physics"
+    "category": "Physics",
 }
 
 
 def register():
-
     import bpy
     from . import properties, ui, operators, creators, addon_prefrences
 
@@ -55,7 +51,6 @@ def register():
 
 
 def unregister():
-
     import bpy
     from . import ui, operators, creators, addon_prefrences
 
@@ -71,6 +66,7 @@ def unregister():
         bpy.utils.unregister_class(panel)
 
     bpy.utils.unregister_class(addon_prefrences.pref_classes)
+
 
 if __name__ == "__main__":
     register()
