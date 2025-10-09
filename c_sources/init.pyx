@@ -5,7 +5,7 @@ cpdef init(importdata):
     global parnum
     global parlist
     global parlistcopy
-    global kdtree
+    global spatialhash
     global psysnum
     global psys
     global cpunum
@@ -113,8 +113,8 @@ cpdef init(importdata):
             jj += 1
 
     jj = 0
-    kdtree = <KDTree *>malloc(1 * cython.sizeof(KDTree))
-    KDTree_create_nodes(kdtree, parnum)
+    spatialhash = <SpatialHash *>malloc(1 * cython.sizeof(SpatialHash))
+    SpatialHash_create(spatialhash, parnum * 2, cpunum)
 
     with nogil:
         for i in prange(
@@ -128,20 +128,21 @@ cpdef init(importdata):
 
             memcpy(parlistcopy[i].loc, parlist[i].loc, sizeof(parlist[i].loc))
 
-    KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1)
+    # Calculate maximum search radius for initial spatial hash build
+    cdef float max_radius = 0
+    cdef float radius
+    for i in range(parnum):
+        if parlist[i].sys.links_active == 1:
+            if parlist[i].sys.link_rellength == 1:
+                radius = parlist[i].size * parlist[i].sys.link_length
+            else:
+                radius = parlist[i].sys.link_length
+        else:
+            radius = parlist[i].size * 2
+        if radius > max_radius:
+            max_radius = radius
 
-    with nogil:
-        for i in prange(kdtree.thread_index, schedule='dynamic', chunksize=2,num_threads=cpunum):
-            KDTree_create_tree(
-                kdtree,
-                parlistcopy,
-                kdtree.thread_start[i],
-                kdtree.thread_end[i],
-                kdtree.thread_name[i],
-                kdtree.thread_parent[i],
-                kdtree.thread_depth[i],
-                0
-            )
+    SpatialHash_build(spatialhash, parlistcopy, parnum, max_radius)
 
     with nogil:
         for i in prange(
@@ -152,17 +153,17 @@ cpdef init(importdata):
                         ):
             if parlist[i].sys.links_active == 1:
                 if parlist[i].sys.link_rellength == 1:
-                    KDTree_rnn_query(
-                        kdtree,
+                    SpatialHash_query_neighbors(
+                        spatialhash,
                         &parlist[i],
-                        parlist[i].loc,
+                        parlist,
                         parlist[i].size * parlist[i].sys.link_length
                     )
                 else:
-                    KDTree_rnn_query(
-                        kdtree,
+                    SpatialHash_query_neighbors(
+                        spatialhash,
                         &parlist[i],
-                        parlist[i].loc,
+                        parlist,
                         parlist[i].sys.link_length
                     )
 
@@ -172,7 +173,7 @@ cpdef init(importdata):
             if parlist[i].neighboursnum > 1:
                 # free(parlist[i].neighbours)
                 parlist[i].neighboursnum = 0
-				
+
     totallinks += newlinks
     print("  New links created: ", newlinks)
     return parnum

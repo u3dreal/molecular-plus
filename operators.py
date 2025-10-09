@@ -340,23 +340,26 @@ class MolSimulateModal(bpy.types.Operator):
         if event.type == "TIMER":
             mol_substep = scene.mol_substep
             framesubstep = frame_current / (mol_substep + 1)
+            is_display_frame = framesubstep == int(framesubstep)
 
-            if framesubstep == int(framesubstep):
+            if is_display_frame:
                 update_progress("Simulating", frame_current / frame_end)
                 stime = time()
 
             context.scene.mol_exportdata.clear()
             simulate.pack_data(context, False)
-            if framesubstep == int(framesubstep):
+            if is_display_frame:
                 etime = time()
                 packtime = etime - stime
                 stime2 = time()
 
             mol_importdata = core.simulate(context.scene.mol_exportdata)
-            if framesubstep == int(framesubstep):
+            if is_display_frame:
                 etime2 = time()
                 moltime = etime2 - stime2
                 stime3 = time()
+
+            # Always update particle velocities for physics continuity
             i = 0
             for ob in bpy.data.objects:
                 obj = get_object(context, ob)
@@ -373,9 +376,16 @@ class MolSimulateModal(bpy.types.Operator):
             scene.mol_deadlink += mol_importdata[3]
             scene.mol_totallink = mol_importdata[4]
             scene.mol_totaldeadlink = mol_importdata[5]
-            scene.frame_set(frame=frame_current + 1)
 
-            if framesubstep == int(framesubstep):
+            # OPTIMIZATION: Only call expensive frame_set on display frames
+            # This should reduce the 1.675 sec Blender bottleneck significantly
+            if is_display_frame:
+                scene.frame_set(frame=frame_current + 1)
+            else:
+                # Skip expensive scene updates for substeps
+                scene.frame_current = frame_current + 1
+
+            if is_display_frame:
                 print("    frame " + str(int(framesubstep) + 1) + ":")
                 print("      links created:", scene.mol_newlink)
                 if scene.mol_totallink:

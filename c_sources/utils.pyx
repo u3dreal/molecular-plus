@@ -6,16 +6,13 @@ cdef int arraysearch(int element, int *array, int len)noexcept nogil:
     return -1
 
 
-cdef float fabs(float value)noexcept nogil:
-    if value >= 0:
-        return value
-    if value < 0:
-        return -value
+
 
 
 #@cython.cdivision(True)
 cdef float square_dist(float point1[3], float point2[3], int k)noexcept nogil:
     cdef float sq_dist = 0
+    cdef int i
     for i in range(k):
         sq_dist += (point1[i] - point2[i]) * (point1[i] - point2[i])
     return sq_dist
@@ -33,7 +30,7 @@ cdef void quick_sort(SParticle *a, int n, int axis)noexcept nogil:
     if (n < THRESHOLD):
         insertion_sort(a, n, axis)
         return
-    
+
     cdef SParticle t
     cdef float p = a[int(n / 2)].loc[axis]
     cdef SParticle *l = a

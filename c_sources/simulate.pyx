@@ -6,7 +6,7 @@
 #cython: cpow=True
 
 # NOTE: order of slow functions to be optimize/multithreaded:
-# kdtreesearching, kdtreecreating, linksolving
+# spatial_hash_building, spatial_hash_querying, linksolving
 
 
 cimport cython
@@ -52,11 +52,11 @@ cdef int *deadlinks = NULL
 cdef Particle *parlist = NULL
 cdef SParticle *parlistcopy = NULL
 cdef ParSys *psys = NULL
-cdef KDTree *kdtree = NULL
+cdef SpatialHash *spatialhash = NULL
 print("cmolcore imported  v1.14.5")
 
 cpdef simulate(importdata):
-    global kdtree
+    global spatialhash
     global parlist
     global parlistcopy
     global parnum
@@ -195,30 +195,14 @@ cpdef simulate(importdata):
         print("-->copy data time", clock() - stime, "sec")
         stime = clock()
 
-    KDTree_create_tree_iterative(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1)
-
-    with nogil:
-        for i in prange(
-                        kdtree.thread_index,
-                        schedule='dynamic',
-                        chunksize=2,
-                        num_threads=cpunum
-                        ):
-            KDTree_create_tree_iterative(
-                kdtree,
-                parlistcopy,
-                kdtree.thread_start[i],
-                kdtree.thread_end[i],
-                kdtree.thread_name[i],
-                kdtree.thread_parent[i],
-                kdtree.thread_depth[i],
-                0
-            )
+    # Build spatial hash grid
+    SpatialHash_build(spatialhash, parlistcopy, parnum, maxSize)
 
     if profiling == 1:
-        print("-->create tree time", clock() - stime,"sec")
+        print("-->create spatial hash time", clock() - stime,"sec")
         stime = clock()
 
+    # Query neighbors using spatial hash
     with nogil:
         for i in prange(
                         parnum,
@@ -226,17 +210,17 @@ cpdef simulate(importdata):
                         chunksize=2,
                         num_threads=cpunum
                         ):
-            KDTree_rnn_query(
-                kdtree,
+            SpatialHash_query_neighbors(
+                spatialhash,
                 &parlist[i],
-                parlist[i].loc,
+                parlist,
                 parlist[i].size * 2
             )
 
     if profiling == 1:
         print("-->neighbours time", clock() - stime, "sec")
         stime = clock()
-    
+
     #cdef int total_heaps = <int>(parPool[0].max * scale) + 1
     #cdef int total_pairs = 2
 

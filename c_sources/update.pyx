@@ -3,13 +3,14 @@ cdef void update(data):
     global parnum
     global psysnum
     global psys
+    global spatialhash
 
     cdef int i = 0
     cdef int ii = 0
 
     for i in range(psysnum):
         psys[i].selfcollision_active = data[i][3]
-        
+
         for ii in range(psys[i].parnum):
 
             psys[i].particles[ii].loc[0] = data[i][0][(ii * 3)]
@@ -23,17 +24,17 @@ cdef void update(data):
                 psys[i].particles[ii].state = data[i][2][ii] + 1
                 if psys[i].links_active == 1:
                     if psys[i].link_rellength == 1:
-                        KDTree_rnn_query(
-                            kdtree,
+                        SpatialHash_query_neighbors(
+                            spatialhash,
                             &psys[i].particles[ii],
-                            psys[i].particles[ii].loc,
+                            parlist,
                             psys[i].particles[ii].size * psys[i].particles[ii].sys.link_length
                         )
                     else:
-                        KDTree_rnn_query(
-                            kdtree,
+                        SpatialHash_query_neighbors(
+                            spatialhash,
                             &psys[i].particles[ii],
-                            psys[i].particles[ii].loc,
+                            parlist,
                             psys[i].particles[ii].sys.link_length
                         )
                     create_link(psys[i].particles[ii].id, psys[i].link_max)

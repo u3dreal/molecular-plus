@@ -1,6 +1,5 @@
 #@cython.cdivision(True)
 cdef void collide(Particle *par)noexcept nogil:
-    global kdtree
     global deltatime
     global deadlinks
     cdef int *neighbours = NULL
@@ -49,7 +48,7 @@ cdef void collide(Particle *par)noexcept nogil:
 
     neighbours = par.neighbours
 
-    # for i in range(kdtree.num_result):
+    # for i in range(spatial_hash.num_result):
     for i in range(par.neighboursnum):
         check = 0
         if parlist[i].id == -1:

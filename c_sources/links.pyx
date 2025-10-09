@@ -1,5 +1,4 @@
 cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nogil:
-    global kdtree
     global parlist
     global parnum
     global newlinks
@@ -31,7 +30,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
         return
 
     if parothers_id == -1:
-        # KDTree_rnn_query(kdtree, &fakepar[0], par.loc, par.sys.link_length)
+        # SpatialHash_query_neighbors(spatialhash, &fakepar[0], par.loc, par.sys.link_length)
         # neighbours = fakepar[0].neighbours
         neighbours = par.neighbours
         neighboursnum = par.neighboursnum

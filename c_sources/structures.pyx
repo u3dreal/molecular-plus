@@ -13,36 +13,29 @@ cdef struct Links:
     float friction
 
 
-cdef struct KDTree:
-    int numnodes
-    # int num_result
-    # int *result
-    Node *root_node
-    Node *nodes
-    char axis[64]
-    int thread_index
-    int *thread_nodes
-    int *thread_start
-    int *thread_end
-    int *thread_name
-    int *thread_parent
-    int *thread_depth
-    
-    # Memory pools for particles and nodes
-    SParticle *particle_pool
-    Node *left_child_pool
-    Node *right_child_pool
-    int pool_size
+cdef struct SpatialHash:
+    float cell_size
+    int grid_width
+    int grid_height
+    int grid_depth
+    int total_cells
+    float min_bounds[3]
+    float max_bounds[3]
 
+    # Cell data arrays
+    int *cell_counts        # Number of particles in each cell
+    int *cell_starts        # Starting index for particles in each cell
+    int *particle_indices   # Sorted particle indices by cell
+    int *particle_cells     # Which cell each particle belongs to
 
-cdef struct Node:
-    int index
-    char name
-    int parent
-    float loc[3]
-    SParticle *particle
-    Node *left_child
-    Node *right_child
+    # Working arrays for construction
+    int *temp_counts        # Temporary cell counts for parallel construction
+    int total_particles
+
+    # Thread-local data for parallel construction
+    int **thread_cell_counts
+    int **thread_particle_indices
+    int num_threads
 
 
 cdef struct ParSys:

@@ -1,5 +1,5 @@
 cpdef memfree():
-    global kdtree
+    global spatialhash
     global psysnum
     global parnum
     global psys
@@ -61,31 +61,7 @@ cpdef memfree():
     parnum = 0
     psysnum = 0
 
-    if kdtree.numnodes >= 1:
-        # Free memory pools instead of individual allocations
-        free(kdtree.particle_pool)
-        kdtree.particle_pool = NULL
-        free(kdtree.left_child_pool)
-        kdtree.left_child_pool = NULL
-        free(kdtree.right_child_pool)
-        kdtree.right_child_pool = NULL
-
-        free(kdtree.thread_nodes)
-        kdtree.thread_nodes = NULL
-        free(kdtree.thread_start)
-        kdtree.thread_start = NULL
-        free(kdtree.thread_end)
-        kdtree.thread_end = NULL
-        free(kdtree.thread_name)
-        kdtree.thread_name = NULL
-        free(kdtree.thread_parent)
-        kdtree.thread_parent = NULL
-        free(kdtree.thread_depth)
-        kdtree.thread_depth = NULL
-        free(kdtree.nodes)
-        kdtree.nodes = NULL
-        # root_node is now part of nodes array, so don't free it separately
-        kdtree.root_node = NULL
-
-    free(kdtree)
-    kdtree = NULL
+    if spatialhash != NULL:
+        SpatialHash_destroy(spatialhash)
+        free(spatialhash)
+        spatialhash = NULL
