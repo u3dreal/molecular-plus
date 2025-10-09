@@ -17,8 +17,8 @@
 # ======================= END GPL LICENSE BLOCK ========================
 bl_info = {
     "name": "Molecular+",
-    "author": "Jean-Francois Gallant (PyroEvil), Gregor Quade (u3dreal)",
-    "version": (1, 20, 3),
+    "author": "Gregor Quade (u3dreal)",
+    "version": (1, 21, 2),
     "blender": (4, 2, 0),
     "location": "Properties editor > Physics Tab",
     "description": "Addon for calculating collisions "
