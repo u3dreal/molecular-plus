@@ -17,6 +17,12 @@ cdef float square_dist(float point1[3], float point2[3], int k)noexcept nogil:
         sq_dist += (point1[i] - point2[i]) * (point1[i] - point2[i])
     return sq_dist
 
+cdef float optimized_square_dist_3d(float point1[3], float point2[3]) noexcept nogil:
+    # For now, use a simple implementation that will benefit from compiler optimizations
+    cdef float dx = point1[0] - point2[0]
+    cdef float dy = point1[1] - point2[1]
+    cdef float dz = point1[2] - point2[2]
+    return dx*dx + dy*dy + dz*dz
 
 cdef float dot_product(float u[3],float v[3])noexcept nogil:
     cdef float dot = 0

@@ -76,7 +76,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
                         srand(1)
                         tension = ((par.sys.link_tension + par2.sys.link_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
                         srand(2)
-                        link.lenght = sqrt(square_dist(par.loc,par2.loc,3)) * tension
+                        link.lenght = sqrt(optimized_square_dist_3d(par.loc,par2.loc)) * tension
                         # link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                         stiffrandom = (par.sys.link_stiffrand + par2.sys.link_stiffrand) / 2 * 2
                         link.stiffness = ((par.sys.link_stiff + par2.sys.link_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
@@ -123,7 +123,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
                         srand(10)
                         tension = ((par.sys.relink_tension + par2.sys.relink_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
                         srand(11)
-                        link.lenght = sqrt(square_dist(par.loc,par2.loc,3)) * tension
+                        link.lenght = sqrt(optimized_square_dist_3d(par.loc,par2.loc)) * tension
                         # link.lenght = ((square_dist(par.loc,par2.loc,3))**0.5) * tension
                         stiffrandom = (par.sys.relink_stiffrand + par2.sys.relink_stiffrand) / 2 * 2
                         link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
