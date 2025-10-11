@@ -61,9 +61,8 @@ if not DEBUG_MODE:
                     "/Ox",
                     "/openmp",
                     "/GT",
-                    "/arch:AVX2",  # Enable AVX2 instructions for Windows
+                    "/arch:AVX2",
                     "/fp:fast",
-                    "/I.",  # Include current directory for header files
                 ],  # ['/Ox','/openmp:llvm','/GT','/arch:SSE2','/fp:fast', '/wd4244', '/MD']
             )
         ]
@@ -76,12 +75,9 @@ if not DEBUG_MODE:
                 extra_compile_args=[
                     "-O3",
                     "-mavx2",
-                    "-mfma",  # Enable fused multiply-add for better performance
                     "-ffast-math",
                     "-fno-builtin",
                     "-fopenmp",
-                    "-march=native",  # Optimize for the native architecture
-                    "-I.",  # Include current directory for header files
                 ],
                 extra_link_args=["-lm", "-fopenmp"],
             )
@@ -133,7 +129,7 @@ else:
             Extension(
                 module_name,
                 ["molecular_core/core.pyx"],
-                extra_compile_args=["-O3", "-g", "-mavx2", "-fopenmp"],
+                extra_compile_args=["-O3", "-g", "-fopenmp"],
                 extra_link_args=["-lm", "-fopenmp"],
             )
         ]

@@ -87,7 +87,7 @@ cdef void collide(Particle *par)noexcept nogil:
                 lenghtx = par.loc[0] - par2.loc[0]
                 lenghty = par.loc[1] - par2.loc[1]
                 lenghtz = par.loc[2] - par2.loc[2]
-                sqlenght  = optimized_square_dist_3d(par.loc, par2.loc)
+                sqlenght  = square_dist(par.loc, par2.loc, 3)
                 if sqlenght != 0 and sqlenght < sqtarget:
                     lenght = sqrt(sqlenght)
                     # lenght = sqlenght ** 0.5

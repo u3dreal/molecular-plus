@@ -99,8 +99,6 @@ if not DEBUG_MODE:
                     "-fno-builtin",
                     "-arch",
                     "arm64",
-                    "-mcpu=apple-m1",  # Enable Apple M1-specific optimizations including NEON
-                    "-I.",  # Include current directory for header files
                     "-Xclang",
                     "-fopenmp",
                     "-isystem/opt/homebrew/opt/libomp/include",
