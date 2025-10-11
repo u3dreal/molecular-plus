@@ -3,7 +3,7 @@ from setuptools import Extension, setup
 import Cython.Compiler.Options
 from Cython.Build import cythonize
 
-core_version = "1.20.2"
+core_version = "1.21.2"
 
 DEBUG_MODE = False
 

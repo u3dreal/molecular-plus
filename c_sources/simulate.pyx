@@ -53,7 +53,7 @@ cdef Particle *parlist = NULL
 cdef SParticle *parlistcopy = NULL
 cdef ParSys *psys = NULL
 cdef SpatialHash *spatialhash = NULL
-print("cmolcore imported  v1.14.5")
+print("cmolcore imported  v1.21.2")
 
 cpdef simulate(importdata):
     global spatialhash
