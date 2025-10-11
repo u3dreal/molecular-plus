@@ -3,7 +3,7 @@ from setuptools import Extension, setup
 import Cython.Compiler.Options
 from Cython.Build import cythonize
 
-core_version = "1.21.2"
+core_version = "1.21.4"
 
 DEBUG_MODE = False
 
@@ -99,6 +99,7 @@ if not DEBUG_MODE:
                     "-fno-builtin",
                     "-arch",
                     "arm64",
+                    "-mcpu=apple-m1",
                     "-Xclang",
                     "-fopenmp",
                     "-isystem/opt/homebrew/opt/libomp/include",
