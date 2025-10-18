@@ -61,7 +61,7 @@ if not DEBUG_MODE:
                     "/Ox",
                     "/openmp",
                     "/GT",
-                    "/arch:AVX2",
+                    "/arch:SSE42",
                     "/fp:fast",
                 ],  # ['/Ox','/openmp:llvm','/GT','/arch:SSE2','/fp:fast', '/wd4244', '/MD']
             )
