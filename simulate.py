@@ -3,8 +3,9 @@ import array
 import numpy as np
 from .utils import get_object
 
+
 def get_weak_map(obj, psys, par_weak):
-    print('start bake weakmap from:', obj.name)
+    print("start bake weakmap from:", obj.name)
 
     tex = psys.settings.texture_slots[0].texture
     texm_offset = psys.settings.texture_slots[0].offset
@@ -13,13 +14,19 @@ def get_weak_map(obj, psys, par_weak):
     colramp = tex.color_ramp
 
     for i in range(parlen):
-        newuv = (psys.particles[i].location + texm_offset) @ obj.matrix_world * texm_scale
+        newuv = (
+            (psys.particles[i].location + texm_offset) @ obj.matrix_world * texm_scale
+        )
         if tex.use_color_ramp:
             par_weak[i] = colramp.evaluate(tex.evaluate(newuv)[0])[0]
         else:
             par_weak[i] = tex.evaluate(newuv)[0]
 
-    print('Weakmap baked on:', psys.settings.name)
+        if psys.settings.mol_inv_weak_map:
+            par_weak[i] = 1 - par_weak[i]
+
+    print("Weakmap baked on:", psys.settings.name)
+
 
 def pack_data(context, initiate):
     psyslen = 0
@@ -36,43 +43,42 @@ def pack_data(context, initiate):
             parlen = len(psys.particles)
 
             if psys.settings.mol_active and parlen:
-
-                par_loc = array.array('f', [0, 0, 0]) * parlen
-                par_vel = array.array('f', [0, 0, 0]) * parlen
-                par_size = array.array('f', [0]) * parlen
-                par_alive = array.array('h', [0]) * parlen
-
+                par_loc = array.array("f", [0, 0, 0]) * parlen
+                par_vel = array.array("f", [0, 0, 0]) * parlen
+                par_size = array.array("f", [0]) * parlen
+                par_alive = array.array("h", [0]) * parlen
 
                 parnum += parlen
 
-                psys.particles.foreach_get('location', par_loc)
-                psys.particles.foreach_get('velocity', par_vel)
-                psys.particles.foreach_get('alive_state', par_alive)
+                psys.particles.foreach_get("location", par_loc)
+                psys.particles.foreach_get("velocity", par_vel)
+                psys.particles.foreach_get("alive_state", par_alive)
 
                 if initiate:
-                    par_mass = array.array('f',[0]) * parlen
+                    par_mass = array.array("f", [0]) * parlen
 
-                    psys.particles.foreach_get('size', par_size)
+                    psys.particles.foreach_get("size", par_size)
 
-                    #use texture in slot 0 for particle weak
-                    par_weak = array.array('f',[1.0]) * parlen
+                    # use texture in slot 0 for particle weak
+                    par_weak = array.array("f", [1.0]) * parlen
                     if psys.settings.mol_bake_weak_map:
                         get_weak_map(obj, psys, par_weak)
-
-
 
                     if psys.settings.mol_density_active:
                         par_mass_np = np.asarray(par_mass)
                         par_size_np = np.asarray(par_size)
                         par_mass_np[:] = psys.settings.mol_density * (
-                                    4 / 3 * 3.141592653589793 * ((par_size_np / 2) ** 3))
+                            4 / 3 * 3.141592653589793 * ((par_size_np / 2) ** 3)
+                        )
                         par_mass = par_mass_np
 
                     else:
-                        par_mass = array.array('f',[psys.settings.mass]) * parlen
+                        par_mass = array.array("f", [psys.settings.mass]) * parlen
 
                     if scene.timescale != 1.0:
-                        psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
+                        psys.settings.timestep = 1 / (
+                            scene.render.fps / scene.timescale
+                        )
                     else:
                         psys.settings.timestep = 1 / scene.render.fps
 
@@ -83,21 +89,39 @@ def pack_data(context, initiate):
 
                     if psys.settings.mol_link_samevalue:
                         psys.settings.mol_link_estiff = psys.settings.mol_link_stiff
-                        psys.settings.mol_link_estiffrand = psys.settings.mol_link_stiffrand
-                        psys.settings.mol_link_estiffexp = psys.settings.mol_link_stiffexp
+                        psys.settings.mol_link_estiffrand = (
+                            psys.settings.mol_link_stiffrand
+                        )
+                        psys.settings.mol_link_estiffexp = (
+                            psys.settings.mol_link_stiffexp
+                        )
                         psys.settings.mol_link_edamp = psys.settings.mol_link_damp
-                        psys.settings.mol_link_edamprand = psys.settings.mol_link_damprand
+                        psys.settings.mol_link_edamprand = (
+                            psys.settings.mol_link_damprand
+                        )
                         psys.settings.mol_link_ebroken = psys.settings.mol_link_broken
-                        psys.settings.mol_link_ebrokenrand = psys.settings.mol_link_brokenrand
+                        psys.settings.mol_link_ebrokenrand = (
+                            psys.settings.mol_link_brokenrand
+                        )
 
                     if psys.settings.mol_relink_samevalue:
                         psys.settings.mol_relink_estiff = psys.settings.mol_relink_stiff
-                        psys.settings.mol_relink_estiffrand = psys.settings.mol_relink_stiffrand
-                        psys.settings.mol_relink_estiffexp = psys.settings.mol_relink_stiffexp
+                        psys.settings.mol_relink_estiffrand = (
+                            psys.settings.mol_relink_stiffrand
+                        )
+                        psys.settings.mol_relink_estiffexp = (
+                            psys.settings.mol_relink_stiffexp
+                        )
                         psys.settings.mol_relink_edamp = psys.settings.mol_relink_damp
-                        psys.settings.mol_relink_edamprand = psys.settings.mol_relink_damprand
-                        psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
-                        psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
+                        psys.settings.mol_relink_edamprand = (
+                            psys.settings.mol_relink_damprand
+                        )
+                        psys.settings.mol_relink_ebroken = (
+                            psys.settings.mol_relink_broken
+                        )
+                        psys.settings.mol_relink_ebrokenrand = (
+                            psys.settings.mol_relink_brokenrand
+                        )
 
                     params = [0] * 48
 
@@ -155,16 +179,18 @@ def pack_data(context, initiate):
                 if initiate:
                     mol_exportdata[0][2] = psyslen
                     mol_exportdata[0][3] = parnum
-                    mol_exportdata.append((
-                        parlen,
-                        par_loc,
-                        par_vel,
-                        par_size,
-                        par_mass,
-                        par_alive,
-                        params,
-                        par_weak
-                    ))
+                    mol_exportdata.append(
+                        (
+                            parlen,
+                            par_loc,
+                            par_vel,
+                            par_size,
+                            par_mass,
+                            par_alive,
+                            params,
+                            par_weak,
+                        )
+                    )
                 else:
                     self_coll = psys.settings.mol_selfcollision_active
                     mol_exportdata.append((par_loc, par_vel, par_alive, self_coll))
