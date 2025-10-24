@@ -455,6 +455,8 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
                 row.enabled = True
                 row.prop(psys.settings, "mol_bake_weak_map", text="Weakmap")
                 row = box.row()
+                row.prop(psys.settings, "mol_inv_weak_map", text="Invert")
+                row = box.row()
                 row.label(
                     text="Using Texture " + psys.settings.texture_slots[0].texture.name
                 )
