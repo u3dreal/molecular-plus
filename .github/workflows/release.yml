@@ -117,16 +117,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win
+          path: .
 
       - name: Download artifacts for Linux 311
         uses: actions/download-artifact@v4
         with:
           name: molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux
+          path: .
 
       - name: Download artifacts for macOS 311 arm64
         uses: actions/download-artifact@v4
         with:
-          name: molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos_arm64
+          name: molecular-plus_${{ needs.build_macos41_arm64.outputs.VERSION }}_311_macos_arm64
+          path: .
 
       - name: Create Release
         run: |
@@ -134,7 +137,7 @@ jobs:
           gh release create "$tag" \
             molecular-plus_${{ needs.build_windows41.outputs.VERSION }}_311_win.zip \
             molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_311_linux.zip \
-            molecular-plus_${{ needs.build_macos41.outputs.VERSION }}_311_macos_arm64.zip \
+            molecular-plus_${{ needs.build_macos41_arm64.outputs.VERSION }}_311_macos_arm64.zip \
             --title "Release $tag" \
             --notes "Release of version $tag"
         env:
