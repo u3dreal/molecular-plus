@@ -179,3 +179,17 @@ if os.path.isfile("core.c"):
 if not DEBUG_MODE:
     if os.path.isfile("core.pyx"):
         os.remove("core.pyx")
+
+# Check if Build exists then remove it
+if os.path.exists("build"):
+    shutil.rmtree("build")
+if os.path.exists("molecular_core"):
+    shutil.rmtree("molecular_core")
+if os.path.exists("molecular_core.egg-info"):
+    shutil.rmtree("molecular_core.egg-info")
+
+# Check if compiled core.* exists then remove it
+if os.path.isfile("core.html"):
+    os.remove("core.html")
+if os.path.isfile("core.c"):
+    os.remove("core.c")
