@@ -278,20 +278,3 @@ cdef void SpatialHash_query_neighbors(SpatialHash *hash, Particle *particle, Par
                         particle.neighboursnum += 1
 
 
-# Compatibility functions to replace KD-tree calls
-cdef void SpatialHash_rnn_query(SpatialHash *hash, Particle *particle, Particle *all_particles, float point[3], float dist) noexcept nogil:
-    """Range neighbor query - compatibility wrapper"""
-    SpatialHash_query_neighbors(hash, particle, all_particles, dist)
-
-
-cdef void SpatialHash_create_nodes(SpatialHash *hash, int parnum) noexcept nogil:
-    """Initialize spatial hash - compatibility wrapper"""
-    SpatialHash_create(hash, parnum * 2, 8)  # Allow for dynamic particle count, 8 threads
-
-
-# Legacy function names for drop-in replacement
-cdef void KDTree_create_nodes(SpatialHash *hash, int parnum) noexcept nogil:
-    SpatialHash_create_nodes(hash, parnum)
-
-cdef void KDTree_rnn_query(SpatialHash *hash, Particle *par, Particle *all_particles, float point[3], float dist) noexcept nogil:
-    SpatialHash_rnn_query(hash, par, all_particles, point, dist)
