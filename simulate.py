@@ -4,6 +4,29 @@ import numpy as np
 from .utils import get_object
 
 
+def read_gn_float_attr_into(obj, mod_name, attr_name, weak_map):
+    # Find target modifier index
+    for target_idx, mod in enumerate(obj.modifiers):
+        if mod.name == mod_name:
+            break
+    else:
+        raise ValueError(f"Modifier '{mod_name}' not found")
+
+    # Temporarily disable modifiers after target
+    orig_states = [(mod, mod.show_viewport) for mod in obj.modifiers[target_idx + 1 :]]
+    for mod, _ in orig_states:
+        mod.show_viewport = False
+
+    try:
+        # Evaluate and read FLOAT attribute directly into weak_map
+        mesh = obj.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
+        mesh.attributes[attr_name].data.foreach_get("value", weak_map)
+    finally:
+        # Restore modifier states
+        for mod, state in orig_states:
+            mod.show_viewport = state
+
+
 def get_weak_map(obj, psys, par_weak):
     print("start bake weakmap from:", obj.name)
 
