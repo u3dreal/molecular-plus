@@ -405,6 +405,15 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row = box.row()
             row.prop(psys.settings, "mol_friction", text=" Friction:")
             row.prop(psys.settings, "mol_collision_damp", text=" Damping:")
+            row = box.row()
+            row.prop(
+                psys.settings,
+                "mol_collsion_adhesion_search_distance",
+                text="Search Distance",
+            )
+            row.prop(
+                psys.settings, "mol_collision_adhesion_factor", text="Adhesion Strength"
+            )
 
         ###   Links at Birth   ###
 
@@ -449,23 +458,58 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row = box.row()
             row.prop(psys.settings, "mol_link_broken", text="Broken")
             row.prop(psys.settings, "mol_link_brokenrand", text="Rand Broken")
+
+            # row = box.row()
+            # row.prop(psys.settings, "mol_link_stiffexp", text="Exponent")
+            # row.label(text="")
+
+            box = layout.box()
             row = box.row()
-            if psys.settings.texture_slots[0]:
+            if (
+                psys.settings.texture_slots[0]
+                and psys.settings.texture_slots[0].texture
+            ):
                 row.active = True
                 row.enabled = True
-                row.prop(psys.settings, "mol_bake_weak_map", text="Weakmap")
-                row = box.row()
+                row.prop(
+                    psys.settings,
+                    "mol_bake_weak_map",
+                    text="Weakmap particle texture",
+                )
                 row.prop(psys.settings, "mol_inv_weak_map", text="Invert")
                 row = box.row()
                 row.label(
                     text="Using Texture " + psys.settings.texture_slots[0].texture.name
                 )
             else:
-                row.label(text="No Texture found in Particle textures[0]")
-                row = box.row()
                 row.active = False
                 row.enabled = False
-                row.prop(psys.settings, "mol_bake_weak_map", text="Weakmap")
+                row.prop(
+                    psys.settings,
+                    "mol_bake_weak_map",
+                    text="Weakmap particle texture",
+                )
+                row.prop(psys.settings, "mol_inv_weak_map", text="Invert")
+                row = box.row()
+                row.label(text="No Texture found in Particle textures[0]")
+
+            box = layout.box()
+            row = box.row()
+            if "M+ weak map" in obj.modifiers:
+                row.active = True
+                row.enabled = True
+                row.prop(
+                    psys.settings, "mol_bake_weak_map_geo", text="Weakmap from geonodes"
+                )
+            else:
+                row.active = False
+                row.enabled = False
+                row.prop(
+                    psys.settings, "mol_bake_weak_map_geo", text="Weakmap from geonodes"
+                )
+                row = box.row()
+                row.label(text="No 'M+ weak map' modifier found")
+
             box = layout.box()
             row = box.row()
             row.prop(
