@@ -78,6 +78,25 @@ def define_props():
         subtype="FACTOR",
     )
 
+    parset.mol_collision_adhesion_search_distance = bpy.props.FloatProperty(
+        name="Distance:",
+        description=descriptions.COLLISION_ADHESION_SEARCH_DISTANCE,
+        default=2.1,
+        min=0,
+        max=10,
+        precision=3,
+    )
+
+    parset.mol_collision_adhesion_factor = bpy.props.FloatProperty(
+        name="Damping:",
+        description=descriptions.COLLISION_ADHESION_FACTOR,
+        default=0.0,
+        min=0,
+        max=1,
+        precision=6,
+        subtype="FACTOR",
+    )
+
     parset.mol_collision_group = bpy.props.IntProperty(
         name="Collide only with:",
         default=1,
@@ -462,6 +481,9 @@ def define_props():
     )
     parset.mol_bake_weak_map = bpy.props.BoolProperty(
         name="mol_bake_weak_map", description="bake weak_map", default=False
+    )
+    parset.mol_bake_weak_map_geo = bpy.props.BoolProperty(
+        name="mol_bake_weak_map_geo", description="bake weak_map_geo", default=False
     )
     parset.mol_inv_weak_map = bpy.props.BoolProperty(
         name="mol_inv_weak_map", description="invert weak_map", default=False
