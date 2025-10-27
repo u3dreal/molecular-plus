@@ -4,7 +4,7 @@ import numpy as np
 from .utils import get_object
 
 
-def read_gn_float_attr_into(obj, mod_name, attr_name, weak_map):
+def get_gn_float_attr(obj, mod_name, attr_name, weak_map):
     # Find target modifier index
     for target_idx, mod in enumerate(obj.modifiers):
         if mod.name == mod_name:
@@ -12,15 +12,32 @@ def read_gn_float_attr_into(obj, mod_name, attr_name, weak_map):
     else:
         raise ValueError(f"Modifier '{mod_name}' not found")
 
+    print("start bake weakmap from geo nodes: ", mod.name)
+
     # Temporarily disable modifiers after target
     orig_states = [(mod, mod.show_viewport) for mod in obj.modifiers[target_idx + 1 :]]
     for mod, _ in orig_states:
         mod.show_viewport = False
 
+    # Force depsgraph to re-evaluate without those modifiers
+    obj.update_tag()  # ← Critical!
+    bpy.context.view_layer.update()
+
     try:
         # Evaluate and read FLOAT attribute directly into weak_map
-        mesh = obj.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
-        mesh.attributes[attr_name].data.foreach_get("value", weak_map)
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        eval_obj = obj.evaluated_get(depsgraph)
+        mesh = eval_obj.data
+
+        attr = mesh.attributes.get(attr_name)
+
+        print("attributes: " + str(len(attr.data)))
+        print("np_array: " + str(len(weak_map)))
+
+        if len(attr.data) != len(weak_map):
+            raise ValueError("Attribute and weak_map lengths do not match !")
+
+        attr.data.foreach_get("value", weak_map)
     finally:
         # Restore modifier states
         for mod, state in orig_states:
@@ -59,7 +76,7 @@ def pack_data(context, initiate):
     for ob in bpy.data.objects:
         obj = get_object(context, ob)
 
-        for psys in obj.particle_systems:
+        for i, psys in enumerate(obj.particle_systems):
             if psys.settings.mol_matter != "-1":
                 psys.settings.mol_density = float(psys.settings.mol_matter)
 
@@ -84,6 +101,15 @@ def pack_data(context, initiate):
 
                     # use texture in slot 0 for particle weak
                     par_weak = array.array("f", [1.0]) * parlen
+
+                    if psys.settings.mol_bake_weak_map_geo:
+                        get_gn_float_attr(ob, "M+ weak map", "weak_map", par_weak)
+                        # Force depsgraph to re-evaluate with modifiers reenabled
+                        ob.update_tag()  # ← Critical!
+                        bpy.context.view_layer.update()
+                        obj = get_object(context, ob)
+                        psys = obj.particle_systems[i]
+
                     if psys.settings.mol_bake_weak_map:
                         get_weak_map(obj, psys, par_weak)
 
@@ -196,6 +222,8 @@ def pack_data(context, initiate):
                     params[45] = psys.settings.mol_link_group
                     params[46] = psys.settings.mol_other_link_active
                     params[47] = int(psys.settings.mol_link_rellength)
+                    params[48] = psys.settings.mol_collison_adhesion_search_distance
+                    params[49] = psys.settings.mol_collison_adhesion_factor
 
                 mol_exportdata = bpy.context.scene.mol_exportdata
 
