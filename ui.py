@@ -408,7 +408,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
             row = box.row()
             row.prop(
                 psys.settings,
-                "mol_collsion_adhesion_search_distance",
+                "mol_collision_adhesion_search_distance",
                 text="Search Distance",
             )
             row.prop(
