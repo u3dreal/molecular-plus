@@ -172,7 +172,7 @@ def pack_data(context, initiate):
                             psys.settings.mol_relink_brokenrand
                         )
 
-                    params = [0] * 48
+                    params = [0] * 50
 
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
@@ -222,8 +222,8 @@ def pack_data(context, initiate):
                     params[45] = psys.settings.mol_link_group
                     params[46] = psys.settings.mol_other_link_active
                     params[47] = int(psys.settings.mol_link_rellength)
-                    params[48] = psys.settings.mol_collison_adhesion_search_distance
-                    params[49] = psys.settings.mol_collison_adhesion_factor
+                    params[48] = psys.settings.mol_collision_adhesion_search_distance
+                    params[49] = psys.settings.mol_collision_adhesion_factor
 
                 mol_exportdata = bpy.context.scene.mol_exportdata
 
