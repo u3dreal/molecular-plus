@@ -92,9 +92,9 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)noexcept nog
                         brokrandom = ((par.sys.link_brokenrand + par2.sys.link_brokenrand) / 2) * 2
                         srand(6)
                         #link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
-                        link.broken = ((par.weak + par2.weak) / 2) * ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.broken = (par.weak * par2.weak) * (par.sys.link_broken * par2.sys.link_broken) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         srand(7)
-                        link.ebroken = ((par.weak + par2.weak) / 2) * ((par.sys.link_ebroken + par2.sys.link_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.ebroken = (par.weak * par2.weak) * (par.sys.link_ebroken * par2.sys.link_ebroken) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         par.links[par.links_num] = link[0]
                         par.links_num += 1
                         par.links_activnum += 1
