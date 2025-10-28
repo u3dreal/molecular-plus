@@ -22,7 +22,7 @@ cpdef init(importdata):
     totaldeadlinks = 0
     fps = float(importdata[0][0])
     substep = int(importdata[0][1])
-    deltatime = (fps * (substep + 1))
+    deltatime = 1.0 / (fps * (substep + 1))
     psysnum = importdata[0][2]
     parnum = importdata[0][3]
     cpunum = importdata[0][4]

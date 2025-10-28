@@ -233,11 +233,11 @@ cdef void solve_link(Particle *par)noexcept nogil:
             # Length = (LengthX ** 2 + LengthY ** 2 + LengthZ ** 2) ** (0.5)
             if par.links[i].lenght != Length and Length != 0:
                 if par.links[i].lenght > Length:
-                    stiff = par.links[i].stiffness * deltatime
+                    stiff = par.links[i].stiffness / deltatime
                     damping = par.links[i].damping
                     exp = par.links[i].exponent
                 if par.links[i].lenght < Length:
-                    stiff = par.links[i].estiffness * deltatime
+                    stiff = par.links[i].estiffness / deltatime
                     damping = par.links[i].edamping
                     exp = par.links[i].eexponent
                 Vx = V2[0] - V1[0]
