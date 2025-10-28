@@ -84,6 +84,7 @@ cpdef simulate(importdata):
     parPool[0].axis = -1
     parPool[0].offset = 0
     parPool[0].max = 0
+    cdef float query_radius = 0
 
     newlinks = 0
     for i in range(cpunum):
@@ -210,11 +211,14 @@ cpdef simulate(importdata):
                         chunksize=2,
                         num_threads=cpunum
                         ):
+            query_radius = parlist[i].size * 2.0
+            if parlist[i].sys.collision_adhesion_factor > 0:
+                query_radius = max(query_radius,(parlist[i].size * 2) * (1.0 + parlist[i].sys.collision_adhesion_distance))
             SpatialHash_query_neighbors(
                 spatialhash,
                 &parlist[i],
                 parlist,
-                parlist[i].size * 2
+                query_radius
             )
 
     if profiling == 1:
