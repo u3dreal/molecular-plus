@@ -81,9 +81,9 @@ def define_props():
     parset.mol_collision_adhesion_search_distance = bpy.props.FloatProperty(
         name="Distance:",
         description=descriptions.COLLISION_ADHESION_SEARCH_DISTANCE,
-        default=2.1,
-        min=0,
-        max=10,
+        default=0.1,
+        min=0.0,
+        max=1.0,
         precision=3,
     )
 
@@ -91,8 +91,8 @@ def define_props():
         name="Damping:",
         description=descriptions.COLLISION_ADHESION_FACTOR,
         default=0.0,
-        min=0,
-        max=1,
+        min=0.0,
+        max=1.0,
         precision=6,
         subtype="FACTOR",
     )
