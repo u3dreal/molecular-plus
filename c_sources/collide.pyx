@@ -1,5 +1,5 @@
 #@cython.cdivision(True)
-from libc.math cimport pow
+from libc.math cimport pow, cos, fmax, fmin
 
 cdef void collide(Particle *par)noexcept nogil:
     global deltatime
@@ -28,6 +28,17 @@ cdef void collide(Particle *par)noexcept nogil:
     cdef float total_force2 = 0
     cdef float contact_distance = 0  # Distance where particles are just touching
     cdef float sq_contact_distance = 0
+    cdef float adhesion_scale = 0.0
+    cdef float distance_ratio = 0.0
+    cdef float collision_depth = 0.0
+    cdef float rel_vel_x = 0.0
+    cdef float rel_vel_y = 0.0
+    cdef float rel_vel_z = 0.0
+    cdef float rel_vel_radial = 0.0
+    cdef float adhesion_force_mag = 0.0
+    cdef float damping_factor = 0.0
+    cdef float velocity_damping = 0.0
+    cdef float total_adhesion_force = 0.0
     cdef float factor1 = 0
     cdef float factor2 = 0
     cdef float *col_normal1 = [0, 0, 0]
@@ -126,16 +137,33 @@ cdef void collide(Particle *par)noexcept nogil:
                         total_force1 += force1
                         total_force2 += force2
 
-                    # Apply adhesion force if particles are within adhesion range but beyond contact range
+                    # Apply adhesion force with velocity-based stabilization
                     if sqlenght >= sq_contact_distance and sqlenght < sq_adhesion_distance:
-                        adhesion_scale = (lenght - adhesion_distance) / (adhesion_distance - contact_distance)  # Strongest when distance is close to contact_distance
-                        # Use negative value to make it attractive (pull particles together)
-                        adhesion_damping = (1 - adhesion_scale) ** 2 * 0.02
-                        adhesion_force_mag = -par.sys.collision_adhesion_factor * stiff * adhesion_scale
-                        adhesion_force1 = ratio1 * adhesion_force_mag
-                        adhesion_force2 = ratio2 * adhesion_force_mag
-                        total_force1 += adhesion_force1 * adhesion_damping
-                        total_force2 += adhesion_force2 * adhesion_damping
+                        adhesion_scale = (lenght - adhesion_distance) / (adhesion_distance - contact_distance)
+                        
+                        # Calculate relative velocity along the connection line
+                        rel_vel_x = par.vel[0] - par2.vel[0]
+                        rel_vel_y = par.vel[1] - par2.vel[1] 
+                        rel_vel_z = par.vel[2] - par2.vel[2]
+                        rel_vel_radial = (rel_vel_x * lenghtx + rel_vel_y * lenghty + rel_vel_z * lenghtz) * invlenght
+                        
+                        # Base adhesion force
+                        adhesion_force_base = -par.sys.collision_adhesion_factor * stiff * adhesion_scale
+                        
+                        # Critical damping to prevent oscillation
+                        # This opposes the radial velocity component
+                        velocity_damping_force = -rel_vel_radial * par.sys.collision_adhesion_factor * stiff * 0.1
+                        
+                        # Combine forces
+                        total_adhesion_force = adhesion_force_base + velocity_damping_force
+                        
+                        # Your original distance-based damping (more damping when closer)
+                        adhesion_damping = (1 - adhesion_scale) * (1 - adhesion_scale) * 0.01
+                        
+                        adhesion_force1 = ratio1 * total_adhesion_force * adhesion_damping
+                        adhesion_force2 = ratio2 * total_adhesion_force * adhesion_damping
+                        total_force1 += adhesion_force1
+                        total_force2 += adhesion_force2
 
                     # Apply total forces (either adhesion alone, collision alone, or combined)
                     par.vel[0] -= lenghtx * total_force1
