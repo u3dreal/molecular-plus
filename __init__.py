@@ -18,7 +18,7 @@
 bl_info = {
     "name": "Molecular+",
     "author": "Gregor Quade (u3dreal)",
-    "version": (1, 21, 6),
+    "version": (1, 21, 7),
     "blender": (4, 2, 0),
     "location": "Properties editor > Physics Tab",
     "description": "Addon for calculating collisions "
