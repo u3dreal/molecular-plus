@@ -412,7 +412,7 @@ class MS_PT_MolecularPanel(bpy.types.Panel):
                 text="Search Distance",
             )
             row.prop(
-                psys.settings, "mol_collision_adhesion_factor", text="Adhesion Strength"
+                psys.settings, "mol_collision_adhesion_factor", text="Adhesion Factor"
             )
 
         ###   Links at Birth   ###
