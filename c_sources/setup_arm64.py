@@ -4,7 +4,7 @@ from setuptools.command.build_ext import build_ext
 from Cython.Build import cythonize
 import Cython.Compiler.Options
 
-core_version = "1.21.7"
+core_version = "1.21.8"
 
 DEBUG_MODE = False
 
