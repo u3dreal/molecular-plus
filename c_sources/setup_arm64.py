@@ -1,7 +1,8 @@
-import os, shutil, platform
-from setuptools import Extension, setup
-import Cython.Compiler.Options
+import os, shutil, platform, subprocess
+from setuptools import Extension, setup, Command
+from setuptools.command.build_ext import build_ext
 from Cython.Build import cythonize
+import Cython.Compiler.Options
 
 core_version = "1.21.7"
 
@@ -25,12 +26,7 @@ if os.path.isfile("core.c"):
 
 os.mkdir("./molecular_core")
 shutil.copy("__init__.py", "./molecular_core/__init__.py")
-# Copy libomp.dylib to molecular_plus_core/ if needed
-
-if os_name == "Darwin":
-    shutil.copyfile(
-        "/opt/homebrew/opt/libomp/lib/libomp.dylib", "./molecular_core/libomp.dylib"
-    )
+# Copy libomp.dylib to molecular_core/ if needed
 
 filenames = [
     "simulate.pyx",
@@ -110,7 +106,7 @@ if not DEBUG_MODE:
                     "-lomp",
                     "-arch",
                     "arm64",
-                    "-Wl,-rpath,@executable_path",
+                    "-Wl,-rpath,@loader_path",
                 ],
             )
         ]
@@ -158,38 +154,50 @@ else:
             )
         ]
 
+
+# === macOS: Custom build_ext to patch .so after build ===
+class DarwinBuildExt(build_ext):
+    def run(self):
+        super().run()
+        if os_name == "Darwin":
+            for ext in self.extensions:
+                so_path = self.get_ext_fullpath(ext.name)
+                if os.path.exists(so_path):
+                    print(f"🔧 Patching {so_path} to use @loader_path/libomp.dylib")
+                    libomp_dst = os.path.join(os.path.dirname(so_path), "libomp.dylib")
+                    # Ensure libomp.dylib is present (in case not copied earlier)
+                    if not os.path.exists(libomp_dst):
+                        shutil.copyfile(
+                            "/opt/homebrew/opt/libomp/lib/libomp.dylib", libomp_dst
+                        )
+                    # Fix the .so to reference @loader_path
+                    subprocess.run(
+                        [
+                            "install_name_tool",
+                            "-change",
+                            "/opt/homebrew/opt/libomp/lib/libomp.dylib",
+                            "@loader_path/libomp.dylib",
+                            so_path,
+                        ],
+                        check=True,
+                    )
+
+
+# Use custom build_ext only on macOS
+cmdclass = {"build_ext": DarwinBuildExt} if os_name == "Darwin" else {}
+
+# === Run setup ===
 setup(
     name="molecular_core",
     version=core_version,
     ext_modules=cythonize(ext_modules),
     packages=["molecular_core"],
-    package_data={"molecular_core": ["libomp.dylib"]} if os_name == "Darwin" else [],
+    package_data={"molecular_core": ["libomp.dylib"]} if os_name == "Darwin" else {},
+    cmdclass=cmdclass,
     zip_safe=False,
 )
 
-# Delete the files after the build
-if os_name == "Darwin" and os.path.exists("molecular_core/libomp.dylib"):
-    os.remove("molecular_core/libomp.dylib")
-
-if os.path.isfile("core.html"):
-    os.remove("core.html")
-if os.path.isfile("core.c"):
-    os.remove("core.c")
-
-if not DEBUG_MODE:
-    if os.path.isfile("core.pyx"):
-        os.remove("core.pyx")
-
-# Check if Build exists then remove it
-if os.path.exists("build"):
-    shutil.rmtree("build")
-if os.path.exists("molecular_core"):
-    shutil.rmtree("molecular_core")
-if os.path.exists("molecular_core.egg-info"):
-    shutil.rmtree("molecular_core.egg-info")
-
-# Check if compiled core.* exists then remove it
-if os.path.isfile("core.html"):
-    os.remove("core.html")
-if os.path.isfile("core.c"):
-    os.remove("core.c")
+# === Build wheel automatically after setup ===
+print("📦 Building wheel...")
+subprocess.run(["python", "setup.py", "bdist_wheel"], check=True)
+print("✅ Wheel built successfully in dist/")
