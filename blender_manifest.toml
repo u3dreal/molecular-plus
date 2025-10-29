@@ -21,9 +21,9 @@ platforms = ["windows-x64", "macos-arm64", "linux-x64"]
 # molecular-plus_1.20.2_311_macos_arm64.zip
 #
 wheels = [
-  "./wheels/molecular_core-1.21.8-cp311-cp311-macosx_15_0_arm64.whl",
-  "./wheels/molecular_core-1.21.8-cp311-cp311-linux_x86_64.whl",
-  "./wheels/molecular_core-1.21.8-cp311-cp311-win_amd64.whl",
+  "./wheels/molecular_core-1.21.7-cp311-cp311-macosx_15_0_arm64.whl",
+  "./wheels/molecular_core-1.21.7-cp311-cp311-linux_x86_64.whl",
+  "./wheels/molecular_core-1.21.7-cp311-cp311-win_amd64.whl",
   "./wheels/molecular_core-1.21.7-cp311-cp311-macosx_15_0_universal2.whl".
 ]
 
