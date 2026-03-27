@@ -1,9 +1,12 @@
-import os, shutil, platform
-from setuptools import Extension, setup
+import os
+import platform
+import shutil
+
 import Cython.Compiler.Options
 from Cython.Build import cythonize
+from setuptools import Extension, setup
 
-core_version = "1.21.8"
+core_version = "1.21.9"
 
 DEBUG_MODE = False
 

@@ -57,18 +57,35 @@ wheels_dir = "..//molecularplus//wheels"
 if not path.exists(wheels_dir):
     mkdir(wheels_dir)
 
-# Print debug information to stderr
-# print("Creating wheel...", file=sys.stderr)
+# Build the wheel
+print("Creating wheel...", file=sys.stderr)
 process = Popen([sys.executable, "setup.py", "bdist_wheel"], stdout=PIPE, stderr=PIPE)
 stdout, stderr = process.communicate()
 
+# Print build output for debugging
+if stdout:
+    print(stdout.decode(), file=sys.stderr)
+if stderr:
+    print(stderr.decode(), file=sys.stderr)
+
+if process.returncode != 0:
+    print("Wheel build failed!", file=sys.stderr)
+    sys.exit(1)
+
 # Move the wheel to the wheels directory
+wheel_found = False
 for root, _, files in walk("dist"):
     for file in files:
         if file.endswith(".whl"):
             source = path.join(root, file)
             destination = path.join(wheels_dir, file)
             shutil.move(source, destination)
+            wheel_found = True
+            print(f"Moved wheel to {destination}", file=sys.stderr)
+
+if not wheel_found:
+    print("No wheel file found in dist/!", file=sys.stderr)
+    sys.exit(1)
 
 chdir("..")
 
