@@ -10,7 +10,7 @@
 
 
 <video width="640" height="360" controls>
-  <source src="https://github.com/user-attachments/assets/a0bf7900-9400-471d-8ba5-81654821770c" type="video/mp4">
+  <source src="https://github.com/user-attachments/assets/a0bf7900-9400-471d-8ba5-81654821770c.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 *1 Million Particles simulation by u3dreal*
