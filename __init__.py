@@ -18,7 +18,7 @@
 bl_info = {
     "name": "Molecular+",
     "author": "Gregor Quade (u3dreal)",
-    "version": (1, 21, 8),
+    "version": (1, 21, 9),
     "blender": (4, 2, 0),
     "location": "Properties editor > Physics Tab",
     "description": "Addon for calculating collisions "
@@ -32,7 +32,8 @@ bl_info = {
 
 def register():
     import bpy
-    from . import properties, ui, operators, creators, addon_prefrences
+
+    from . import addon_prefrences, creators, operators, properties, ui
 
     properties.define_props()
 
@@ -52,7 +53,8 @@ def register():
 
 def unregister():
     import bpy
-    from . import ui, operators, creators, addon_prefrences
+
+    from . import addon_prefrences, creators, operators, ui
 
     bpy.types.PHYSICS_PT_add.remove(ui.append_to_PHYSICS_PT_add_panel)
 

@@ -200,8 +200,3 @@ setup(
     cmdclass=cmdclass,
     zip_safe=False,
 )
-
-# === Build wheel automatically after setup ===
-print("📦 Building wheel...")
-subprocess.run(["python", "setup.py", "bdist_wheel"], check=True)
-print("✅ Wheel built successfully in dist/")

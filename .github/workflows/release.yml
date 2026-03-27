@@ -123,13 +123,13 @@ jobs:
       - name: Download artifacts for Linux 313
         uses: actions/download-artifact@v4
         with:
-          name: molecular-plus_${{ needs.build_linux41.outputs.VERSION }}_313_linux
+          name: molecular-plus_${{ needs.build_linux.outputs.VERSION }}_313_linux
           path: .
 
       - name: Download artifacts for macOS 313 arm64
         uses: actions/download-artifact@v4
         with:
-          name: molecular-plus_${{ needs.build_macos41_arm64.outputs.VERSION }}_313_macos_arm64
+          name: molecular-plus_${{ needs.build_macos_arm64.outputs.VERSION }}_313_macos_arm64
           path: .
 
       - name: Create Release
