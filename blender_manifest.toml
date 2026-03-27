@@ -1,12 +1,12 @@
 schema_version = "1.0.0"
 id = "molecularplus"
-version = "1.21.8"
+version = "1.21.9"
 name = "Molecular Plus"
 tagline = "Extension for molecular simulations in Blender"
 maintainer = "Gregor Quade (u3dreal)"
 type = "add-on"
 
-blender_version_min = "4.2.0"
+blender_version_min = "5.1.0"
 
 # License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
 license = [
@@ -18,13 +18,13 @@ platforms = ["windows-x64", "macos-arm64", "linux-x64"]
 
 # Optional: bundle 3rd party Python modules
 #
-# molecular-plus_1.20.2_311_macos_arm64.zip
+# molecular-plus_1.21.9_313_macos_arm64.zip
 #
 wheels = [
-  "./wheels/molecular_core-1.21.8-cp311-cp311-macosx_15_0_arm64.whl",
-  "./wheels/molecular_core-1.21.8-cp311-cp311-linux_x86_64.whl",
-  "./wheels/molecular_core-1.21.8-cp311-cp311-win_amd64.whl",
-  "./wheels/molecular_core-1.21.8-cp311-cp311-macosx_15_0_universal2.whl",
+  "./wheels/molecular_core-1.21.9-cp313-cp313-macosx_15_0_arm64.whl",
+  "./wheels/molecular_core-1.21.9-cp313-cp313-linux_x86_64.whl",
+  "./wheels/molecular_core-1.21.9-cp313-cp313-win_amd64.whl",
+  "./wheels/molecular_core-1.21.9-cp313-cp313-macosx_15_0_universal2.whl",
 ]
 
 # Optional: add-ons can list which resources they will require
@@ -37,6 +37,9 @@ wheels = [
 [build]
 paths_exclude_pattern = [
   "__pycache__/",
-  "/.git/",
+  "/.git*/",
   "/*.zip",
+  "/.vscode",
+  "/.ropeproject",
+  "/.idea"
 ]

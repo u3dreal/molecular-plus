@@ -1,10 +1,14 @@
-import os, shutil, platform, subprocess
-from setuptools import Extension, setup, Command
-from setuptools.command.build_ext import build_ext
-from Cython.Build import cythonize
-import Cython.Compiler.Options
+import os
+import platform
+import shutil
+import subprocess
 
-core_version = "1.21.8"
+import Cython.Compiler.Options
+from Cython.Build import cythonize
+from setuptools import Command, Extension, setup
+from setuptools.command.build_ext import build_ext
+
+core_version = "1.21.9"
 
 DEBUG_MODE = False
 
