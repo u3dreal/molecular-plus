@@ -6,7 +6,7 @@ and the efforts of PavelBlend and Scorpion81 for maintaining compatibility with 
 
 
 
-This is my extended version of the addon adding a create panel to be able to fast setup a scene.
+This is my extended version of the addon adding a create panel for fast scene setup.
 
 I cleaned up the code and moved the molecular+ panel to the physics section of blender, where it belongs.
 
