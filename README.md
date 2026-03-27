@@ -7,9 +7,8 @@
 [![Video Thumbnail](https://img.youtube.com/vi/u3Eq1POk_Bc/maxresdefault.jpg)](https://www.youtube.com/watch?v=u3Eq1POk_Bc)
 *Animation by [The Marble Mechanic](https://www.youtube.com/@TheMarbleMechanic)*
 
+https://github.com/user-attachments/assets/840eddb2-3bd3-4b04-8b01-6759afaebeac
 
-
-https://github.com/user-attachments/assets/3c65f569-e341-4140-b5a7-9933dffe702d
 *1 Million Particles simulation by u3dreal*
 
 ![Molecular Simulation](https://github.com/u3dreal/molecular-plus/blob/main/doc/molecular-3.jpg)
