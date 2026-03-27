@@ -58,7 +58,8 @@ Get the latest release with pre-compiled wheels for all supported platforms:
 
 ## Community & Support
 
-Join the community on [Discord](https://discord.gg/tAwvNEAfA3) for support and discussions. More information and tutorials available at [q3de.com/research/molecular/](http://q3de.com/research/molecular/).
+Join the community on [Discord](https://discord.gg/tAwvNEAfA3) for support and discussions. 
+More information available at [q3de.com/research/molecular/](http://q3de.com/research/molecular/).
 
 Follow on X (Twitter): [@u3dreal](https://twitter.com/u3dreal)
 
