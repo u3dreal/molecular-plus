@@ -89,6 +89,7 @@ if not DEBUG_MODE:
             )
         ]
     elif os_name == "Darwin":
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "15.0"
         ext_modules = [
             Extension(
                 module_name,
