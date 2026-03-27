@@ -27,6 +27,7 @@ https://github.com/user-attachments/assets/840eddb2-3bd3-4b04-8b01-6759afaebeac
 - **Multi-Platform Support**: Windows (x64), macOS (ARM64 & Universal), Linux (x64)
 
 ## What's New in Version 1.21.9
+- **python 3.13 for Blender 5.1
 
 **Complete Spatial Hash Engine Rewrite**: The latest version features a ground-up replacement of the KD-tree spatial search algorithm with a **spatial hash grid implementation**, delivering:
 
