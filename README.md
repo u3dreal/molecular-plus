@@ -4,7 +4,7 @@
 
 **Molecular Plus** is an advanced particle simulation addon for Blender (4.2 – 5.1+) that brings molecular dynamics and soft-body physics to your 3D scenes. Originally based on the molecular addon by pyroevil, this extended version adds powerful scene creation tools and a completely rewritten high-performance simulation engine.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/u3Eq1POk_Bc?si=94FKwpjn9dnFuOY-" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+[![Video Thumbnail](https://img.youtube.com/vi/u3Eq1POk_Bc/maxresdefault.jpg)](https://www.youtube.com/watch?v=u3Eq1POk_Bc)
 *Animation by [The Marble Mechanic](https://www.youtube.com/@TheMarbleMechanic)*
 
 ![Molecular Simulation](https://github.com/u3dreal/molecular-plus/blob/main/doc/molecular-3.jpg)
