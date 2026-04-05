@@ -75,6 +75,8 @@ If you find this addon helpful and want to support future development, please co
 
 [![Donate](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J7W7MNCKVBYAA)
 
+👉 **Become a Sponsor:** [github.com/sponsors/u3dreal](https://github.com/sponsors/u3dreal)
+
 ## License
 
 GPL-3.0-or-later
