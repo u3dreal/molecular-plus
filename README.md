@@ -1,4 +1,3 @@
-[![Molecular+](https://github.com/u3dreal/molecular-plus/actions/workflows/release.yml/badge.svg)](https://github.com/u3dreal/molecular-plus/actions/workflows/release.yml)
 [![Molecular+](https://github.com/u3dreal/molecular-plus/actions/workflows/main.yml/badge.svg)](https://github.com/u3dreal/molecular-plus/actions/workflows/main.yml)
 
 # Molecular Plus – Advanced Particle Simulation for Blender
